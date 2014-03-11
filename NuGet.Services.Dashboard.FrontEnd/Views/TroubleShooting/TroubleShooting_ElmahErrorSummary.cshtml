@@ -1,0 +1,51 @@
+﻿
+@using System;
+@using System.Collections.Generic;
+@using System.Linq;
+@model List<Tuple<string,string,string,string>>
+
+
+
+<table class="hovered">
+    <tbody>
+        <tr>
+            <th>
+                Error
+            </th>
+            <th>
+                Occurences
+            </th>
+            <th>
+                Last Reported
+            </th>
+            <th>
+                Details
+            </th>
+
+        </tr>
+        @foreach(Tuple<string,string,string,string> row in @Model)
+    {            
+            <tr>
+                <td>
+                    @row.Item1
+                </td>
+                <td>
+                    @row.Item2
+                </td>
+                <td>
+                    @row.Item3
+                </td>
+                <td>
+                    <p id="LinkP"><a href="javascript:Toggle('DetailsDiv','LinkP');" id="ShowDetailsLinkDiv"  title="Show details">Show/Hide</a></p><div id="DetailsDiv" style="display: none">
+                        <pre>
+				@row.Item4
+			</pre>
+                    </div>
+                </td>
+
+            </tr>
+    }
+    </tbody>
+</table>
+<br />
+<br />

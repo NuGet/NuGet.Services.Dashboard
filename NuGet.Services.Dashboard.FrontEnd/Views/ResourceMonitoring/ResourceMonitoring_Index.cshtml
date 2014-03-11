@@ -1,0 +1,40 @@
+﻿<script type="text/javascript">
+
+    function UpdateResourceStatus() {
+
+        $.ajax({
+            url: '@Url.Action("GetCPUStatus", "ResourceMonitoring")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#CurrentCPU").html(result);
+            }
+        });
+
+        $.ajax({
+            url: '@Url.Action("GetMemoryStatus", "ResourceMonitoring")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#CurrentMemory").html(result + "Mb");
+            }
+        });
+        window.setTimeout(UpdateResourceStatus, 5000 * 60);
+    };
+</script>
+
+<div class="tile" data-role="tile-slider" data-param-period="20000" id="resourcediv" onclick="ShowDetails('Details','ResourceMonitoring');">
+    <div id="CurrentCPU" class="tile-content bg-color-green">
+        <h1>CPU</h1>
+        <br />
+        <div class="badge">0%</div>
+    </div>
+    <div id="CurrentMemory" class="tile-content bg-color-green">
+        <h1>Memory</h1>
+        <br />
+        <div class="badge">0 Mb</div>
+    </div>
+    <div class="brand bg-color-green">
+                                         <p class="text"><em>Resource Monitor</em></p>
+     </div>
+</div>

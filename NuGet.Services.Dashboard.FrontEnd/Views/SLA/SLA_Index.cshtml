@@ -1,0 +1,41 @@
+﻿<script type="text/javascript">
+    
+    function UpdateSLAStatus() {
+
+        $.ajax({
+            url: '@Url.Action("GetCurrentThroughputStatus", "SLA")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#CurrentRequests").html(result);                
+            }
+        });
+
+        $.ajax({
+            url: '@Url.Action("GetCurrentErrorRateStatus", "SLA")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#CurrentError").html(result);               
+            }
+        });
+        window.setTimeout(UpdateSLAStatus, 5000 * 60);
+    };
+</script>
+
+<div class="tile" data-role="tile-slider" data-param-period="20000" id="SLAdiv" onclick="ShowDetails('Details','SLA');" title="Appserver throughout and responsetime">
+    <div id="CurrentRequests" class="tile-content bg-color-green">
+        <h1>Requests per hour</h1>
+        <br />
+        <div class="badge">0 rph</div>
+    </div>
+    <div id="CurrentError" class="tile-content bg-color-green">
+        <h1>Error per hour</h1>
+        <br />
+        <div class="badge">0 eph</div>
+    </div>
+     <div class="brand bg-color-green">
+                                            <p class="text"><em>AppServer SLA</em></p>
+                                        </div>
+
+</div>
