@@ -277,8 +277,10 @@
     <None Include="Properties\PublishProfiles\demodashboard2 - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\demodashboard2 - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\nuget-bhuvak-dash - FTP %282%29.pubxml" />
+    <None Include="Properties\PublishProfiles\nuget-bhuvak-dash - FTP %283%29.pubxml" />
     <None Include="Properties\PublishProfiles\nuget-bhuvak-dash - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\nuget-bhuvak-dash - Web Deploy %282%29.pubxml" />
+    <None Include="Properties\PublishProfiles\nuget-bhuvak-dash - Web Deploy %283%29.pubxml" />
     <None Include="Properties\PublishProfiles\nuget-bhuvak-dash - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\nuget-bhuvak-frontend - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\nuget-bhuvak-frontend - Web Deploy.pubxml" />

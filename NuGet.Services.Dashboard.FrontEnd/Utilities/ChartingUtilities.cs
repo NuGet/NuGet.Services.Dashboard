@@ -41,13 +41,13 @@ namespace NuGetDashboard.Utilities
             return chart;
         }
 
-        public static DotNet.Highcharts.Highcharts GetLineChart(List<DotNet.Highcharts.Options.Series> seriesSet, List<string> xValues, string title)
+        public static DotNet.Highcharts.Highcharts GetLineChart(List<DotNet.Highcharts.Options.Series> seriesSet, List<string> xValues, string title,int dimensions=300)
         {
             DotNet.Highcharts.Highcharts chart = new DotNet.Highcharts.Highcharts(title);
             chart.InitChart(new Chart
             {
-                Height = 300,
-                Width = 300
+                Height = dimensions,
+                Width = dimensions
             });
 
             chart.SetXAxis(new XAxis

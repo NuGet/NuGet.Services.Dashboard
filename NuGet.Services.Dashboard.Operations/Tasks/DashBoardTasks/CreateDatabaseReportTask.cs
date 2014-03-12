@@ -29,8 +29,8 @@ namespace NuGetGallery.Operations
 
         public override void ExecuteCommand()
         {
-            AppendHourlyCount(SqlQueryForConnectionCount, "DbConnections");
-            AppendHourlyCount(SqlQueryForRequestCount, "DbRequests");
+            AppendHourlyCount(SqlQueryForConnectionCount, "DBConnections");
+            AppendHourlyCount(SqlQueryForRequestCount, "DBRequests");
             CreateReportForDBCPUUsage();
         }
 
@@ -43,12 +43,12 @@ namespace NuGetGallery.Operations
                 {
                     sqlConnection.Open();
                     var connectionCount = dbExecutor.Query<Int32>(sqlQuery).SingleOrDefault();
-                    connectionCountDataPoints = ReportHelpers.AppendDatatoBlob(StorageAccount, blobName + ".json", new Tuple<string, string>(String.Format("{0:HH-mm}", DateTime.Now), connectionCount.ToString()));
+                    connectionCountDataPoints = ReportHelpers.AppendDatatoBlob(StorageAccount, blobName + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), connectionCount.ToString()),ContainerName);
 
                 }
             }            
             JArray reportObject = ReportHelpers.GetJson(connectionCountDataPoints);
-            ReportHelpers.CreateBlob(StorageAccount, blobName + ".json", "dashboard", "application/json", ReportHelpers.ToStream(reportObject));
+            ReportHelpers.CreateBlob(StorageAccount, blobName + ".json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
         }
 
         private void CreateReportForDBCPUUsage()
@@ -67,11 +67,11 @@ namespace NuGetGallery.Operations
                     {
                         Console.WriteLine("Time ..................." + time.ToString());
                         var usageSeconds = dbExecutor.Query<Int32>(string.Format("select Sum(usage_in_seconds) from sys.resource_usage where time = '{0}' AND database_name = '{1}'", time.ToString(), currentDbName)).SingleOrDefault();
-                        usageDataPoints.Add(new Tuple<string, string>(time.ToString(), usageSeconds.ToString()));
+                        usageDataPoints.Add(new Tuple<string, string>(String.Format("{0:HH:mm}", time), usageSeconds.ToString()));
                     }
                 }
                 JArray reportObject = ReportHelpers.GetJson(usageDataPoints);
-                ReportHelpers.CreateBlob(StorageAccount, "DBCPU" + ".json", "dashboard", "application/json", ReportHelpers.ToStream(reportObject));
+                ReportHelpers.CreateBlob(StorageAccount, "DBCPUTime" + ".json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
             }
         }
     }

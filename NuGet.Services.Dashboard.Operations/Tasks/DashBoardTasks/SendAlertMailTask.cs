@@ -17,6 +17,7 @@ using System.Net.Mail;
 using System.Web.Helpers;
 using System.Web.UI;
 using System.Net.Mime;
+using System.Configuration;
 
 namespace NuGetGallery.Operations
 {
@@ -39,7 +40,7 @@ namespace NuGetGallery.Operations
         {
 
             SmtpClient sc = new SmtpClient("smtphost");
-            NetworkCredential nc = new NetworkCredential("", "");
+            NetworkCredential nc = new NetworkCredential(ConfigurationManager.AppSettings["SmtpUserName"], ConfigurationManager.AppSettings["SmtpPassword"]);
             sc.UseDefaultCredentials = true;
             sc.Credentials = nc;
             sc.Host = "outlook.office365.com";
@@ -47,8 +48,8 @@ namespace NuGetGallery.Operations
             sc.Port = 587;          
             //ServicePointManager.ServerCertificateValidationCallback = delegate(object s, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) { return true; };
             System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage();
-            message.From = new MailAddress("", "NuGet Gallery Live site monitor");
-            message.To.Add(new MailAddress("", ""));          
+            message.From = new MailAddress(ConfigurationManager.AppSettings["SmtpUserName"], "NuGet Gallery Live site monitor");
+            message.To.Add(new MailAddress(ConfigurationManager.AppSettings["MailRecepientAddress"], ConfigurationManager.AppSettings["MailRecepientAddress"]));          
             message.Subject = string.Format("[NuGet Gallery LiveSite Monitoring]: {0}",AlertSubject);
             message.IsBodyHtml = true;
             message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(@"<html><body>" + GetMailContent() + "</body></html>", new ContentType("text/html")));

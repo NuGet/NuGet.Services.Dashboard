@@ -90,13 +90,16 @@ namespace NuGetDashboard.Controllers.Diagnostics
         [HttpGet]
         public JsonResult GetCPUStatus()
         {
-            return Json(BlobStorageService.GetValueFromBlob("CPUStatus.json", "CPU"), JsonRequestBehavior.AllowGet);
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("Instance0CPU.json");
+            return Json(dict.Values.ElementAt(dict.Count-1), JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet]
         public JsonResult GetMemoryStatus()
         {
-            return Json(BlobStorageService.GetValueFromBlob("MemoryStatus.json", "Memory"), JsonRequestBehavior.AllowGet);
+            //return Json(BlobStorageService.GetValueFromBlob("MemoryStatus.json", "Memory"), JsonRequestBehavior.AllowGet);
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("Instance0Memory.json");
+            return Json(dict.Values.ElementAt(dict.Count-1), JsonRequestBehavior.AllowGet);
         }
 
         private ActionResult GetChart(string blobName)

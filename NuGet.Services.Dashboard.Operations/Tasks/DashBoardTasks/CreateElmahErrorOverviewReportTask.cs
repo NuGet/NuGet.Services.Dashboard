@@ -40,12 +40,12 @@ namespace NuGetGallery.Operations
             {
                 //For the last 5 hours, retrieves the error count each hour. 
                 int count = entities.Where(entity => entity.Error.Time.ToUniversalTime() > startingTime && entity.Error.Time.ToUniversalTime() < startingTime.AddHours(1)).ToList().Count;
-                hourlyErrorCounts.Add(new Tuple<string, string>(String.Format("{0:HH mm}", startingTime), count.ToString()));
+                hourlyErrorCounts.Add(new Tuple<string, string>(String.Format("{0:HH:mm}", startingTime.ToLocalTime()), count.ToString()));
                 startingTime = startingTime.AddHours(1);
             }                     
 
             JArray reportObject = ReportHelpers.GetJson(hourlyErrorCounts);
-            ReportHelpers.CreateBlob(StorageAccount, "ElmahErrorsOverView" + ".json", "dashboard", "application/json", ReportHelpers.ToStream(reportObject));
+            ReportHelpers.CreateBlob(StorageAccount, "ErrorRate" + ".json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
           
         }
 

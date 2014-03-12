@@ -17,6 +17,9 @@ namespace NuGetGallery.Operations
         [Option("The connection string to the storage server", AltName = "st")]
         public CloudStorageAccount StorageAccount { get; set; }
 
+        [Option("The container name to be used", AltName = "ct")]
+        public string ContainerName { get; set; }
+
         protected string StorageAccountName
         {
             get { return StorageAccount.Credentials.AccountName; }

@@ -55,7 +55,7 @@ namespace NuGetGallery.Operations
                 {
                     int countThreshold = 0;
                     CriticalErrorDictionary.TryGetValue(errorGroups.Key,out countThreshold);
-                    if(errorGroups.Count() > countThreshold)
+                    if(errorGroups.Count() > (countThreshold * LastNHours))
                     {
                      new SendAlertMailTask {
                     AlertSubject = "Elmah Error Alert",
@@ -69,7 +69,7 @@ namespace NuGetGallery.Operations
             }
 
             JArray reportObjectElmah = ReportHelpers.GetJsonForTable(listOfErrors);
-            ReportHelpers.CreateBlob(StorageAccount, "ElmahErrorsDetailed" + LastNHours.ToString() + "hours.json", "dashboard", "application/json", ReportHelpers.ToStream(reportObjectElmah));
+            ReportHelpers.CreateBlob(StorageAccount, "ElmahErrorsDetailed" + LastNHours.ToString() + "hours.json", ContainerName, "application/json", ReportHelpers.ToStream(reportObjectElmah));
           
         }
         

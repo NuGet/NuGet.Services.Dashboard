@@ -98,10 +98,10 @@ namespace NuGetGallery.Operations.Common
         /// <param name="blobName"></param>
         /// <param name="xValues"></param>
         /// <param name="yValues"></param>
-        public static List<Tuple<string,string>> AppendDatatoBlob(CloudStorageAccount account, string blobName, Tuple<string,string> tuple)
+        public static List<Tuple<string,string>> AppendDatatoBlob(CloudStorageAccount account, string blobName, Tuple<string,string> tuple,string containerName="dashboard")
         {
 
-            string json = Load( account, blobName);
+            string json = Load( account, blobName,containerName);
             if (json == null)
             {
                 return null;
@@ -115,8 +115,8 @@ namespace NuGetGallery.Operations.Common
             }
             dict.Add(tuple);
             if(dict.Count > 5)
-            {
-              dict =  dict.Skip(dict.Count - 5).ToList();
+            {  
+                dict.RemoveRange(0, dict.Count - 5);
             }
             return dict;
         }

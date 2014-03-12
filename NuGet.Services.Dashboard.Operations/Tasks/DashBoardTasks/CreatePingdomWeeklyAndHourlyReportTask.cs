@@ -17,7 +17,7 @@ using System.Web.Script.Serialization;
 namespace NuGetGallery.Operations
 {
     [Command("createpingdomweeklyreport", "Creates report for the weekly average pingdom values", AltName = "cpdwr")]
-    public class CreatePingdomWeeklyReportTask : StorageTask
+    public class CreatePingdomWeeklyAndHourlyReportTask : StorageTask
     {
         [Option("PingdomUserName", AltName = "user")]
         public string UserName { get; set; }
@@ -25,11 +25,19 @@ namespace NuGetGallery.Operations
         [Option("PingdomUserpassword", AltName = "password")]
         public string Password { get; set; }
 
+        [Option("PingdomAppKey", AltName = "appkey")]
+        public string AppKey { get; set; }
+
+        [Option("Frequency", AltName = "f")]
+        public string Frequency { get; set; }
+
+
         public override void ExecuteCommand()
         {
             NetworkCredential nc = new NetworkCredential(UserName, Password);
             WebRequest request = WebRequest.Create("https://api.pingdom.com/api/2.0/checks");
             request.Credentials = nc;
+            request.Headers.Add(AppKey);
             request.PreAuthenticate = true;
             request.Method = "GET";
             WebResponse respose = request.GetResponse();
@@ -42,24 +50,36 @@ namespace NuGetGallery.Operations
                     List<Tuple<string, string>> summary = GetCheckSummaryAvgForLastWeek(o["id"]);
                     JArray reportObject = ReportHelpers.GetJson(summary);
                     string checkAlias = o["name"].ToString();
-                    checkAlias = checkAlias.Substring(0, checkAlias.IndexOf(" "));
-                    ReportHelpers.CreateBlob(StorageAccount, checkAlias + "WeeklyReport.json", "dashboard", "application/json", ReportHelpers.ToStream(reportObject));
+                    checkAlias = checkAlias.Replace(" ",".");
+                    checkAlias = checkAlias.Replace("(", "").Replace(")", "");
+                    ReportHelpers.CreateBlob(StorageAccount, checkAlias + Frequency + "Report.json", "dashboard", "application/json", ReportHelpers.ToStream(reportObject));
                 }
             }
         }
 
         private List<Tuple<string, string>> GetCheckSummaryAvgForLastWeek(int checkId)
         {
-            int i = 8;
+            int i = 7;
             List<Tuple<string, string>> summaryValues = new List<Tuple<string, string>>();
             while (i >= 1)
             {
                 //Get the average response time for the past 8 days.
-                long fromTime = UnixTimeStampUtility.GetUnixTimestampSeconds(DateTime.UtcNow.Subtract(new TimeSpan(i, 0, 0, 0)));
-                long toTime = UnixTimeStampUtility.GetUnixTimestampSeconds(DateTime.UtcNow.Subtract(new TimeSpan(i - 1, 0, 0, 0)));
+                long fromTime = 0;
+                long toTime = 0;
+                if (Frequency.Equals("Hourly", StringComparison.OrdinalIgnoreCase))
+                {
+                    fromTime = UnixTimeStampUtility.GetUnixTimestampSeconds(DateTime.UtcNow.Subtract(new TimeSpan(0, i, 0, 0)));
+                    toTime = UnixTimeStampUtility.GetUnixTimestampSeconds(DateTime.UtcNow.Subtract(new TimeSpan(0, i-1, 0, 0)));
+                }
+                else
+                {
+                    fromTime = UnixTimeStampUtility.GetUnixTimestampSeconds(DateTime.UtcNow.Subtract(new TimeSpan(i, 0, 0, 0)));
+                    toTime = UnixTimeStampUtility.GetUnixTimestampSeconds(DateTime.UtcNow.Subtract(new TimeSpan(i - 1, 0, 0, 0)));
+                }
                 NetworkCredential nc = new NetworkCredential(UserName, Password);
                 WebRequest request = WebRequest.Create(string.Format("https://api.pingdom.com/api/2.0/summary.average/{0}?from={1}&to={2}", checkId, fromTime, toTime));
                 request.Credentials = nc;
+                request.Headers.Add(AppKey);
                 request.PreAuthenticate = true;
                 request.Method = "GET";
                 WebResponse respose = request.GetResponse();
@@ -72,8 +92,13 @@ namespace NuGetGallery.Operations
                         foreach (var status in summary.Value)
                         {
                             //Get the average response time and store it to the JSON object.
-                            if (status.Key == "avgresponse")                            
-                                summaryValues.Add(new Tuple<string, string>("Day" + i.ToString(), status.Value.ToString()));
+                            if (status.Key == "avgresponse")
+                            {
+                                if(Frequency.Equals("Hourly",StringComparison.OrdinalIgnoreCase))
+                                summaryValues.Add(new Tuple<string, string>(String.Format("{0:HH:mm}", UnixTimeStampUtility.DateTimeFromUnixTimestampSeconds(fromTime).ToLocalTime()), status.Value.ToString()));
+                                else
+                                    summaryValues.Add(new Tuple<string, string>(String.Format("{0:MM/dd}", UnixTimeStampUtility.DateTimeFromUnixTimestampSeconds(fromTime).ToLocalTime()), status.Value.ToString()));
+                            }
                         }
                     }
                 }

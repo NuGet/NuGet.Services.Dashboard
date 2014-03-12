@@ -58,13 +58,15 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         [HttpGet]
         public JsonResult GetCurrentThroughputStatus()
         {
-            return Json(BlobStorageService.GetValueFromBlob("CurrentRequestsStatus.json", "Requests"), JsonRequestBehavior.AllowGet);
+            Dictionary<string,string> dict = BlobStorageService.GetDictFromBlob("Throughput.json");
+            return Json(dict.Values.ElementAt(dict.Count-1), JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet]
         public JsonResult GetCurrentErrorRateStatus()
         {
-            return Json(BlobStorageService.GetValueFromBlob("CurrentErrorRateStatus.json", "ErrorRate"), JsonRequestBehavior.AllowGet);
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("ErrorRate.json");
+            return Json(dict.Values.ElementAt(dict.Count-1), JsonRequestBehavior.AllowGet);
         }
     }
 }

@@ -41,7 +41,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public ActionResult ThisWeek()
         {
             //Returns the chart for Average response for the last week
-            string[] checkNames = new string[] { "feed", "home", "packages" };
+            string[] checkNames = new string[] { "feed.raw.packages.list", "home", "package.restore.download", "package.restore.lookup","packages","feed.top.30.by.downloads" };
             List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
             List<string> xValues = new List<string>();
             List<Object> yValues = new List<Object>();
@@ -55,14 +55,16 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                     Name = check
                 });
             }
-            DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, xValues,"AvgResponseTime");         
+            DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, xValues,"AvgResponseTime",600);
+            
+        
             return PartialView("~/Views/Shared/PartialChart.cshtml", chart);          
         }
 
         [HttpGet]
         public ActionResult GetPackageRestoreUptime()
-        {  
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("PackageRestoreHourlyReport","ResponseTime"));
+        {
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("package.restore.downloadHourlyReport", "PackageRestoreResponseTime"));
         }       
 
         [HttpGet]
