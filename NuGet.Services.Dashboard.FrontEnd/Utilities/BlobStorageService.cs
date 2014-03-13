@@ -161,7 +161,10 @@ namespace NuGetDashboard.Utilities
             JArray array = JArray.Parse(json);
             foreach (JObject item in array)
             {
-                dict.Add(item["key"].ToString(), item["value"].ToString());
+                if (!dict.ContainsKey(item["key"].ToString()))
+                {
+                    dict.Add(item["key"].ToString(), item["value"].ToString());
+                }
             }
             return dict;
         }

@@ -15,15 +15,51 @@ namespace NuGetGallery.Operations.Common
             CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
             CloudBlobContainer container = blobClient.GetContainerReference(containerName);
             CloudBlockBlob blob = container.GetBlockBlobReference(name);
-            string content;
-            using (var memoryStream = new MemoryStream())
-            {
-                blob.DownloadToStream(memoryStream);
-                content = System.Text.Encoding.UTF8.GetString(memoryStream.ToArray());
+            string content = string.Empty;
+            if (blob != null)
+            {  
+                using (var memoryStream = new MemoryStream())
+                {
+                    blob.DownloadToStream(memoryStream);
+                    content = System.Text.Encoding.UTF8.GetString(memoryStream.ToArray());
+                }
             }
 
             return content;
         }
+
+        public static bool IffBlobExists(CloudStorageAccount storageAccount, string name, string containerName = "dashboard")
+        {
+            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
+            CloudBlockBlob blob = container.GetBlockBlobReference(name);
+            return (blob.Exists());
+
+        }
+
+        public static void DownloadBlobToLocalFile(CloudStorageAccount storageAccount, string blobName, string fileName, string containerName = "dashboard")
+        {
+            if (!File.Exists(fileName))
+            {
+                CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+                CloudBlobContainer container = blobClient.GetContainerReference(containerName);
+                CloudBlockBlob blob = container.GetBlockBlobReference(blobName);
+                string content = string.Empty;
+                if (blob != null)
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        blob.DownloadToStream(memoryStream);
+                        content = System.Text.Encoding.UTF8.GetString(memoryStream.ToArray());
+                    }
+                    StreamWriter sw = new StreamWriter(fileName);
+                    sw.Write(content);
+                    sw.Flush();
+                    sw.Close();
+                }
+            }
+        }
+
 
         public static Stream ToStream(JToken jToken)
         {
@@ -98,27 +134,31 @@ namespace NuGetGallery.Operations.Common
         /// <param name="blobName"></param>
         /// <param name="xValues"></param>
         /// <param name="yValues"></param>
-        public static List<Tuple<string,string>> AppendDatatoBlob(CloudStorageAccount account, string blobName, Tuple<string,string> tuple,string containerName="dashboard")
+        public static void AppendDatatoBlob(CloudStorageAccount account, string blobName, Tuple<string,string> tuple,int bufferCount,string containerName="dashboard")
         {
-
-            string json = Load( account, blobName,containerName);
-            if (json == null)
-            {
-                return null;
-            }
-
             List<Tuple<string, string>> dict = new List<Tuple<string, string>>();
-            JArray array = JArray.Parse(json);            
-            foreach (JObject item in array)
-            {               
-                dict.Add(new Tuple<string,string>(item["key"].ToString(), item["value"].ToString()));
-            }
+            if (ReportHelpers.IffBlobExists(account, blobName, containerName))
+            {
+                string json = Load(account, blobName, containerName);
+                if (!string.IsNullOrEmpty(json))
+                {
+
+                    JArray array = JArray.Parse(json);
+                    foreach (JObject item in array)
+                    {
+                        dict.Add(new Tuple<string, string>(item["key"].ToString(), item["value"].ToString()));
+                    }
+                }
+            }          
+            
             dict.Add(tuple);
-            if(dict.Count > 5)
+            if(dict.Count > bufferCount)
             {  
-                dict.RemoveRange(0, dict.Count - 5);
+                dict.RemoveRange(0, dict.Count - bufferCount);
             }
-            return dict;
+
+            JArray reportObject = ReportHelpers.GetJson(dict);
+            ReportHelpers.CreateBlob(account, blobName , containerName, "application/json", ReportHelpers.ToStream(reportObject));            
         }
 
 

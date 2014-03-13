@@ -1,6 +1,6 @@
 ﻿<script type="text/javascript">
     
-    function UpdateSLAStatus() {
+    function UpdateStatus() {
 
         $.ajax({
             url: '@Url.Action("GetCurrentThroughputStatus", "SLA")',
@@ -19,7 +19,23 @@
                 $("#CurrentError").html(result);               
             }
         });
-        window.setTimeout(UpdateSLAStatus, 5000 * 60);
+        $.ajax({
+            url: '@Url.Action("GetHourlyPackagetatus", "Trending")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#CurrentPackages").html(result);
+            }
+        });
+        $.ajax({
+            url: '@Url.Action("GetHourlyUsertatus", "Trending")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#CurrentUsers").html(result);
+            }
+        });
+        window.setTimeout(UpdateStatus, 5000 * 60);
     };
 </script>
 

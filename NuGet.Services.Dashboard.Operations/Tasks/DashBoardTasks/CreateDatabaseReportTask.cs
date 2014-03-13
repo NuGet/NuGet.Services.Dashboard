@@ -43,12 +43,10 @@ namespace NuGetGallery.Operations
                 {
                     sqlConnection.Open();
                     var connectionCount = dbExecutor.Query<Int32>(sqlQuery).SingleOrDefault();
-                    connectionCountDataPoints = ReportHelpers.AppendDatatoBlob(StorageAccount, blobName + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), connectionCount.ToString()),ContainerName);
+                    ReportHelpers.AppendDatatoBlob(StorageAccount, blobName + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), connectionCount.ToString()),5, ContainerName);
 
                 }
-            }            
-            JArray reportObject = ReportHelpers.GetJson(connectionCountDataPoints);
-            ReportHelpers.CreateBlob(StorageAccount, blobName + ".json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
+            }                    
         }
 
         private void CreateReportForDBCPUUsage()
@@ -67,9 +65,10 @@ namespace NuGetGallery.Operations
                     {
                         Console.WriteLine("Time ..................." + time.ToString());
                         var usageSeconds = dbExecutor.Query<Int32>(string.Format("select Sum(usage_in_seconds) from sys.resource_usage where time = '{0}' AND database_name = '{1}'", time.ToString(), currentDbName)).SingleOrDefault();
-                        usageDataPoints.Add(new Tuple<string, string>(String.Format("{0:HH:mm}", time), usageSeconds.ToString()));
+                        usageDataPoints.Add(new Tuple<string, string>(String.Format("{0:HH:mm}", time.ToLocalTime()), usageSeconds.ToString()));
                     }
                 }
+                usageDataPoints.Reverse(); //reverse it as the array returned will have latest hour as first entry.
                 JArray reportObject = ReportHelpers.GetJson(usageDataPoints);
                 ReportHelpers.CreateBlob(StorageAccount, "DBCPUTime" + ".json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
             }

@@ -44,6 +44,21 @@ namespace NuGetDashboard.Controllers.Trending
         {
             DotNet.Highcharts.Highcharts chart =  ChartingUtilities.GetLineChartFromBlobName("UsersoctoberMonthlyReport", "Users");
             return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
-        }       
+        }
+
+        [HttpGet]
+        public JsonResult GetHourlyPackagetatus()
+        {
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("UploadsHourlyReport.json");
+            return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet]
+        public JsonResult GetHourlyUsertatus()
+        {
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("UsersHourlyReport.json");
+            return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
+        }
+
     }
 }

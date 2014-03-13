@@ -72,7 +72,7 @@ namespace NuGetDashboard.Controllers.Diagnostics
         [HttpGet]
         public ActionResult DBCPUTime()
         {            
-            return GetChart("DBCPUTime");
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("DBCPUTime","DBCPUTimeInSeconds"));
         }
 
         [HttpGet]

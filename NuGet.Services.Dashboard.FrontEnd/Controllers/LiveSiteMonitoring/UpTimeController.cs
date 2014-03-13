@@ -64,7 +64,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         [HttpGet]
         public ActionResult GetPackageRestoreUptime()
         {
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("package.restore.downloadHourlyReport", "PackageRestoreResponseTime"));
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("package.restore.downloadHourlyReport", "PackageRestoreResponseInMilleSec"));
         }       
 
         [HttpGet]
