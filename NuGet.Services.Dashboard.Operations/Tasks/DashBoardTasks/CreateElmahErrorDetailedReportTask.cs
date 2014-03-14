@@ -31,13 +31,12 @@ namespace NuGetGallery.Operations
              
         public override void ExecuteCommand()
         {
-            CriticalErrorDictionary.Add("The semaphore timeout period has expired",30);
-            CriticalErrorDictionary.Add("The wait operation timed out",60);
+            Dictionary<string, string> CriticalErrorDictionary = ReportHelpers.GetDictFromBlob(StorageAccount, "Configuration.ElmahCriticalErrors.json");
 
             TableErrorLog log = new TableErrorLog(string.Format(ElmahAccountCredentials));
             List<ErrorLogEntry> entities = new List<ErrorLogEntry>();
             
-            log.GetErrors(0, 1000, entities);
+            log.GetErrors(0, 50 * LastNHours, entities); //retrieve n * LastNHours errors assuming a max of 50 errors per hour.
              List<string> listOfErrors = new List<string>();
 
             //Get the error from Last N hours.
@@ -53,9 +52,9 @@ namespace NuGetGallery.Operations
                 listOfErrors.Add(errorGroups.Key.ToString() + "~" + errorGroups.Count().ToString() + "~" + errorGroups.Max( item => item.Error.Time.ToUniversalTime()) + "~" +  errorGroups.First().Error.Detail);
                 if (CriticalErrorDictionary.ContainsKey(errorGroups.Key.ToString()))
                 {
-                    int countThreshold = 0;
+                    string countThreshold = string.Empty;
                     CriticalErrorDictionary.TryGetValue(errorGroups.Key,out countThreshold);
-                    if(errorGroups.Count() > (countThreshold * LastNHours))
+                    if(errorGroups.Count() > (Convert.ToInt32(countThreshold)) && LastNHours == 1)
                     {
                      new SendAlertMailTask {
                     AlertSubject = "Elmah Error Alert",
@@ -71,9 +70,8 @@ namespace NuGetGallery.Operations
             JArray reportObjectElmah = ReportHelpers.GetJsonForTable(listOfErrors);
             ReportHelpers.CreateBlob(StorageAccount, "ElmahErrorsDetailed" + LastNHours.ToString() + "hours.json", ContainerName, "application/json", ReportHelpers.ToStream(reportObjectElmah));
           
-        }
-        
-        private Dictionary<string, int> CriticalErrorDictionary = new Dictionary<string, int>();
+        }      
+  
 
     }
 }

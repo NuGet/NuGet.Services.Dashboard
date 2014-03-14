@@ -31,12 +31,19 @@ namespace NuGetDashboard.Controllers.Diagnostics
             Dictionary<string, string> dict = new Dictionary<string, string>();
             List<string> errors = new List<string>();
             BlobStorageService.GetJsonDataFromBlob("ElmahErrorsDetailed" + hour + "hours.json", out errors);
+            Dictionary<string, string> criticalErrors = BlobStorageService.GetDictFromBlob("Configuration.ElmahCriticalErrors.json");
 
-            List<Tuple<string, string, string, string>> errorrows = new List<Tuple<string, string, string, string>>();
+            List<Tuple<string, string, string, string,int>> errorrows = new List<Tuple<string, string, string, string,int>>();
             foreach(string error in errors)
             {  
                 string[] values = error.Split(new String[] { @"""" + "," },StringSplitOptions.RemoveEmptyEntries);
-                errorrows.Add(new Tuple<string, string, string, string>(values[0].Trim(new char[] { '[', '"' }), values[1].Trim(new char[] { '[', '"' }), values[2].Trim(new char[] { '[', '"' }), values[3].Trim(new char[] { '[', '"' })));
+                int severity = 1;
+                if(criticalErrors.ContainsKey(values[0].Replace(@"["+ @"""","")))
+                {
+                    severity = 0;
+                }
+
+                errorrows.Add(new Tuple<string, string, string, string,int>(values[0].Replace(@"["+ @"""",""), values[1].Replace(@"["+ @"""",""), values[2].Replace(@"["+ @"""",""), values[3].Replace(@"["+ @"""",""),severity));
             }
 
             return PartialView("~/Views/TroubleShooting/TroubleShooting_ElmahErrorSummary.cshtml", errorrows);

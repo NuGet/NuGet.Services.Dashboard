@@ -23,8 +23,8 @@ namespace NuGetGallery.Operations
       
         public override void ExecuteCommand()
         {
-            CreateWeeklyStatReportFor(ConnectionString.ConnectionString, SqlQueryForUploads, "Uploads");
-            CreateWeeklyStatReportFor(ConnectionString.ConnectionString, SqlQueryForUsers, "Users");        
+            CreateWeeklyStatReportFor(ConnectionString.ConnectionString, SqlQueryForUploads, "Uploads" + string.Format("{0:MMdd}", DateTime.Now));
+            CreateWeeklyStatReportFor(ConnectionString.ConnectionString, SqlQueryForUsers, "Users" + string.Format("{0:MMdd}", DateTime.Now));        
         }
 
         private void CreateWeeklyStatReportFor(string connectionString, string sqlQuery, string reportName)
@@ -39,18 +39,15 @@ namespace NuGetGallery.Operations
                     sqlConnection.Open();                   
                         try
                         {
-                            var count = dbExecutor.Query<Int32>(string.Format(sqlQuery, startingTime.ToString("yyyy-MM-dd hh:mm:ss"), endTime.ToString("yyyy-MM-dd hh:mm:ss"))).SingleOrDefault();
-                            uploadsDataPoints.Add(new Tuple<string, string>(string.Format("{0:HH-mm}",endTime) , count.ToString()));
+                            var count = dbExecutor.Query<Int32>(string.Format(sqlQuery, startingTime.ToString("yyyy-MM-dd hh:mm:ss"), endTime.ToString("yyyy-MM-dd hh:mm:ss"))).SingleOrDefault();                            
+                            ReportHelpers.AppendDatatoBlob(StorageAccount, reportName + "HourlyReport.json", new Tuple<string, string>(string.Format("{0:HH-mm}", endTime), count.ToString()), 50, ContainerName);
                         }
                         catch (NullReferenceException)
                         {
                             uploadsDataPoints.Add(new Tuple<string, string>("0", "0"));
                         }                        
                     }
-                }
-            
-            JArray reportObject = ReportHelpers.GetJson(uploadsDataPoints);
-            ReportHelpers.CreateBlob(StorageAccount, reportName +  "HourlyReport.json", "dashboard", "application/json", ReportHelpers.ToStream(reportObject));
+                }          
         }
     }
 }

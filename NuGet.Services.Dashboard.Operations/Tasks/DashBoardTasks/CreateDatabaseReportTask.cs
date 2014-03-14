@@ -43,7 +43,7 @@ namespace NuGetGallery.Operations
                 {
                     sqlConnection.Open();
                     var connectionCount = dbExecutor.Query<Int32>(sqlQuery).SingleOrDefault();
-                    ReportHelpers.AppendDatatoBlob(StorageAccount, blobName + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), connectionCount.ToString()),5, ContainerName);
+                    ReportHelpers.AppendDatatoBlob(StorageAccount, blobName + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), connectionCount.ToString()), 50, ContainerName);
 
                 }
             }                    
@@ -70,7 +70,7 @@ namespace NuGetGallery.Operations
                 }
                 usageDataPoints.Reverse(); //reverse it as the array returned will have latest hour as first entry.
                 JArray reportObject = ReportHelpers.GetJson(usageDataPoints);
-                ReportHelpers.CreateBlob(StorageAccount, "DBCPUTime" + ".json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
+                ReportHelpers.CreateBlob(StorageAccount, "DBCPUTime" + string.Format("{0:MMdd}", DateTime.Now) + ".json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
             }
         }
     }

@@ -49,14 +49,14 @@ namespace NuGetDashboard.Controllers.Trending
         [HttpGet]
         public JsonResult GetHourlyPackagetatus()
         {
-            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("UploadsHourlyReport.json");
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("Uploads" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime()) + "HourlyReport.json");
             return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet]
         public JsonResult GetHourlyUsertatus()
         {
-            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("UsersHourlyReport.json");
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("Users" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime()) + "HourlyReport.json");
             return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
         }
 

@@ -30,28 +30,44 @@ namespace NuGetGallery.Operations
         [Option("IISStorageAccount", AltName = "iis")]
         public CloudStorageAccount IISStorageAccount { get; set; }
 
+        [Option("Retry", AltName = "retry")]
+        public int RetryCount { get; set; }
+
+
         public override void ExecuteCommand()
         {
-            string latestLogName = "u_ex" + string.Format("{0:yyMMddHH}", DateTime.UtcNow) + ".log";
-            DirectoryInfo info = new System.IO.DirectoryInfo(Path.Combine(Environment.CurrentDirectory, latestLogName));
-            if (!Directory.Exists(info.FullName))
-            {
-                Directory.CreateDirectory(info.FullName);
-            }
-            string standardError = string.Empty;
-            string standardOutput = string.Empty;
-            ReportHelpers.DownloadBlobToLocalFile(IISStorageAccount, DeploymentID + "/NuGetGallery/NuGetGallery_IN_0/Web/W3SVC1273337584/" + latestLogName, Path.Combine(info.FullName, "IN0.log"), "wad-iis-requestlogs");
-            ReportHelpers.DownloadBlobToLocalFile(IISStorageAccount, DeploymentID + "/NuGetGallery/NuGetGallery_IN_1/Web/W3SVC1273337584/" + latestLogName, Path.Combine(info.FullName, "IN1.log"), "wad-iis-requestlogs");
-            ReportHelpers.DownloadBlobToLocalFile(IISStorageAccount, DeploymentID + "/NuGetGallery/NuGetGallery_IN_2/Web/W3SVC1273337584/" + latestLogName, Path.Combine(info.FullName, "IN2.log"), "wad-iis-requestlogs");
-            int exitCode = InvokeNugetProcess(@"-i:IISW3C -o:CSV " +@"""" +String.Format(@"select count(*) from {0}\*.log" ,info.FullName) + @""""+" -stats:OFF", out standardError,out standardOutput);
-            Console.WriteLine(exitCode);
-            Console.WriteLine(standardOutput);
-            string requestCount = standardOutput.Replace("COUNT(ALL *)", "").Replace(Environment.NewLine, "").Trim() ;
-            Tuple<string, string> datapoint = new Tuple<string, string>(string.Format("{0:HH:00}",DateTime.Now), requestCount);
 
-         
-            string blobName = "IISRequests" + string.Format("{0:MMdd}",DateTime.Now) +".json";         
-            ReportHelpers.AppendDatatoBlob(StorageAccount, blobName, datapoint,24,ContainerName);
+            while (RetryCount-- > 0)
+            {
+                try
+                {
+                    //Get the logs for the previous Hour as the current one is being used by Azure.
+                    string latestLogName = "u_ex" + string.Format("{0:yyMMddHH}", DateTime.UtcNow.AddHours(-1)) + ".log";
+                    DirectoryInfo info = new System.IO.DirectoryInfo(Path.Combine(Environment.CurrentDirectory, latestLogName));
+                    if (!Directory.Exists(info.FullName))
+                    {
+                        Directory.CreateDirectory(info.FullName);
+                    }                    
+                    string standardError = string.Empty;
+                    string standardOutput = string.Empty;
+                    Task t1 = ReportHelpers.DownloadBlobToLocalFile(IISStorageAccount, DeploymentID + "/NuGetGallery/NuGetGallery_IN_0/Web/W3SVC1273337584/" + latestLogName, Path.Combine(info.FullName, "IN0.log"), "wad-iis-requestlogs");
+                    Task t2 = ReportHelpers.DownloadBlobToLocalFile(IISStorageAccount, DeploymentID + "/NuGetGallery/NuGetGallery_IN_1/Web/W3SVC1273337584/" + latestLogName, Path.Combine(info.FullName, "IN1.log"), "wad-iis-requestlogs");
+                    Task t3 = ReportHelpers.DownloadBlobToLocalFile(IISStorageAccount, DeploymentID + "/NuGetGallery/NuGetGallery_IN_2/Web/W3SVC1273337584/" + latestLogName, Path.Combine(info.FullName, "IN2.log"), "wad-iis-requestlogs");                 
+                    
+                    int exitCode = InvokeNugetProcess(@"-i:IISW3C -o:CSV " + @"""" + String.Format(@"select count(*) from {0}\*.log", info.FullName) + @"""" + " -stats:OFF", out standardError, out standardOutput);
+                    Console.WriteLine(exitCode);
+                    Console.WriteLine(standardOutput);
+                    string requestCount = standardOutput.Replace("COUNT(ALL *)", "");
+                    requestCount = requestCount.Substring(2, requestCount.IndexOf(Environment.NewLine,2)).Trim();
+                    Tuple<string, string> datapoint = new Tuple<string, string>(string.Format("{0:HH:00}", DateTime.Now.AddHours(-1)), requestCount);
+                    string blobName = "IISRequests" + string.Format("{0:MMdd}", DateTime.Now.AddHours(-1)) + ".json";
+                    ReportHelpers.AppendDatatoBlob(StorageAccount, blobName, datapoint, 50, ContainerName);
+                    break; // break if the operation succeeds without doing any retry.
+                }catch(Exception e)
+                {
+                    Console.WriteLine(string.Format("Exception thrown while trying to create report : {0}",e.Message));
+                }
+            }
         }
 
 

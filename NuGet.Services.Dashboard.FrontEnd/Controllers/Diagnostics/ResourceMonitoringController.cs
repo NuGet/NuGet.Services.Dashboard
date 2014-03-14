@@ -71,20 +71,20 @@ namespace NuGetDashboard.Controllers.Diagnostics
 
         [HttpGet]
         public ActionResult DBCPUTime()
-        {            
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("DBCPUTime","DBCPUTimeInSeconds"));
+        {
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("DBCPUTime" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime()), "DBCPUTimeInSeconds"));
         }
 
         [HttpGet]
         public ActionResult DBRequests()
-        {
-            return GetChart("DBRequests");          
+        {                   
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("DBRequests" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime()), "DBRequests",12));
         }
 
         [HttpGet]
         public ActionResult DBConnections()
         {
-            return GetChart("DBConnections");
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("DBConnections" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime()), "DBConnections", 12));           
         }
 
         [HttpGet]

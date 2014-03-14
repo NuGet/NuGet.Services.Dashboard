@@ -1,10 +1,7 @@
-﻿
-@using System;
+﻿@using System;
 @using System.Collections.Generic;
 @using System.Linq;
-@model List<Tuple<string,string,string,string>>
-
-
+@model List<Tuple<string,string,string,string,int>>;
 
 <table class="hovered">
     <tbody>
@@ -19,13 +16,14 @@
                 Last Reported
             </th>
             <th>
-                Details
+                Severity
             </th>
 
         </tr>
-        @foreach(Tuple<string,string,string,string> row in @Model)
-    {            
-            <tr>
+        @foreach(Tuple<string,string,string,string,int> row in @Model)
+    {       
+             
+               <tr>
                 <td>
                     @row.Item1
                 </td>
@@ -35,15 +33,18 @@
                 <td>
                     @row.Item3
                 </td>
-                <td>
-                    <p id="LinkP"><a href="javascript:Toggle('DetailsDiv','LinkP');" id="ShowDetailsLinkDiv"  title="Show details">Show/Hide</a></p><div id="DetailsDiv" style="display: none">
-                        <pre>
-				@row.Item4
-			</pre>
-                    </div>
-                </td>
-
-            </tr>
+                 <td>
+                       @if (@row.Item5 == 0)
+                        {
+                           <span class="square bg-color-orange"></span>
+                        }                        
+                        else
+                        {
+                          // <span class="square bg-color-red"></span>
+                        }
+                   </td>
+                </tr>       
+        
     }
     </tbody>
 </table>
