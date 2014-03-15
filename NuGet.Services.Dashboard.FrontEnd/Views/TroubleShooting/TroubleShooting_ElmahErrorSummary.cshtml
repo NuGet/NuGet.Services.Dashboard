@@ -1,7 +1,7 @@
 ﻿@using System;
 @using System.Collections.Generic;
 @using System.Linq;
-@model List<Tuple<string,string,string,string,int>>;
+@model List<Tuple<string,string,string,string>>
 
 <table class="hovered">
     <tbody>
@@ -20,9 +20,8 @@
             </th>
 
         </tr>
-        @foreach(Tuple<string,string,string,string,int> row in @Model)
-    {       
-             
+        @foreach(Tuple<string,string,string,string> row in @Model)
+         {                    
                <tr>
                 <td>
                     @row.Item1
@@ -34,19 +33,17 @@
                     @row.Item3
                 </td>
                  <td>
-                       @if (@row.Item5 == 0)
+                       @if (@row.Item4 == "0")
                         {
                            <span class="square bg-color-orange"></span>
                         }                        
                         else
                         {
-                          // <span class="square bg-color-red"></span>
+                           <span class="square bg-color-white"></span>
                         }
                    </td>
                 </tr>       
         
-    }
+          }
     </tbody>
 </table>
-<br />
-<br />

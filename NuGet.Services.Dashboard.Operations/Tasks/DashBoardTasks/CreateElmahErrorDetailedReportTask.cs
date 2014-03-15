@@ -49,8 +49,8 @@ namespace NuGetGallery.Operations
             foreach (IGrouping<string, ErrorLogEntry> errorGroups in elmahGroups)
             {
                 Console.WriteLine(errorGroups.Key.ToString() + "  " + errorGroups.Count());
-                listOfErrors.Add(errorGroups.Key.ToString() + "~" + errorGroups.Count().ToString() + "~" + errorGroups.Max( item => item.Error.Time.ToUniversalTime()) + "~" +  errorGroups.First().Error.Detail);
-                if (CriticalErrorDictionary.ContainsKey(errorGroups.Key.ToString()))
+                listOfErrors.Add(errorGroups.Key.ToString() + "~" + errorGroups.Count().ToString() + "~" + errorGroups.Max( item => item.Error.Time.ToLocalTime()) + "~" +  errorGroups.First().Error.Detail);
+                if (CriticalErrorDictionary.Keys.Any(item => errorGroups.Key.ToString().Contains(item)))
                 {
                     string countThreshold = string.Empty;
                     CriticalErrorDictionary.TryGetValue(errorGroups.Key,out countThreshold);

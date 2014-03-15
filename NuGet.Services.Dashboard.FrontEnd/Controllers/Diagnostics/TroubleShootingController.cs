@@ -12,7 +12,7 @@ namespace NuGetDashboard.Controllers.Diagnostics
     /// Gets troubleshooting details like ElmahLog detailed summary and DB detailed summary.
     /// </summary>
     public class TroubleShootingController : Controller
-    {      
+    {
         public ActionResult Index()
         {
             return View();
@@ -33,21 +33,25 @@ namespace NuGetDashboard.Controllers.Diagnostics
             BlobStorageService.GetJsonDataFromBlob("ElmahErrorsDetailed" + hour + "hours.json", out errors);
             Dictionary<string, string> criticalErrors = BlobStorageService.GetDictFromBlob("Configuration.ElmahCriticalErrors.json");
 
-            List<Tuple<string, string, string, string,int>> errorrows = new List<Tuple<string, string, string, string,int>>();
-            foreach(string error in errors)
-            {  
-                string[] values = error.Split(new String[] { @"""" + "," },StringSplitOptions.RemoveEmptyEntries);
-                int severity = 1;
-                if(criticalErrors.ContainsKey(values[0].Replace(@"["+ @"""","")))
+            List<Tuple<string, string, string, string>> errorrows = new List<Tuple<string, string, string, string>>();
+            foreach (string error in errors)
+            {
+                string[] values = error.Split(new String[] { @"""" + "," }, StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 0; i < values.Length; i++)
                 {
-                    severity = 0;
+                    values[i] = values[i].Replace("[" , "");
+                    values[i] = values[i].Replace(@"""", "");
+                    values[i] = values[i].Trim();
                 }
-
-                errorrows.Add(new Tuple<string, string, string, string,int>(values[0].Replace(@"["+ @"""",""), values[1].Replace(@"["+ @"""",""), values[2].Replace(@"["+ @"""",""), values[3].Replace(@"["+ @"""",""),severity));
+                string severity = "1";
+                if (criticalErrors.Keys.Any(item => values[0].Contains(item)))
+                {
+                    severity = "0";
+                }
+                errorrows.Add(new Tuple<string, string, string, string>(values[0], values[1], values[2], severity));
             }
-
             return PartialView("~/Views/TroubleShooting/TroubleShooting_ElmahErrorSummary.cshtml", errorrows);
-        }      
 
+        }
     }
 }
