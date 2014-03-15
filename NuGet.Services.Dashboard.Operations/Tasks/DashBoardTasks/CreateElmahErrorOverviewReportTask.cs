@@ -32,7 +32,7 @@ namespace NuGetGallery.Operations
             List<ErrorLogEntry> entities = new List<ErrorLogEntry>();            
             log.GetErrors(0, 200, entities);
             int count = entities.Where(entity => entity.Error.Time.ToUniversalTime() > DateTime.UtcNow.AddHours(-1) && entity.Error.Time.ToUniversalTime() < DateTime.UtcNow).ToList().Count;
-            ReportHelpers.AppendDatatoBlob(StorageAccount, "ErrorRate" + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now.ToString()), count.ToString()), 50, ContainerName);            
+            ReportHelpers.AppendDatatoBlob(StorageAccount, "ErrorRate" + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), count.ToString()), 50, ContainerName);            
         }
 
         

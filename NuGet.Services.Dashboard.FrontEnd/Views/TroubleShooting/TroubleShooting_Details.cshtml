@@ -9,17 +9,17 @@
             <a href="#"> Web Server </a>
             <div class="fg-color-darken">
                 <h5>Top errors</h5>    
-                <select id="NoofHours" onchange="Toggle()">
+                <select id="NoofHourselmah" onchange="Toggle('elmah')">
                     <option value="1" id="1option" selected>1 hour</option>
                     <option value="6" id="6option">6 hour</option>
                     <option value="24" id="24option">24 hour</option>
                 </select>       
-                <div style="width:800px;" class="fg-color-darken" id="1hourdiv"><p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Error for last 1 hour. For more details check out https://www.nuget.org/Admin/Errors.axd </small></p>
+                <div style="width:800px;" class="fg-color-darken" id="1hourdivelmah"><p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Error for last 1 hour. For more details check out https://www.nuget.org/Admin/Errors.axd </small></p>
                 @Html.Action("ElmahErrorSummary", "TroubleShooting", new { hour = "1" })</div>  
-                <div style="width:800px;display: none" class="fg-color-darken" id="6hourdiv" >
+                <div style="width:800px;display: none" class="fg-color-darken" id="6hourdivelmah" >
                     <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Error for last 6 hours.For more details check out https://www.nuget.org/Admin/Errors.axd </small></p>
                 @Html.Action("ElmahErrorSummary", "TroubleShooting", new { hour = "6" })</div>  
-                <div style="width:800px;display: none" class="fg-color-darken" id="24hourdiv">
+                <div style="width:800px;display: none" class="fg-color-darken" id="24hourdivelmah">
                     <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Error for last 24 hours. For more details check out https://www.nuget.org/Admin/Errors.axd </small></p>
                 @Html.Action("ElmahErrorSummary", "TroubleShooting", new { hour = "24" })</div> 
                 
@@ -29,10 +29,33 @@
         </li>            
         <li>
             <a href="#"> DataBase </a>
-            <div style="width:800px;" class="fg-color-darken">
+            @*<div style="width:800px;" class="fg-color-darken">
                 <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Current active requests. For more details around request limit check http://msdn.microsoft.com/en-us/library/windowsazure/ff394112.aspx </small></p>
                 @Html.Action("DBRequestsSummary", "TroubleShooting")
-            </div> 
+            </div>*@ 
+            <div class="fg-color-darken">
+                <h5>Top errors</h5>
+                <select id="NoofHoursdb" onchange="Toggle('db')">
+                    <option value="1" id="1option" selected>1 hour</option>
+                    <option value="6" id="6option">6 hour</option>
+                    <option value="24" id="24option">24 hour</option>
+                </select>
+                <div style="width:800px;" class="fg-color-darken" id="1hourdivdb">
+                    <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Error for last 1 hour. For more details check out https://www.nuget.org/Admin/Errors.axd </small></p>
+                    @Html.Action("DBRequestsSummary", "TroubleShooting", new { hour = "1" })
+                </div>
+                <div style="width:800px;display: none" class="fg-color-darken" id="6hourdivdb">
+                    <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Error for last 6 hours.For more details check out https://www.nuget.org/Admin/Errors.axd </small></p>
+                    @Html.Action("DBRequestsSummary", "TroubleShooting", new { hour = "6" })
+                </div>
+                <div style="width:800px;display: none" class="fg-color-darken" id="24hourdivdb">
+                    <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Error for last 24 hours. For more details check out https://www.nuget.org/Admin/Errors.axd </small></p>
+                    @Html.Action("DBRequestsSummary", "TroubleShooting", new { hour = "24" })
+                </div>
+
+
+
+            </div>      
         </li>    
     </ul>
    

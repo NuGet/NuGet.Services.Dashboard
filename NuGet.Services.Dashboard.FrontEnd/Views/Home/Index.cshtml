@@ -17,13 +17,13 @@
     
     };
 
-    function Toggle() {
-             
-        var onehour = document.getElementById('1hourdiv');
-        var sixhour = document.getElementById('6hourdiv');
-        var twentyfourhour = document.getElementById('24hourdiv');
+    function Toggle(divName) {
+             debugger
+        var onehour = document.getElementById('1hourdiv' + divName);
+        var sixhour = document.getElementById('6hourdiv' + divName);
+        var twentyfourhour = document.getElementById('24hourdiv' + divName);
 
-        if ($("#NoofHours option:selected").val() =="1") {
+        if ($("#NoofHours"+divName+" option:selected").val() =="1") {
             onehour.style.display = "block";
             sixhour.style.display = "none";
             twentyfourhour.style.display = "none";

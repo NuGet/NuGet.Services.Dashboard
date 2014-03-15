@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using NuGet.Services.Dashboard.Common;
+using Newtonsoft.Json.Linq;
+using System.Web.Script.Serialization;
 
 namespace NuGetDashboard.Controllers.Diagnostics
 {
@@ -21,10 +24,12 @@ namespace NuGetDashboard.Controllers.Diagnostics
         {
             return PartialView("~/Views/TroubleShooting/TroubleShooting_Details.cshtml");
         }
-        public ActionResult DBRequestsSummary()
-        {
-            Dictionary<string, string> dict = new Dictionary<string, string>();
-            return PartialView("~/Views/TroubleShooting/TroubleShooting_DBRequestsSummary.cshtml", BlobStorageService.GetDictFromBlob("DbRequesstSummaryReport.json"));
+        public ActionResult DBRequestsSummary(string hour)
+        {  
+            var listOfEvents = new JavaScriptSerializer().Deserialize<List<DatabaseEvent>>(BlobStorageService.Load("DBDetailed" + hour + "Hour.json"));
+
+            //Dictionary<string, string> dict = new Dictionary<string, string>();
+            return PartialView("~/Views/TroubleShooting/TroubleShooting_DBRequestsSummary.cshtml", listOfEvents);
         }
         public ActionResult ElmahErrorSummary(string hour)
         {

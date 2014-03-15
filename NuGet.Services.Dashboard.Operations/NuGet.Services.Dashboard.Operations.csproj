@@ -138,6 +138,7 @@
       <DependentUpon>TaskResources.resx</DependentUpon>
     </Compile>
     <Compile Include="Common\ResourceHelper.cs" />
+    <Compile Include="Tasks\DashBoardTasks\CreateDatabaseDetailedReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateDatabaseReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateElmahErrorDetailedReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateElmahErrorOverviewReportTask.cs" />
@@ -176,6 +177,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Readme\Elmah.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Services.Dashboard.Common\NuGet.Services.Dashboard.Common.csproj">
+      <Project>{5566ae9c-8466-4316-9372-7b38b57dbb20}</Project>
+      <Name>NuGet.Services.Dashboard.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

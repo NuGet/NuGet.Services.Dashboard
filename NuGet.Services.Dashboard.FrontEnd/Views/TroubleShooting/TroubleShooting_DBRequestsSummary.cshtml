@@ -1,27 +1,58 @@
 ﻿@using System;
 @using System.Collections.Generic;
 @using System.Linq;
-@model Dictionary<string, string>
-
+@using NuGet.Services.Dashboard.Common;
+@model List<DatabaseEvent>
 <table class="hovered">
     <tbody>
         <tr>
             <th>
-                Metrix
+                StartTime
             </th>
             <th>
-                Value
+                EndTime
+            </th>
+            <th>
+                EventType
+            </th>
+            <th>
+                Eventcount
+            </th>
+            <th>
+                Description
+            </th>
+            <th>
+                Severity
             </th>
 
         </tr>
-        @foreach (KeyValuePair<string, string> pair in @Model)
+        @foreach (DatabaseEvent dbEvent in @Model)
         {
             <tr>
                 <td>
-                    @pair.Key
+                    @dbEvent.start_time
                 </td>
                 <td>
-                    @pair.Value
+                    @dbEvent.end_time
+                </td>
+                <td>
+                    @dbEvent.event_type
+                </td>
+                <td>
+                    @dbEvent.event_count
+                </td>
+                <td>
+                    @dbEvent.description
+                </td>
+                <td>
+                    @if(@dbEvent.event_type.Contains("throttling") || @dbEvent.event_type.Contains("deadlock"))
+                    {
+                    <span class="square bg-color-orange"></span>
+                    }
+                    else
+                    {
+                    <span class="square bg-color-green"></span>
+                    }
                 </td>
             </tr>
         }

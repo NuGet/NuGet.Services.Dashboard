@@ -43,6 +43,16 @@ namespace NuGetGallery.Operations
                 {
                     sqlConnection.Open();
                     var connectionCount = dbExecutor.Query<Int32>(sqlQuery).SingleOrDefault();
+                    if(connectionCount > 80)
+                    {
+                        new SendAlertMailTask
+                        {
+                            AlertSubject = "DB connections/Requests Alert",
+                            ErrorDetails = "Connection/Requests spike in DB",
+                            Count = connectionCount.ToString(),
+                            AdditionalLink = ""
+                        }.ExecuteCommand();
+                    }
                     ReportHelpers.AppendDatatoBlob(StorageAccount, blobName + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), connectionCount.ToString()), 50, ContainerName);
 
                 }

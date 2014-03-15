@@ -39,8 +39,8 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
 
         [HttpGet]
         public ActionResult RequestsInOneDay()
-        {  
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("RequestsIn24Hour"));
+        {
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("IISRequests" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime()),"RequestsPerHour",24,800));
         }
 
         [HttpGet]

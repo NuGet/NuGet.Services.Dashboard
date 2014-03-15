@@ -379,6 +379,12 @@
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Services.Dashboard.Common\NuGet.Services.Dashboard.Common.csproj">
+      <Project>{5566ae9c-8466-4316-9372-7b38b57dbb20}</Project>
+      <Name>NuGet.Services.Dashboard.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
