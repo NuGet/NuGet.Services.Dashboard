@@ -24,23 +24,23 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         {
             return PartialView("~/Views/SLA/SLA_Details.cshtml");
         }
-
+     
         [HttpGet]
-        public ActionResult RequestsInOneHour()
+        public ActionResult ErrorsThisWeek()
         {
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("RequestsInOneHour"));
+            string[] blobNames = new string[2];
+            for (int i = 0; i < 2; i++)
+                blobNames[i] = "ErrorRate" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i));
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "ErrorsPerHour", 24, 800));
         }
 
         [HttpGet]
-        public ActionResult RequestsInSixHour()
-        {           
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("RequestsInSixHour"));
-        }
-
-        [HttpGet]
-        public ActionResult RequestsInOneDay()
+        public ActionResult RequestsThisWeek()
         {
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("IISRequests" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime()),"RequestsPerHour",24,800));
+            string[] blobNames = new string[4];
+            for (int i = 0; i < 4;i++)
+                   blobNames[i] = "IISRequests" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i));
+                return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "RequestsPerHour", 24, 800));
         }
 
         [HttpGet]

@@ -16,6 +16,7 @@ using System.Web.Script.Serialization;
 using NuGetGallery;
 using NuGetGallery.Infrastructure;
 using Elmah;
+using NuGet.Services.Dashboard.Common;
 
 
 namespace NuGetGallery.Operations
@@ -36,8 +37,8 @@ namespace NuGetGallery.Operations
             TableErrorLog log = new TableErrorLog(string.Format(ElmahAccountCredentials));
             List<ErrorLogEntry> entities = new List<ErrorLogEntry>();
             
-            log.GetErrors(0, 50 * LastNHours, entities); //retrieve n * LastNHours errors assuming a max of 50 errors per hour.
-             List<string> listOfErrors = new List<string>();
+            log.GetErrors(0, 100 * LastNHours, entities); //retrieve n * LastNHours errors assuming a max of 50 errors per hour.
+             List<ElmahError> listOfErrors = new List<ElmahError>();
 
             //Get the error from Last N hours.
             if (entities.Any(entity => entity.Error.Time.ToUniversalTime() > DateTime.Now.Subtract(new TimeSpan(LastNHours,0,0)).ToUniversalTime()))
@@ -48,27 +49,37 @@ namespace NuGetGallery.Operations
             //Group the error based on exception and send alerts if critical errors exceed the thresold values.
             foreach (IGrouping<string, ErrorLogEntry> errorGroups in elmahGroups)
             {
-                Console.WriteLine(errorGroups.Key.ToString() + "  " + errorGroups.Count());
-                listOfErrors.Add(errorGroups.Key.ToString() + "~" + errorGroups.Count().ToString() + "~" + errorGroups.Max( item => item.Error.Time.ToLocalTime()) + "~" +  errorGroups.First().Error.Detail);
+                Console.WriteLine(errorGroups.Key.ToString() + "  " + errorGroups.Count());              
+                int severity = 1;
                 if (CriticalErrorDictionary.Keys.Any(item => errorGroups.Key.ToString().Contains(item)))
+                {
+                    severity = 0;
+                }
+                string link = "https://www.nuget.org/Admin/Errors.axd/detail?id={0}";
+                if(ContainerName.Contains("qa"))
+                {
+                    link = "https://int.nugettest.org/Admin/Errors.axd/detail?id={0}";
+                }
+                listOfErrors.Add(new ElmahError(errorGroups.Key.ToString(),errorGroups.Count(), errorGroups.Max( item => item.Error.Time.ToLocalTime()),string.Format(link,errorGroups.First().Id),errorGroups.First().Error.Detail,severity));            
+                if (severity == 0)
                 {
                     string countThreshold = string.Empty;
                     CriticalErrorDictionary.TryGetValue(errorGroups.Key,out countThreshold);
                     if(errorGroups.Count() > (Convert.ToInt32(countThreshold)) && LastNHours == 1)
                     {
                      new SendAlertMailTask {
-                    AlertSubject = "Elmah Error Alert",
-                    ErrorDetails = errorGroups.Key.ToString(),
-                    Count = errorGroups.Count().ToString(),
-                    AdditionalLink = ""                    
+                    AlertSubject = string.Format("Elmah Error Alert activated for {0}",errorGroups.Key),
+                    Details = String.Format("Number of {0} exceeded threshold limit during the last hour.Threshold per hour : {1}, Events recorded in the last hour: {2}" ,errorGroups.Key.ToString(),countThreshold.ToString(),errorGroups.Count().ToString()),
+                    AlertName = string.Format("Elmah Error Alert for {0}",errorGroups.Key.ToString()),
+                    Component = "Web Server"                                      
                 }.ExecuteCommand();
                     }
-                }
+                }            
             }
             }
 
-            JArray reportObjectElmah = ReportHelpers.GetJsonForTable(listOfErrors);
-            ReportHelpers.CreateBlob(StorageAccount, "ElmahErrorsDetailed" + LastNHours.ToString() + "hours.json", ContainerName, "application/json", ReportHelpers.ToStream(reportObjectElmah));
+            var json = new JavaScriptSerializer().Serialize(listOfErrors);          
+            ReportHelpers.CreateBlob(StorageAccount, "ElmahErrorsDetailed" + LastNHours.ToString() + "hours.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
           
         }      
   

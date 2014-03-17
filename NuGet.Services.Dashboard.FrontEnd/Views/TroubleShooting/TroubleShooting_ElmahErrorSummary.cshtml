@@ -1,7 +1,8 @@
 ﻿@using System;
 @using System.Collections.Generic;
 @using System.Linq;
-@model List<Tuple<string,string,string,string>>
+@using NuGet.Services.Dashboard.Common;
+@model List<ElmahError>
 
 <table class="hovered">
     <tbody>
@@ -20,20 +21,21 @@
             </th>
 
         </tr>
-        @foreach(Tuple<string,string,string,string> row in @Model)
+        @foreach(ElmahError row in @Model)
          {                    
                <tr>
                 <td>
-                    @row.Item1
+                    <a href="@row.Link" target="_blank">@row.Error</a>
+                   
                 </td>
                 <td>
-                    @row.Item2
+                    @row.Occurecnes.ToString()
                 </td>
                 <td>
-                    @row.Item3
+                    @row.LastReported.ToString()
                 </td>
                  <td>
-                       @if (@row.Item4 == "0")
+                       @if (@row.Severity == 0)
                         {
                            <span class="square bg-color-orange"></span>
                         }                        

@@ -62,22 +62,16 @@
     </div>
 </div>    
     <div class="page-region">
-          <div style="position:absolute; top: 1em; right: 1em;"> 
-              <div class="input-control switch" data-role="input-control">
-                  <label class="inline-block" style="margin-right: 20px">
+          <div style="position:absolute; top: 1em; right: 1em;">            
                      
                         @if (Model.Equals("Prod"))
-                        { 
-                                                <input type="checkbox" checked onchange="location.href='@Url.Action("UpdateEnvironment", "Home",new {envName = "QA"})'" />
-                                                <span class="fg-color-darken">Prod</span>
+                        {
+                        <button class="default" onclick="location.href='@Url.Action("UpdateEnvironment", "Home",new {envName = "QA"})'">Switch to 'int'</button>
                         }
                         else
                         {
-                            <input type="checkbox" onchange="location.href='@Url.Action("UpdateEnvironment", "Home",new {envName = "Prod"})'" />
-                            <span class="fg-color-darken">QA</span>
+                          <button class="default" onclick="location.href='@Url.Action("UpdateEnvironment", "Home",new {envName = "Prod"})'">Switch to 'prod'</button>                          
                         }
-                                              
-                  </label>                 
               </div>
               </div>
             <div id="maincontent" >@Html.Action("Tiles", "Home");</div>

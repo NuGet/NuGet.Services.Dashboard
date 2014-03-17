@@ -118,5 +118,33 @@ namespace NuGetDashboard.Utilities
             DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, xValues, title, chartDimensions);
             return chart;
         }
+
+        public static DotNet.Highcharts.Highcharts GetLineChartFromBlobName(string[] blobNames, string title = null, int dataPointCount = 6, int chartDimensions = 300)
+        {
+            if (string.IsNullOrEmpty(title))
+                title = blobNames[0];
+            List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
+            List<string> xValues = new List<string>();
+            foreach (string blobName in blobNames)
+            {  
+               
+                List<Object> yValues = new List<Object>();
+                BlobStorageService.GetJsonDataFromBlob(blobName + ".json", out xValues, out yValues);
+                if (xValues.Count > dataPointCount)
+                {
+                    xValues.RemoveRange(0, xValues.Count - dataPointCount);
+                    yValues.RemoveRange(0, yValues.Count - dataPointCount);
+                }
+
+                seriesSet.Add(new DotNet.Highcharts.Options.Series
+                {
+                    Data = new Data(yValues.ToArray()),
+                    Name = blobName
+                });
+            }
+
+            DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, xValues, title, chartDimensions);
+            return chart;
+        }
     }
 }

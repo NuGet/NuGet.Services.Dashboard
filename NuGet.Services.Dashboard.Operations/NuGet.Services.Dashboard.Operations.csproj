@@ -177,6 +177,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Readme\Elmah.txt" />
+    <Content Include="Tasks\DashboardAlertMail.htm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Services.Dashboard.Common\NuGet.Services.Dashboard.Common.csproj">

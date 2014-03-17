@@ -25,20 +25,20 @@ namespace NuGetGallery.Operations
     public class SendAlertMailTask : OpsTask 
     {
         [Option("ErrorDetails", AltName = "e")]
-        public string ErrorDetails { get; set; }
-
-        [Option("Count", AltName = "x")]
-        public string Count { get; set; }
+        public string Details { get; set; }
 
         [Option("AlertSubject", AltName = "s")]
         public string AlertSubject { get; set; }
 
-        [Option("AdditionalLink", AltName = "l")]
-        public string AdditionalLink { get; set; }
+        [Option("AlertName", AltName = "s")]
+        public string AlertName { get; set; }
+        
+        [Option("Component", AltName = "c")]
+        public string Component { get; set; }
+
 
         public override void ExecuteCommand()
         {
-
             SmtpClient sc = new SmtpClient("smtphost");
             NetworkCredential nc = new NetworkCredential(ConfigurationManager.AppSettings["SmtpUserName"], ConfigurationManager.AppSettings["SmtpPassword"]);
             sc.UseDefaultCredentials = true;
@@ -67,52 +67,19 @@ namespace NuGetGallery.Operations
         }
 
         private string GetMailContent()
-        {   
-            stringwriter = new StringWriter();
-            htmlWriter = new HtmlTextWriter(stringwriter);
-            htmlWriter.RenderBeginTag(HtmlTextWriterTag.H3);
-            htmlWriter.AddAttribute(HtmlTextWriterAttribute.Bgcolor, "Yellow");
-            //htmlWriter.Write(content);
-            htmlWriter.Write("The following spike is observed in {0}", AlertSubject);
-            htmlWriter.RenderEndTag();
-            htmlWriter.AddAttribute(HtmlTextWriterAttribute.Border, "1");
-            htmlWriter.RenderBeginTag(HtmlTextWriterTag.Table);
-            htmlWriter.RenderBeginTag(HtmlTextWriterTag.Tr);
-            htmlWriter.RenderBeginTag(HtmlTextWriterTag.Th);
-            htmlWriter.Write("Error");
-            htmlWriter.RenderEndTag();
-            htmlWriter.RenderBeginTag(HtmlTextWriterTag.Th);
-            htmlWriter.Write("Count");
-            htmlWriter.RenderEndTag();
-            htmlWriter.RenderEndTag();
+        {
+            StreamReader sr = new StreamReader("DashboardAlertMail.htm");
+            string mailBody = sr.ReadToEnd();
+            sr.Close();
+            mailBody = mailBody.Replace("{AlertSubjectLine}", AlertSubject);
+            mailBody = mailBody.Replace("{ComponentName}", Component);
+            mailBody = mailBody.Replace("{Alert}", AlertName);
+            mailBody = mailBody.Replace("{AlertDescription}", Details);
+            mailBody = mailBody.Replace("{AlertTime}", DateTime.Now.ToString());
+            return mailBody;
 
-            //foreach (WorkItem item in bugs)
-            //{
-            htmlWriter.RenderBeginTag(HtmlTextWriterTag.Tr);
-            htmlWriter.RenderBeginTag(HtmlTextWriterTag.Td);
-            htmlWriter.Write(ErrorDetails);
-            htmlWriter.RenderEndTag();
-            //  htmlWriter.RenderEndTag();
-            htmlWriter.RenderBeginTag(HtmlTextWriterTag.Td);
-            htmlWriter.Write(Count);
-            htmlWriter.RenderEndTag();
-
-            htmlWriter.RenderEndTag();
-            //}          
-
-            htmlWriter.RenderEndTag();
-            htmlWriter.WriteLine("");
-            htmlWriter.AddAttribute(HtmlTextWriterAttribute.Target, "_blank");
-            htmlWriter.AddAttribute(HtmlTextWriterAttribute.Href, AdditionalLink);
-            htmlWriter.RenderBeginTag(HtmlTextWriterTag.A);
-
-            htmlWriter.Write("Click here for details");
-            htmlWriter.RenderEndTag();
-            return stringwriter.ToString();
-        }
-
-        private static StringWriter stringwriter;
-        private static HtmlTextWriter htmlWriter;
+          
+        }      
 
     }
 }

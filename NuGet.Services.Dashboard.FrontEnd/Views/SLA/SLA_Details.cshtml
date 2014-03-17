@@ -5,16 +5,16 @@
     <div class="menu-pull-bar"></div>
     <!-- Tabs -->
     <ul>
-        <li class="active"><a href="#1Hour">One Hour</a></li>
-        <li><a href="#6Hours">Six Hours</a></li>
-        <li><a href="#1Day">One Day</a></li>
+        <li class="active"><a href="#Requests">Requests Weekly Trend</a></li>
+        <li><a href="#Errors">Errors Weekly Trend</a></li>
+        
         
     </ul>
     <!-- Tabs content -->
     <div class="frames">
-        <div class="frame active" id="1Hour">@Html.Action("RequestsInOneHour", "SLA");</div>              
-        <div class="frame" id="6Hours">@Html.Action("RequestsInSixHour", "SLA");</div>
-        <div class="frame" id="1Day">@Html.Action("RequestsInOneDay", "SLA");</div>       
+        <div class="frame active" id="Requests">@Html.Action("RequestsThisWeek", "SLA");</div>              
+        <div class="frame" id="Errors">@Html.Action("ErrorsThisWeek", "SLA");</div>
+           
     </div>
 </div>
 

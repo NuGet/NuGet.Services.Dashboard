@@ -80,8 +80,21 @@ namespace NuGetGallery.Operations
             }
             else
             {
-                ValidateArguments();
-                ExecuteCommand();
+                try
+                {
+                    ValidateArguments();
+                    ExecuteCommand();
+                }catch(Exception e)
+                {
+                    new SendAlertMailTask
+                    {
+                        AlertSubject = string.Format("Error executing task {0}",this.GetType().ToString()),
+                        Details = String.Format("Exception thrown while executing task {0}. Exception Message : {1}, Stack Trace : {2}",this.GetType().ToString(),e.Message,e.StackTrace),
+                        AlertName = "Exception from Dashboard OpsTask",
+                        Component = "Dashboard Ops"
+                    }.ExecuteCommand();
+                    throw e;
+                }
             }
         }
 

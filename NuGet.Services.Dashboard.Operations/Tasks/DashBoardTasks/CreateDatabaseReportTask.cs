@@ -16,6 +16,7 @@ using System.Web.Script.Serialization;
 using NuGetGallery;
 using NuGetGallery.Infrastructure;
 using Elmah;
+using NuGet.Services.Dashboard.Common;
 
 
 namespace NuGetGallery.Operations
@@ -25,16 +26,19 @@ namespace NuGetGallery.Operations
     {
         private string SqlQueryForConnectionCount = @"select count(*) from sys.dm_exec_connections";
         private string SqlQueryForRequestCount = @"select count(*) from sys.dm_exec_requests";
+        private string SqlQueryForBlockedRequestCount = @"select count(*) from sys.dm_exec_requests where status = 'suspended'";
 
 
         public override void ExecuteCommand()
         {
-            AppendHourlyCount(SqlQueryForConnectionCount, "DBConnections");
-            AppendHourlyCount(SqlQueryForRequestCount, "DBRequests");
+            DatabaseAlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<DatabaseAlertThresholds>(ReportHelpers.Load(StorageAccount,"Configuration.DatabaseThresholds.json",ContainerName));
+            GetCurrentValueAndAlert(SqlQueryForConnectionCount, "DBConnections", thresholdValues.DatabaseConnectionsThreshold);
+            GetCurrentValueAndAlert(SqlQueryForRequestCount, "DBRequests", thresholdValues.DatabaseRequestsThreshold);
+            GetCurrentValueAndAlert(SqlQueryForBlockedRequestCount, "DBSuspendedRequests", thresholdValues.DatabaseBlockedRequestsThreshold, false);
             CreateReportForDBCPUUsage();
         }
 
-        private void AppendHourlyCount(string sqlQuery,string blobName)
+        private void GetCurrentValueAndAlert(string sqlQuery,string blobName,int threshold,bool updateblob = true)
         {
             List<Tuple<string, string>> connectionCountDataPoints = new List<Tuple<string, string>>();
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
@@ -43,16 +47,17 @@ namespace NuGetGallery.Operations
                 {
                     sqlConnection.Open();
                     var connectionCount = dbExecutor.Query<Int32>(sqlQuery).SingleOrDefault();
-                    if(connectionCount > 80)
+                    if(connectionCount > threshold)
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = "DB connections/Requests Alert",
-                            ErrorDetails = "Connection/Requests spike in DB",
-                            Count = connectionCount.ToString(),
-                            AdditionalLink = ""
+                            AlertSubject = string.Format("SQL Azure database alert activated for {0}", blobName),
+                            Details = string.Format("Number of {0} exceeded the threshold value. Threshold value {1}, Current value : {2}",blobName,threshold,connectionCount),                          
+                            AlertName = "SQL Azure DB alert for connections/requests count",
+                            Component = "SQL Azure database"
                         }.ExecuteCommand();
                     }
+                    if(updateblob)
                     ReportHelpers.AppendDatatoBlob(StorageAccount, blobName + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), connectionCount.ToString()), 50, ContainerName);
 
                 }

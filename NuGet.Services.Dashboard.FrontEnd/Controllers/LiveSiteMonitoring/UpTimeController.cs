@@ -56,8 +56,6 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                 });
             }
             DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, xValues,"AvgResponseTime",600);
-            
-        
             return PartialView("~/Views/Shared/PartialChart.cshtml", chart);          
         }
 

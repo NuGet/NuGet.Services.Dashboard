@@ -27,35 +27,12 @@ namespace NuGetDashboard.Controllers.Diagnostics
         public ActionResult DBRequestsSummary(string hour)
         {  
             var listOfEvents = new JavaScriptSerializer().Deserialize<List<DatabaseEvent>>(BlobStorageService.Load("DBDetailed" + hour + "Hour.json"));
-
-            //Dictionary<string, string> dict = new Dictionary<string, string>();
             return PartialView("~/Views/TroubleShooting/TroubleShooting_DBRequestsSummary.cshtml", listOfEvents);
         }
         public ActionResult ElmahErrorSummary(string hour)
         {
-            Dictionary<string, string> dict = new Dictionary<string, string>();
-            List<string> errors = new List<string>();
-            BlobStorageService.GetJsonDataFromBlob("ElmahErrorsDetailed" + hour + "hours.json", out errors);
-            Dictionary<string, string> criticalErrors = BlobStorageService.GetDictFromBlob("Configuration.ElmahCriticalErrors.json");
-
-            List<Tuple<string, string, string, string>> errorrows = new List<Tuple<string, string, string, string>>();
-            foreach (string error in errors)
-            {
-                string[] values = error.Split(new String[] { @"""" + "," }, StringSplitOptions.RemoveEmptyEntries);
-                for (int i = 0; i < values.Length; i++)
-                {
-                    values[i] = values[i].Replace("[" , "");
-                    values[i] = values[i].Replace(@"""", "");
-                    values[i] = values[i].Trim();
-                }
-                string severity = "1";
-                if (criticalErrors.Keys.Any(item => values[0].Contains(item)))
-                {
-                    severity = "0";
-                }
-                errorrows.Add(new Tuple<string, string, string, string>(values[0], values[1], values[2], severity));
-            }
-            return PartialView("~/Views/TroubleShooting/TroubleShooting_ElmahErrorSummary.cshtml", errorrows);
+            var listOfEvents = new JavaScriptSerializer().Deserialize<List<ElmahError>>(BlobStorageService.Load("ElmahErrorsDetailed" + hour + "hours.json"));          
+            return PartialView("~/Views/TroubleShooting/TroubleShooting_ElmahErrorSummary.cshtml", listOfEvents);
 
         }
     }
