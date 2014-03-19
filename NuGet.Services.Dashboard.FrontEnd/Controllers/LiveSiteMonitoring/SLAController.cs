@@ -28,8 +28,8 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         [HttpGet]
         public ActionResult ErrorsThisWeek()
         {
-            string[] blobNames = new string[2];
-            for (int i = 0; i < 2; i++)
+            string[] blobNames = new string[4];
+            for (int i = 0; i < 4; i++)
                 blobNames[i] = "ErrorRate" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i));
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "ErrorsPerHour", 24, 800));
         }

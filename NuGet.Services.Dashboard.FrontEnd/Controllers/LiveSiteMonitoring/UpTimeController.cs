@@ -41,7 +41,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public ActionResult ThisWeek()
         {
             //Returns the chart for Average response for the last week
-            string[] checkNames = new string[] { "feed.raw.packages.list", "home", "package.restore.download", "package.restore.lookup","packages","feed.top.30.by.downloads" };
+            string[] checkNames = new string[] { "feed.raw.packages.list", "package.restore.download", "package.restore.lookup","feed.top.30.by.downloads" };
             List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
             List<string> xValues = new List<string>();
             List<Object> yValues = new List<Object>();
@@ -63,28 +63,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public ActionResult GetPackageRestoreUptime()
         {
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("package.restore.downloadHourlyReport", "PackageRestoreResponseInMilleSec"));
-        }       
-
-        [HttpGet]
-        public ActionResult Monthly()
-        {
-            string value = DateTimeUtility.GetLastMonthName();           
-            string[] checkNames = new string[] { "feed", "home", "packages" };
-            List<PingdomMonthlyReportViewModel> reports = new List<PingdomMonthlyReportViewModel>();
-            foreach (string check in checkNames)
-            {
-                //Get the response values from pre-created blobs for each check.
-                string blobName = check + value + "MonthlyReport.json";
-                Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob(blobName);
-                double upTime = Convert.ToDouble(dict["totalup"]);
-                int avgResponse = Convert.ToInt32(dict["avgresponse"]);
-                int Outages = Convert.ToInt32(dict["Outages"]);
-                int downTime = Convert.ToInt32(dict["totaldown"]);
-                reports.Add(new PingdomMonthlyReportViewModel(check, upTime, downTime, Outages, avgResponse, value));
-            }          
-            ViewBag.SelectedValue = value;
-            return PartialView("~/Views/UpTime/UpTime_Monthly.cshtml",reports);
-        }
+        }             
 
         [HttpGet]
         public JsonResult GetStatus()

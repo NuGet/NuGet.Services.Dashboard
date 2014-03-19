@@ -95,6 +95,32 @@ namespace NuGetDashboard.Controllers.Diagnostics
         }
 
         [HttpGet]
+        public ActionResult DBCPUTimeThisWeek()
+        {
+            string[] blobNames = new string[4];
+            for (int i = 0; i < 4; i++)
+                blobNames[i] = "DBCPUTime" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i));
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "DBCPUTimeInSeconds", 50, 400));
+        }
+        [HttpGet]
+        public ActionResult DBRequestsThisWeek()
+        {
+            string[] blobNames = new string[4];
+            for (int i = 0; i < 4; i++)
+                blobNames[i] = "DBRequests" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i));
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "DBRequests", 50, 600));
+        }
+        [HttpGet]
+        public ActionResult DBConnectionsThisWeek()
+        {
+            string[] blobNames = new string[4];
+            for (int i = 0; i < 4; i++)
+                blobNames[i] = "DBConnections" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i));
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "DBConnections", 50, 600));
+        }
+
+
+        [HttpGet]
         public JsonResult GetMemoryStatus()
         {
             //return Json(BlobStorageService.GetValueFromBlob("MemoryStatus.json", "Memory"), JsonRequestBehavior.AllowGet);

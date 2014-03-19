@@ -368,7 +368,6 @@
     <Content Include="Views\ResourceMonitoring\ResourceMonitoring_Details.cshtml" />
     <Content Include="Views\Shared\PartialChart.cshtml" />
     <Content Include="Views\Shared\PartialFrames.cshtml" />
-    <Content Include="Views\UpTime\UpTime_Monthly.cshtml" />
     <Content Include="Views\TroubleShooting\TroubleShooting_Details.cshtml" />
     <Content Include="Views\TroubleShooting\TroubleShooting_ElmahErrorSummary.cshtml" />
     <Content Include="Views\TroubleShooting\TroubleShooting_DBRequestsSummary.cshtml" />

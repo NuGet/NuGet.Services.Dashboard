@@ -68,7 +68,8 @@ namespace NuGetGallery.Operations
                     if(errorGroups.Count() > (Convert.ToInt32(countThreshold)) && LastNHours == 1)
                     {
                      new SendAlertMailTask {
-                    AlertSubject = string.Format("Elmah Error Alert activated for {0}",errorGroups.Key),
+
+                    AlertSubject = string.Format("Elmah Error Alert activated for {0}",errorGroups.Key.ToString()),
                     Details = String.Format("Number of {0} exceeded threshold limit during the last hour.Threshold per hour : {1}, Events recorded in the last hour: {2}" ,errorGroups.Key.ToString(),countThreshold.ToString(),errorGroups.Count().ToString()),
                     AlertName = string.Format("Elmah Error Alert for {0}",errorGroups.Key.ToString()),
                     Component = "Web Server"                                      

@@ -22,28 +22,22 @@ namespace NuGetDashboard.Controllers.Trending
             return PartialView("~/Views/Trending/Trending_Details.cshtml");
         }
 
-        public ActionResult Monthly()
+        [HttpGet]
+        public ActionResult PackagesThiSWeek()
         {
-            return PartialView("~/Views/Trending/Trending_Monthly.cshtml");
+            string[] blobNames = new string[4];
+            for (int i = 0; i < 4; i++)
+                blobNames[i] = "Uploads" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i)) + "HourlyReport";
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "UploadsPerHour", 24, 800));
         }
 
-        public ActionResult Daily()
+        [HttpGet]
+        public ActionResult UsersThiSWeek()
         {
-            return PartialView("~/Views/Trending/Trending_Details.cshtml");
-        }
-
-        //Returns the overall trend chart for packages 
-        public ActionResult PackagesChart()
-        {
-            DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChartFromBlobName("UploadsoctoberMonthlyReport", "Packages");
-            return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
-        }
-
-        //Returns the overall trend chart for users
-        public ActionResult UsersChart()
-        {
-            DotNet.Highcharts.Highcharts chart =  ChartingUtilities.GetLineChartFromBlobName("UsersoctoberMonthlyReport", "Users");
-            return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
+            string[] blobNames = new string[4];
+            for (int i = 0; i < 4; i++)
+                blobNames[i] = "Users" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i)) + "HourlyReport";
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "UsersPerHour", 24, 800));
         }
 
         [HttpGet]
