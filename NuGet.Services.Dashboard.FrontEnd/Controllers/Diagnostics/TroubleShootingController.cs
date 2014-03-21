@@ -24,11 +24,21 @@ namespace NuGetDashboard.Controllers.Diagnostics
         {
             return PartialView("~/Views/TroubleShooting/TroubleShooting_Details.cshtml");
         }
+        /// <summary>
+        /// Returns the data for DB Troubleshooting for the given hour.
+        /// </summary>
+        /// <param name="hour"></param>
+        /// <returns></returns>
         public ActionResult DBRequestsSummary(string hour)
         {  
             var listOfEvents = new JavaScriptSerializer().Deserialize<List<DatabaseEvent>>(BlobStorageService.Load("DBDetailed" + hour + "Hour.json"));
             return PartialView("~/Views/TroubleShooting/TroubleShooting_DBRequestsSummary.cshtml", listOfEvents);
         }
+        /// <summary>
+        /// Returns the detailed report on Elmah for the past N hours.
+        /// </summary>
+        /// <param name="hour"></param>
+        /// <returns></returns>
         public ActionResult ElmahErrorSummary(string hour)
         {
             var listOfEvents = new JavaScriptSerializer().Deserialize<List<ElmahError>>(BlobStorageService.Load("ElmahErrorsDetailed" + hour + "hours.json"));          

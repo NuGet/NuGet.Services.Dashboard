@@ -193,11 +193,9 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\Diagnostics\ResourceMonitoringController.cs" />
     <Compile Include="Controllers\Diagnostics\TroubleShootingController.cs" />
-    <Compile Include="Controllers\Diagnostics\WorkerJobsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LiveSiteMonitoring\SLAController.cs" />
     <Compile Include="Controllers\LiveSiteMonitoring\UpTimeController.cs" />
-    <Compile Include="Controllers\TeamStatsAndTrending\SupportRequestsController.cs" />
     <Compile Include="Controllers\TeamStatsAndTrending\TrendingController.cs" />
     <Compile Include="Filters\InitializeSimpleMembershipAttribute.cs" />
     <Compile Include="Global.asax.cs">
@@ -211,7 +209,6 @@
     <Compile Include="Utilities\BlobStorageService.cs" />
     <Compile Include="Utilities\ChartingUtilities.cs" />
     <Compile Include="Utilities\DateTimeUtility.cs" />
-    <Compile Include="Utilities\NewRelicHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
@@ -354,20 +351,11 @@
     <Content Include="Views\UpTime\UpTime_Index.cshtml" />
     <Content Include="Views\UpTime\UpTime_Now.cshtml" />
     <Content Include="Views\Home\Tiles.cshtml" />
-    <Content Include="Views\WorkerJobs\Worker_Details.cshtml" />
-    <Content Include="Views\SupportRequests\SupportRequests_Details.cshtml" />
-    <Content Include="Views\SupportRequests\SupportRequests_Index.cshtml" />
-    <Content Include="Views\SupportRequests\SupportRequests_Summary.cshtml" />
     <Content Include="Views\UpTime\UpTime_Details.cshtml" />
     <Content Include="Views\SLA\SLA_Details.cshtml" />
     <Content Include="Views\Trending\Trending_Details.cshtml" />
-    <Content Include="Views\Trending\Trending_Monthly.cshtml" />
     <Content Include="Views\SLA\SLA_Index.cshtml" />
-    <Content Include="Views\WorkerJobs\Worker_Index.cshtml" />
-    <Content Include="Views\ResourceMonitoring\ResourceMonitoring_Index.cshtml" />
-    <Content Include="Views\ResourceMonitoring\ResourceMonitoring_Details.cshtml" />
     <Content Include="Views\Shared\PartialChart.cshtml" />
-    <Content Include="Views\Shared\PartialFrames.cshtml" />
     <Content Include="Views\TroubleShooting\TroubleShooting_Details.cshtml" />
     <Content Include="Views\TroubleShooting\TroubleShooting_ElmahErrorSummary.cshtml" />
     <Content Include="Views\TroubleShooting\TroubleShooting_DBRequestsSummary.cshtml" />

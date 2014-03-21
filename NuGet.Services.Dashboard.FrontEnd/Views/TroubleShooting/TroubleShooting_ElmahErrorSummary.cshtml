@@ -21,12 +21,11 @@
             </th>
 
         </tr>
-        @foreach(ElmahError row in @Model)
-         {                    
-               <tr>
+        @foreach (ElmahError row in @Model)
+        {
+            <tr>
                 <td>
                     <a href="@row.Link" target="_blank">@row.Error</a>
-                   
                 </td>
                 <td>
                     @row.Occurecnes.ToString()
@@ -34,18 +33,18 @@
                 <td>
                     @row.LastReported.ToString()
                 </td>
-                 <td>
-                       @if (@row.Severity == 0)
-                        {
-                           <span class="square bg-color-orange"></span>
-                        }                        
-                        else
-                        {
-                           <span class="square bg-color-green"></span>
-                        }
-                   </td>
-                </tr>       
-        
-          }
+                <td>
+                    @if (@row.Severity == 0)
+                    {
+                        <span class="square bg-color-orange"></span>
+                    }
+                    else
+                    {
+                        <span class="square bg-color-green"></span>
+                    }
+                </td>
+            </tr>
+
+        }
     </tbody>
 </table>

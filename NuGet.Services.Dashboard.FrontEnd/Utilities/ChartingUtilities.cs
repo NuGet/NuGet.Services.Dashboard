@@ -95,30 +95,18 @@ namespace NuGetDashboard.Utilities
         }
 
         public static DotNet.Highcharts.Highcharts GetLineChartFromBlobName(string blobName,string title =null,int dataPointCount=6, int chartDimensions=300)
-        {
-            if (string.IsNullOrEmpty(title))
-                title = blobName;
-            List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
-            List<string> xValues = new List<string>();
-            List<Object> yValues = new List<Object>();
-            BlobStorageService.GetJsonDataFromBlob(blobName + ".json", out xValues, out yValues);
-
-            if (xValues.Count > dataPointCount)
-            {
-                xValues.RemoveRange(0, xValues.Count - dataPointCount);
-                yValues.RemoveRange(0, yValues.Count - dataPointCount);
-            }
-
-            seriesSet.Add(new DotNet.Highcharts.Options.Series
-            {
-                Data = new Data(yValues.ToArray()),
-                Name = title
-            });
-
-            DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, xValues, title, chartDimensions);
-            return chart;
+        {            
+            return GetLineChartFromBlobName(new string[] { blobName }, title, dataPointCount, chartDimensions);
         }
 
+        /// <summary>
+        /// Given the json blob name, this helper will return a line chart for the data in it.
+        /// </summary>
+        /// <param name="blobNames"></param>
+        /// <param name="title">The title for the chart. If unspecified, the blobName will be used.</param>
+        /// <param name="dataPointCount">The number of datapoints to show in the graph.</param>
+        /// <param name="chartDimensions">The width/height of the chart</param>
+        /// <returns></returns>
         public static DotNet.Highcharts.Highcharts GetLineChartFromBlobName(string[] blobNames, string title = null, int dataPointCount = 6, int chartDimensions = 300)
         {
             if (string.IsNullOrEmpty(title))
@@ -130,6 +118,7 @@ namespace NuGetDashboard.Utilities
                
                 List<Object> yValues = new List<Object>();
                 BlobStorageService.GetJsonDataFromBlob(blobName + ".json", out xValues, out yValues);
+                //Retrive only the last N data points (To do : need to update this to retrieve the data for last N hours intead of N data points).
                 if (xValues.Count > dataPointCount)
                 {
                     xValues.RemoveRange(0, xValues.Count - dataPointCount);

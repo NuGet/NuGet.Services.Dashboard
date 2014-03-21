@@ -1,10 +1,4 @@
 ﻿<script type="text/javascript">
-
-    $(document).ready(function () {
-        GetPingdomStatusUpdate();           
-        UpdateStatus();
-    });
-
     function GetPingdomStatusUpdate() {
         $.ajax({
             url: '@Url.Action("GetStatus", "UpTime")',

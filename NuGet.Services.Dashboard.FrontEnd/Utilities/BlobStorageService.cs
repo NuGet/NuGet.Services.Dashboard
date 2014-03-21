@@ -24,8 +24,8 @@ namespace NuGetDashboard.Utilities
 
         public static string Load(string name,string containerName="dashboard")
         {
-            if (MvcApplication.currentEnvironmentName.Equals("QA"))
-                containerName = "qadashboard";
+            if (MvcApplication.currentEnvironmentName.Equals("QA")) 
+                containerName = "qadashboard"; // To do :This value need to be taken from the configuration instead of hardcoding.
             else
                 containerName = "dashboard";
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(_connectionString);
@@ -38,39 +38,13 @@ namespace NuGetDashboard.Utilities
                 blob.DownloadToStream(memoryStream);
                 content = System.Text.Encoding.UTF8.GetString(memoryStream.ToArray());
             }
-
             return content;
-        }
-
-        /// <summary>
-        /// Checks if blob by specified name exits
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public static bool IfBlobExists(string name,out DateTime createdTime,string containerName="dashboard")
-        {
-            if (MvcApplication.currentEnvironmentName.Equals("QA"))
-                containerName = "qadashboard";
-            else
-                containerName = "dashboard";
-            createdTime = new DateTime(1, 1, 1);
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(_connectionString);
-            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
-            CloudBlobContainer container = blobClient.GetContainerReference(containerName);            
-            CloudBlockBlob blob = container.GetBlockBlobReference(name);
-            if (blob.Exists())
-            {
-                blob.FetchAttributes();
-                if (blob.Properties.LastModified.HasValue)
-                    createdTime = blob.Properties.LastModified.Value.DateTime;
-                return true;
-            }
-            else
-                return false;            
         }      
 
         /// <summary>
-        /// Gets the JSON data from the blob. The blobs are pre-created as key value pairs using Ops tasks.
+        /// Gets the JSON data from the blob.
+        /// The assumption is that the blobs are in form of "key/value" pair json array. 
+        /// Gets the keys in XValues and values in YValues to faciliate charting based on the values.
         /// </summary>
         /// <param name="blobName"></param>
         /// <param name="xValues"></param>
@@ -92,32 +66,11 @@ namespace NuGetDashboard.Utilities
                 yValues.Add((item["value"]).ToString());
             }
 
-        }
+        }      
 
         /// <summary>
         /// Gets the JSON data from the blob. The blobs are pre-created as key value pairs using Ops tasks.
-        /// </summary>
-        /// <param name="blobName"></param>
-        /// <param name="xValues"></param>
-        /// <param name="yValues"></param>
-        public static void GetJsonDataFromBlob(string blobName, out List<string> xValues)
-        {
-            xValues = new List<string>();           
-            string json = Load(blobName);
-            if (json == null)
-            {
-                return;
-            }
-
-            JArray array = JArray.Parse(json);
-            foreach (JObject item in array)
-            {
-                xValues.Add(item["row"].ToString());               
-            }
-        }
-
-        /// <summary>
-        /// Gets the JSON data from the blob. The blobs are pre-created as key value pairs using Ops tasks.
+        /// Retrieves the value for a specific key.
         /// </summary>
         /// <param name="blobName"></param>
         /// <param name="xValues"></param>
@@ -141,9 +94,8 @@ namespace NuGetDashboard.Utilities
             return null;
         }
 
-
         /// <summary>
-        /// Gets the JSON data from the blob. The blobs are pre-created as key value pairs using Ops tasks.
+        /// Gets the JSON data as a dict from the blob. The blobs are pre-created as key value pairs using Ops tasks.
         /// </summary>
         /// <param name="blobName"></param>
         /// <param name="xValues"></param>

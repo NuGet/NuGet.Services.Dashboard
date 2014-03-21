@@ -45,13 +45,13 @@
                     @dbEvent.description
                 </td>
                 <td>
-                    @if(@dbEvent.event_type.Contains("throttling") || @dbEvent.event_type.Contains("deadlock"))
+                    @if (@dbEvent.event_type.Contains("throttling") || @dbEvent.event_type.Contains("deadlock"))
                     {
-                    <span class="square bg-color-orange"></span>
+                        <span class="square bg-color-orange"></span>
                     }
                     else
                     {
-                    <span class="square bg-color-green"></span>
+                        <span class="square bg-color-green"></span>
                     }
                 </td>
             </tr>
