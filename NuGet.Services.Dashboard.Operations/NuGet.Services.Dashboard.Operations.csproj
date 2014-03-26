@@ -138,10 +138,12 @@
       <DependentUpon>TaskResources.resx</DependentUpon>
     </Compile>
     <Compile Include="Common\ResourceHelper.cs" />
+    <Compile Include="Tasks\DashBoardTasks\CreateCloudServiceDetailsReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateDatabaseDetailedReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateDatabaseReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateElmahErrorDetailedReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateElmahErrorOverviewReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\CreatePingdomDetailedReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreatePingdomMonthlyReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreatePingdomWeeklyAndHourlyReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateRequestsPerHourReportTask.cs" />

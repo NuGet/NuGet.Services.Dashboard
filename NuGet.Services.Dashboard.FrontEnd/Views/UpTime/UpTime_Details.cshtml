@@ -5,11 +5,13 @@
     <div class="menu-pull-bar"></div>    
     <ul>
         <li class="active"><a href="#Now">Now</a></li>
-        <li><a href="#Weekly">Weekly</a></li>
+        <li><a href="#Weekly">Over all Weekly Trend</a></li>
+        <li><a href="#WeeklyPR">PackageRestore Weekly Trend</a></li>
     </ul>    
     <div class="frames">
         <div class="frame active" id="Now">@Html.Action("Now", "UpTime") </div>
         <div class="frame" id="Weekly">@Html.Action("ThisWeek", "UpTime") </div>
+        <div class="frame" id="WeeklyPR">@Html.Action("PackageRestoreThisWeek", "UpTime") </div>
     </div>
 </div>
 

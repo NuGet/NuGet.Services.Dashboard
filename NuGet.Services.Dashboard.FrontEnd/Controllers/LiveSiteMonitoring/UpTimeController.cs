@@ -71,6 +71,15 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             List<PingdomStatusViewModel> checks = GetStatusInternal();
             return Json(checks, JsonRequestBehavior.AllowGet);
         }
+
+        [HttpGet]
+        public ActionResult PackageRestoreThisWeek()
+        {
+            string[] blobNames = new string[8];
+            for (int i = 0; i < 8; i++)
+                blobNames[i] = "package.restore.download" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i)) + "DetailedReport";
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "PackageRestoreThisWeek", 24, 800));
+        }
         
 
         #region PrivateMethods

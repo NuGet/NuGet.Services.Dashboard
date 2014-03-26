@@ -38,8 +38,8 @@ namespace NuGetGallery.Operations
                 {
                     sqlConnection.Open();                   
                         try
-                        {
-                            var count = dbExecutor.Query<Int32>(string.Format(sqlQuery, startingTime.ToString("yyyy-MM-dd hh:mm:ss"), endTime.ToString("yyyy-MM-dd hh:mm:ss"))).SingleOrDefault();                            
+                        {                            
+                            var count = dbExecutor.Query<Int32>(string.Format(sqlQuery, startingTime.ToString("yyyy-MM-dd HH:mm:ss"), endTime.ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();                            
                             ReportHelpers.AppendDatatoBlob(StorageAccount, reportName + "HourlyReport.json", new Tuple<string, string>(string.Format("{0:HH-mm}", endTime), count.ToString()), 50, ContainerName);
                         }
                         catch (NullReferenceException)

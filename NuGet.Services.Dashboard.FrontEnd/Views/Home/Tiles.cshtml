@@ -2,7 +2,7 @@
 
 @if (Model.Equals("Prod"))
 {
-    <div class="grid grid-pad">
+    @*<div class="grid grid-pad">
         <div class="col-1-2">
             <div class="content">
                 <h2 style="font-family: 'Trebuchet MS'"><em>LiveSite Monitoring</em></h2>
@@ -15,36 +15,53 @@
                 <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Refreshed every 60 minutes</small> </p>
             </div>
         </div>
-    </div>
+    </div>*@
 
+    <div style="position:absolute; top: 4em; right: 2em;">
+        <span class="square bg-color-green"></span><p style="font-family: arial; color: gray; font-size: 23px; font-style: italic"><small>* tiles shows hourly values</small> </p>
+        <span class="square bg-color-blue"></span><p style="font-family: arial; color: gray; font-size: 23px; font-style: italic"><small>* tiles shows daily values</small> </p>
+    </div>
     <div class="grid grid-pad">
-        <div class="col-1-2">
+        <div class="col-1-3">
             <div class="content">
-                @Html.Action("Index", "SLA")
-                @Html.Action("Index", "UpTime")
-                @*@Html.Action("Index", "ResourceMonitoring") Commenting out as CPU/memory as the data is not in sync with the one in Azure dashboard. Need to fix it.*@
+   
+     
+        @Html.Action("Index", "UpTime")       
+        </div>
+            </div>
+
+        <div class="col-1-3">
+            <div class="content">  
+                @Html.Action("Index", "SLA")        
+                @Html.Action("Index", "ResourceMonitoring")
             </div>
         </div>
 
-        <div class="col-1-2">
+        <div class="col-1-3">
             <div class="content">
 
-                <div class="tile bg-color-blue" title="New user registrations per hour">
-                    <div class="tile-content" onclick="ShowDetails('Details','Trending');">
-                        <h2>New Users</h2>
-                    </div>
-                    <div class="brand">
-                        <div id="CurrentUsers" class="badge"></div>
-                    </div>
-                </div>
-                <div class="tile bg-color-blue" data-role="tile-slider" data-param-period="10000" onclick="ShowDetails('Details','Trending');" title="New packages uploaded per hour">
-                    <div class="tile-content">
-                        <h2>New Packages</h2>
-                        <div class="brand">
-                            <div id="CurrentPackages" class="badge"></div>
-                        </div>
-                    </div>
-                </div>
+        <div class="tile bg-color-blue" title="New user registrations per hour">
+            <div class="tile-content" onclick="ShowDetails('Details','Trending');">
+                <h2>New Users</h2>
+                <br />
+                <div id="CurrentUsers"></div>
+            </div>
+           
+            @*<div class="brand">
+                <div id="CurrentUsers" class="badge"></div>
+            </div>*@
+        </div>
+        <div class="tile bg-color-blue" data-role="tile-slider" data-param-period="10000" onclick="ShowDetails('Details','Trending');" title="New packages uploaded per hour">
+            <div class="tile-content">
+                <h2>New Packages</h2>
+                <br />
+                <div id="CurrentPackages"></div>
+                @*<div class="brand">
+                    <div id="CurrentPackages" class="badge"></div>
+                </div>*@
+            </div>
+        </div>
+   
             </div>
         </div>
 

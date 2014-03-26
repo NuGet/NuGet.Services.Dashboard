@@ -23,7 +23,7 @@
             type: "GET",
             dataType: 'json',
             success: function (result) {
-                $("#CurrentPackages").html(result);
+                $("#CurrentPackages").html("<h1>" + result + "</h1>");
             }
         });
         $.ajax({
@@ -31,7 +31,15 @@
             type: "GET",
             dataType: 'json',
             success: function (result) {
-                $("#CurrentUsers").html(result);
+                $("#CurrentUsers").html( "<h1>" + result + "</h1>");
+            }
+        });
+        $.ajax({
+            url: '@Url.Action("GetHourlyInstanceCount", "ResourceMonitoring")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#CurrentInstanceCount").html("<h1>" + result + "</h1>");
             }
         });
         window.setTimeout(UpdateStatus, 5000 * 60);
@@ -49,7 +57,7 @@
         <br />
         <div id="CurrentError" class="badge">0 eph</div>
     </div>
-    <div class="brand bg-color-green">
+    @*<div class="brand bg-color-green">
         <p class="text"><em>AppServer SLA</em></p>
-    </div>
+    </div>*@
 </div>

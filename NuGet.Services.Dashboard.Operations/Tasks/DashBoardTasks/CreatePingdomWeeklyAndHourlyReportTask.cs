@@ -16,7 +16,7 @@ using System.Web.Script.Serialization;
 
 namespace NuGetGallery.Operations
 {
-    [Command("createpingdomweeklyreport", "Creates report for the weekly average pingdom values", AltName = "cpdwr")]
+    [Command("createpingdomweeklyreport", "Creates report for average response time for all the pingdom checks for fhe last 7 days/hours.", AltName = "cpdwr")]
     public class CreatePingdomWeeklyAndHourlyReportTask : StorageTask
     {
         [Option("PingdomUserName", AltName = "user")]
@@ -47,23 +47,23 @@ namespace NuGetGallery.Operations
                 var objects = js.Deserialize<dynamic>(reader.ReadToEnd());
                 foreach (var o in objects["checks"])
                 {
-                    List<Tuple<string, string>> summary = GetCheckSummaryAvgForLastWeek(o["id"]);
+                    List<Tuple<string, string>> summary = GetCheckSummaryAvgForSpecifiedTimeSpan(o["id"]);
                     JArray reportObject = ReportHelpers.GetJson(summary);
                     string checkAlias = o["name"].ToString();
                     checkAlias = checkAlias.Replace(" ",".");
                     checkAlias = checkAlias.Replace("(", "").Replace(")", "");
-                    ReportHelpers.CreateBlob(StorageAccount, checkAlias + Frequency + "Report.json", "dashboard", "application/json", ReportHelpers.ToStream(reportObject));
+                    ReportHelpers.CreateBlob(StorageAccount, checkAlias + Frequency + "Report.json", "dashboard", "application/json", ReportHelpers.ToStream(reportObject));              
                 }
             }
         }
 
-        private List<Tuple<string, string>> GetCheckSummaryAvgForLastWeek(int checkId)
+        private List<Tuple<string, string>> GetCheckSummaryAvgForSpecifiedTimeSpan(int checkId)
         {
             int i = 7;
             List<Tuple<string, string>> summaryValues = new List<Tuple<string, string>>();
             while (i >= 1)
             {
-                //Get the average response time for the past 8 days.
+                //Get the average response time for the past 7 hours/weeks based on the frequency.
                 long fromTime = 0;
                 long toTime = 0;
                 if (Frequency.Equals("Hourly", StringComparison.OrdinalIgnoreCase))

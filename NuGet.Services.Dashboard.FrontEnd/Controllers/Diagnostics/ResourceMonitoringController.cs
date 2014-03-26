@@ -14,7 +14,12 @@ namespace NuGetDashboard.Controllers.Diagnostics
     /// Provides details about the resource utilization on the server : CPU, memory and DB.
     /// </summary>
     public class ResourceMonitoringController : Controller
-    {    
+    {
+        public ActionResult Index()
+        {
+            return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_Index.cshtml");
+        }
+
         [HttpGet]
         public ActionResult DBCPUTime()
         {
@@ -36,27 +41,35 @@ namespace NuGetDashboard.Controllers.Diagnostics
         [HttpGet]
         public ActionResult DBCPUTimeThisWeek()
         {
-            string[] blobNames = new string[4];
-            for (int i = 0; i < 4; i++)
+            string[] blobNames = new string[8];
+            for (int i = 0; i < 8; i++)
                 blobNames[i] = "DBCPUTime" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i));
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "DBCPUTimeInSeconds", 50, 400));
         }
         [HttpGet]
         public ActionResult DBRequestsThisWeek()
         {
-            string[] blobNames = new string[4];
-            for (int i = 0; i < 4; i++)
+            string[] blobNames = new string[8];
+            for (int i = 0; i < 8; i++)
                 blobNames[i] = "DBRequests" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i));
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "DBRequests", 50, 600));
         }
         [HttpGet]
         public ActionResult DBConnectionsThisWeek()
         {
-            string[] blobNames = new string[4];
-            for (int i = 0; i < 4; i++)
+            string[] blobNames = new string[8];
+            for (int i = 0; i < 8; i++)
                 blobNames[i] = "DBConnections" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i));
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "DBConnections", 50, 600));
-        }       
+        }
+
+        [HttpGet]
+        public JsonResult GetHourlyInstanceCount()
+        {
+            //TBD: Need to take the service name from the config.
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("nuget-prod-0-v2galleryInstanceCount" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime()) + "HourlyReport.json");
+            return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
+        }
 
         private ActionResult GetChart(string blobName)
         {   
