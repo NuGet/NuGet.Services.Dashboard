@@ -37,7 +37,7 @@ namespace NuGetGallery.Operations
             TableErrorLog log = new TableErrorLog(string.Format(ElmahAccountCredentials));
             List<ErrorLogEntry> entities = new List<ErrorLogEntry>();
             
-            log.GetErrors(0, 100 * LastNHours, entities); //retrieve n * LastNHours errors assuming a max of 50 errors per hour.
+            log.GetErrors(0, 500 * LastNHours, entities); //retrieve n * LastNHours errors assuming a max of 500 errors per hour.
              List<ElmahError> listOfErrors = new List<ElmahError>();
 
             //Get the error from Last N hours.

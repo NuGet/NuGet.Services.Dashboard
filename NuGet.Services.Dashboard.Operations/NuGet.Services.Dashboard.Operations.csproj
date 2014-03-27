@@ -147,6 +147,7 @@
     <Compile Include="Tasks\DashBoardTasks\CreatePingdomMonthlyReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreatePingdomWeeklyAndHourlyReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateRequestsPerHourReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\CreateSearchIndexingStatusReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateStatsHourlyReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateStatsMonthlyReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateWADPerformanceDiagnosticsReportTask.cs" />

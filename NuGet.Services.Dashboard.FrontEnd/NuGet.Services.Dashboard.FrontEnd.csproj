@@ -196,6 +196,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LiveSiteMonitoring\SLAController.cs" />
     <Compile Include="Controllers\LiveSiteMonitoring\UpTimeController.cs" />
+    <Compile Include="Controllers\LiveSiteMonitoring\WorkJobController.cs" />
     <Compile Include="Controllers\TeamStatsAndTrending\TrendingController.cs" />
     <Compile Include="Filters\InitializeSimpleMembershipAttribute.cs" />
     <Compile Include="Global.asax.cs">
@@ -267,6 +268,8 @@
     <Content Include="Content\themes\base\minified\jquery.ui.theme.min.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <None Include="Properties\PublishProfiles\dashboard-nuget - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\dashboard-nuget - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\demodashboard - FTP %282%29.pubxml" />
     <None Include="Properties\PublishProfiles\demodashboard - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\demodashboard - Web Deploy %282%29.pubxml" />
@@ -360,6 +363,7 @@
     <Content Include="Views\TroubleShooting\TroubleShooting_ElmahErrorSummary.cshtml" />
     <Content Include="Views\TroubleShooting\TroubleShooting_DBRequestsSummary.cshtml" />
     <Content Include="Views\ResourceMonitoring\ResourceMonitoring_Index.cshtml" />
+    <Content Include="Views\WorkJobs\WorkJobs_Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

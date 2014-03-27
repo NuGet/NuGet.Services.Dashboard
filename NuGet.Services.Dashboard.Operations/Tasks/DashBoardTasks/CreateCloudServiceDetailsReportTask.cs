@@ -32,10 +32,13 @@ namespace NuGetGallery.Operations
         [Option("ServiceName", AltName = "name")]
         public string ServiceName { get; set; }
 
+        [Option("CertificateName", AltName = "cername")]
+        public string CertificateName { get; set; }
+
 
         public override void ExecuteCommand()
         {
-            X509Certificate cert = X509Certificate.CreateFromCertFile("bhuvak-dashboardautomation.cer");
+            X509Certificate cert = X509Certificate.CreateFromCertFile(CertificateName);
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format("https://management.core.windows.net/{0}/services/hostedservices/{1}?embed-detail=true", SubscriptionId, ServiceName));
             request.ClientCertificates.Add(cert);
             request.Headers.Add("x-ms-version: 2014-02-01");        

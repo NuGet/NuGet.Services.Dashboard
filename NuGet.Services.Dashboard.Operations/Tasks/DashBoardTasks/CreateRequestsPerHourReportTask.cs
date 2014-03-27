@@ -50,9 +50,8 @@ namespace NuGetGallery.Operations
                     }                    
                     string standardError = string.Empty;
                     string standardOutput = string.Empty;
-                    Task t1 = ReportHelpers.DownloadBlobToLocalFile(IISStorageAccount, DeploymentID + "/NuGetGallery/NuGetGallery_IN_0/Web/W3SVC1273337584/" + latestLogName, Path.Combine(info.FullName, "IN0.log"), "wad-iis-requestlogs");
-                    Task t2 = ReportHelpers.DownloadBlobToLocalFile(IISStorageAccount, DeploymentID + "/NuGetGallery/NuGetGallery_IN_1/Web/W3SVC1273337584/" + latestLogName, Path.Combine(info.FullName, "IN1.log"), "wad-iis-requestlogs");
-                    Task t3 = ReportHelpers.DownloadBlobToLocalFile(IISStorageAccount, DeploymentID + "/NuGetGallery/NuGetGallery_IN_2/Web/W3SVC1273337584/" + latestLogName, Path.Combine(info.FullName, "IN2.log"), "wad-iis-requestlogs");                 
+                    for (int i = 0; i < 9;i++ )  //download log for up to 9 instances. TBD : Need to update this to dynamically get the current instance count. It would still be flaky as there is a log in uploading IIS logs and when we download them.
+                        ReportHelpers.DownloadBlobToLocalFile(IISStorageAccount, DeploymentID + "/NuGetGallery/NuGetGallery_IN_0/Web/W3SVC1273337584/" + latestLogName, Path.Combine(info.FullName, "IN" + i.ToString()+".log"), "wad-iis-requestlogs");
                     
                     int exitCode = InvokeNugetProcess(@"-i:IISW3C -o:CSV " + @"""" + String.Format(@"select count(*) from {0}\*.log", info.FullName) + @"""" + " -stats:OFF", out standardError, out standardOutput);
                     Console.WriteLine(exitCode);

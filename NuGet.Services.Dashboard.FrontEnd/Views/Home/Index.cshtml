@@ -79,14 +79,14 @@
     <div class="page-region">
         <div style="position:absolute; top: 1em; right: 1em;">
             <button id="timeButton" class="default"></button>
-            @if (Model.Equals("Prod"))
+            @*@if (Model.Equals("Prod")) Disable Switch to int for now as the background task for int environment is not running.
             {
                 <button class="default" onclick="location.href='@Url.Action("UpdateEnvironment", "Home",new {envName = "QA"})'">Switch to 'int'</button>
             }
             else
             {
                 <button class="default" onclick="location.href='@Url.Action("UpdateEnvironment", "Home",new {envName = "Prod"})'">Switch to 'prod'</button>
-            }
+            }*@
         </div>
     </div>
     <div id="maincontent">@Html.Action("Tiles", "Home");</div>
