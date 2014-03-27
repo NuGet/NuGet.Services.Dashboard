@@ -1,0 +1,63 @@
+﻿<script type="text/javascript">
+    //Refreshes the data in tiles every 5 minutes.
+    function UpdateStatus() {
+        $.ajax({
+            url: '@Url.Action("GetCurrentThroughputStatus", "SLA")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#CurrentRequests").html(result);
+            }
+        });
+
+        $.ajax({
+            url: '@Url.Action("GetCurrentErrorRateStatus", "SLA")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#CurrentError").html(result);
+            }
+        });
+        $.ajax({
+            url: '@Url.Action("GetHourlyPackagetatus", "Trending")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#CurrentPackages").html("<h1>" + result + "</h1>");
+            }
+        });
+        $.ajax({
+            url: '@Url.Action("GetHourlyUsertatus", "Trending")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#CurrentUsers").html( "<h1>" + result + "</h1>");
+            }
+        });
+        $.ajax({
+            url: '@Url.Action("GetHourlyInstanceCount", "ResourceMonitoring")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#CurrentInstanceCount").html("<h1>" + result + "</h1>");
+            }
+        });
+        window.setTimeout(UpdateStatus, 5000 * 60);
+    };
+</script>
+
+<div class="tile" data-role="tile-slider" data-param-period="20000" id="SLAdiv" onclick="ShowDetails('Details','SLA');" title="Appserver throughout and responsetime">
+    <div class="tile-content bg-color-green">
+        <h1>Requests per hour</h1>
+        <br />
+        <div id="CurrentRequests" class="badge">0 rph</div>
+    </div>
+    <div class="tile-content bg-color-green">
+        <h1>Error per hour</h1>
+        <br />
+        <div id="CurrentError" class="badge">0 eph</div>
+    </div>
+    @*<div class="brand bg-color-green">
+        <p class="text"><em>AppServer SLA</em></p>
+    </div>*@
+</div>

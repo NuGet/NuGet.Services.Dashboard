@@ -1,0 +1,94 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Data;
+using System.Data.SqlClient;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+using Newtonsoft.Json.Linq;
+using NuGetGallery.Operations.Common;
+using AnglicanGeek.DbExecutor;
+using System;
+using System.Net;
+using System.Web.Script.Serialization;
+using NuGetGallery;
+using NuGetGallery.Infrastructure;
+using Elmah;
+using NuGet.Services.Dashboard.Common;
+
+
+namespace NuGetGallery.Operations
+{
+    [Command("CreateDatabaseReportTask", "Creates database report task", AltName = "cdrt")]
+    public class CreateDatabaseReportTask : DatabaseAndStorageTask
+    {
+        private string SqlQueryForConnectionCount = @"select count(*) from sys.dm_exec_connections";
+        private string SqlQueryForRequestCount = @"select count(*) from sys.dm_exec_requests";
+        private string SqlQueryForBlockedRequestCount = @"select count(*) from sys.dm_exec_requests where status = 'suspended'";
+
+
+        public override void ExecuteCommand()
+        {
+            DatabaseAlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<DatabaseAlertThresholds>(ReportHelpers.Load(StorageAccount,"Configuration.DatabaseThresholds.json",ContainerName));
+            GetCurrentValueAndAlert(SqlQueryForConnectionCount, "DBConnections", thresholdValues.DatabaseConnectionsThreshold);
+            GetCurrentValueAndAlert(SqlQueryForRequestCount, "DBRequests", thresholdValues.DatabaseRequestsThreshold);
+            GetCurrentValueAndAlert(SqlQueryForBlockedRequestCount, "DBSuspendedRequests", thresholdValues.DatabaseBlockedRequestsThreshold, false);
+            CreateReportForDBCPUUsage();
+        }
+
+        private void GetCurrentValueAndAlert(string sqlQuery,string blobName,int threshold,bool updateblob = true)
+        {
+            List<Tuple<string, string>> connectionCountDataPoints = new List<Tuple<string, string>>();
+            using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
+            {
+                using (var dbExecutor = new SqlExecutor(sqlConnection))
+                {
+                    sqlConnection.Open();
+                    var connectionCount = dbExecutor.Query<Int32>(sqlQuery).SingleOrDefault();
+                    if(connectionCount > threshold)
+                    {
+                        new SendAlertMailTask
+                        {
+                            AlertSubject = string.Format("SQL Azure database alert activated for {0}", blobName),
+                            Details = string.Format("Number of {0} exceeded the threshold value. Threshold value {1}, Current value : {2}",blobName,threshold,connectionCount),                          
+                            AlertName = "SQL Azure DB alert for connections/requests count",
+                            Component = "SQL Azure database"
+                        }.ExecuteCommand();
+                    }
+                    if(updateblob)
+                    ReportHelpers.AppendDatatoBlob(StorageAccount, blobName + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), connectionCount.ToString()), 50, ContainerName);
+
+                }
+            }                    
+        }
+
+        private void CreateReportForDBCPUUsage()
+        {
+            List<Tuple<string, string>> usageDataPoints = new List<Tuple<string, string>>();
+            var masterConnectionString = Util.GetMasterConnectionString(ConnectionString.ConnectionString);
+            var currentDbName = Util.GetDbName(ConnectionString.ConnectionString);
+            using (var sqlConnection = new SqlConnection(masterConnectionString))
+            {
+                using (var dbExecutor = new SqlExecutor(sqlConnection))
+                {
+                    sqlConnection.Open();
+
+                    List<DateTime> lastNTimeEntries = dbExecutor.Query<DateTime>(string.Format("select distinct Top(5) time from sys.resource_usage where database_name = '{0}' order by time desc", currentDbName.ToString())).ToList();
+                    foreach (DateTime time in lastNTimeEntries)
+                    {
+                        Console.WriteLine("Time ..................." + time.ToString());
+                        var usageSeconds = dbExecutor.Query<Int32>(string.Format("select Sum(usage_in_seconds) from sys.resource_usage where time = '{0}' AND database_name = '{1}'", time.ToString(), currentDbName)).SingleOrDefault();
+                        usageDataPoints.Add(new Tuple<string, string>(String.Format("{0:HH:mm}", time.ToLocalTime()), usageSeconds.ToString()));
+                    }
+                }
+                usageDataPoints.Reverse(); //reverse it as the array returned will have latest hour as first entry.
+                JArray reportObject = ReportHelpers.GetJson(usageDataPoints);
+                ReportHelpers.CreateBlob(StorageAccount, "DBCPUTime" + string.Format("{0:MMdd}", DateTime.Now) + ".json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
+            }
+        }
+    }
+}
+
+

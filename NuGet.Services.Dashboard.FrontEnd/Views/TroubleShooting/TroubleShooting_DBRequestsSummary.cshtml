@@ -1,0 +1,63 @@
+﻿@using System;
+@using System.Collections.Generic;
+@using System.Linq;
+@using NuGet.Services.Dashboard.Common;
+@model List<DatabaseEvent>
+<table class="hovered">
+    <tbody>
+        <tr>
+            <th>
+                StartTime
+            </th>
+            <th>
+                EndTime
+            </th>
+            <th>
+                EventType
+            </th>
+            <th>
+                Eventcount
+            </th>
+            <th>
+                Description
+            </th>
+            <th>
+                Severity
+            </th>
+
+        </tr>
+        @foreach (DatabaseEvent dbEvent in @Model)
+        {
+            <tr>
+                <td>
+                    @dbEvent.start_time
+                </td>
+                <td>
+                    @dbEvent.end_time
+                </td>
+                <td>
+                    @dbEvent.event_type
+                </td>
+                <td>
+                    @dbEvent.event_count
+                </td>
+                <td>
+                    @dbEvent.description
+                </td>
+                <td>
+                    @if (@dbEvent.event_type.Contains("throttling") || @dbEvent.event_type.Contains("deadlock"))
+                    {
+                        <span class="square bg-color-orange"></span>
+                    }
+                    else
+                    {
+                        <span class="square bg-color-green"></span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<br />
+<br />
+
