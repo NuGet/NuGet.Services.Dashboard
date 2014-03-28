@@ -215,6 +215,10 @@
     <Compile Include="Utilities\DateTimeUtility.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\modern-responsive.css" />
+    <Content Include="Content\modern.css" />
+    <Content Include="Content\simplegrid.css" />
+    <Content Include="Content\theme-dark.css" />
     <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
@@ -287,7 +291,15 @@
     <None Include="Properties\PublishProfiles\nuget-bhuvak-dash - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\nuget-bhuvak-frontend - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\nuget-bhuvak-frontend - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\nuget-dashboard - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\nuget-dashboard - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.9.1.intellisense.js" />
+    <Content Include="Scripts\accordion.js" />
+    <Content Include="Scripts\buttonset.js" />
+    <Content Include="Scripts\calendar.js" />
+    <Content Include="Scripts\carousel.js" />
+    <Content Include="Scripts\dialog.js" />
+    <Content Include="Scripts\dropdown.js" />
     <Content Include="Scripts\Highcharts-3.0.1\js\adapters\mootools-adapter.js" />
     <Content Include="Scripts\Highcharts-3.0.1\js\adapters\mootools-adapter.src.js" />
     <Content Include="Scripts\Highcharts-3.0.1\js\adapters\prototype-adapter.js" />
@@ -308,6 +320,7 @@
     <Content Include="Scripts\Highcharts-3.0.1\js\themes\gray.js" />
     <Content Include="Scripts\Highcharts-3.0.1\js\themes\grid.js" />
     <Content Include="Scripts\Highcharts-3.0.1\js\themes\skies.js" />
+    <Content Include="Scripts\input-control.js" />
     <Content Include="Scripts\jquery-1.9.1.js" />
     <Content Include="Scripts\jquery-1.9.1.min.js" />
     <Content Include="Scripts\jquery-1.9.1.min.map" />
@@ -324,6 +337,12 @@
     <Content Include="Scripts\knockout-2.2.0.js" />
     <Content Include="Scripts\metroui\dropdown.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Scripts\pagecontrol.js" />
+    <Content Include="Scripts\rating.js" />
+    <Content Include="Scripts\slider.js" />
+    <Content Include="Scripts\start-menu.js" />
+    <Content Include="Scripts\tile-drag.js" />
+    <Content Include="Scripts\tile-slider.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
