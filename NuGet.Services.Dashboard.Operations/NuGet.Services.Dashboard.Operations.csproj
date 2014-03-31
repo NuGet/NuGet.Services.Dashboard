@@ -73,7 +73,7 @@
       <HintPath>..\packages\Nuget.Core.2.8.0\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
     <Reference Include="NuGetGallery">
-      <HintPath>..\NuGetGallery.Operations.Tools\bin\Debug\NuGetGallery.dll</HintPath>
+      <HintPath>External\NuGetGallery.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -180,6 +180,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Readme\Elmah.txt" />
+    <Content Include="External\DashboardAlertMail.htm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="External\NuGetGallery.Core.dll" />
+    <Content Include="External\NuGetGallery.dll" />
     <Content Include="Tasks\DashboardAlertMail.htm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
