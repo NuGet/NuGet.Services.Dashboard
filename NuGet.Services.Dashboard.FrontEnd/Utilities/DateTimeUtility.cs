@@ -14,12 +14,20 @@ namespace NuGetDashboard.Utilities
         private static readonly DateTime UnixEpoch =
     new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        public static DateTime GetPacificTime()
+        public static DateTime GetPacificTimeNow()
         {
             //Hacky way to find Pacific time from UTC. Need to fix it using TimeZone and DateTimeOffSet.
             DateTime time = DateTime.Now;
                 if(DateTime.Now.Equals(DateTime.UtcNow))
                     time = time.AddHours(-7);
+            return time;
+        }
+
+        public static DateTime ToPacificTime(DateTime time)
+        {
+            //Hacky way to find Pacific time from UTC. Need to fix it using TimeZone and DateTimeOffSet.     
+            if (DateTime.Now.Equals(DateTime.UtcNow))
+                time = time.AddHours(-7);
             return time;
         }
 

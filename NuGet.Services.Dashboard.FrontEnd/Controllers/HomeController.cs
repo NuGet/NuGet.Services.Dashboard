@@ -37,7 +37,7 @@ namespace NuGetDashboard.Controllers
         public JsonResult GetCurrentPacificTime()
         {
             //Returns the current pacific time. The dates in the charts are all in local time (pacific time) as of now. Hence displayed a clock with pacific time in the home page for reference.
-            return Json(string.Format("{0:HH:mm:ss}",DateTimeUtility.GetPacificTime()), JsonRequestBehavior.AllowGet);
+            return Json(string.Format("{0:HH:mm:ss}",DateTimeUtility.GetPacificTimeNow()), JsonRequestBehavior.AllowGet);
         }
     
     }

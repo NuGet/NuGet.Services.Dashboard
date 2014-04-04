@@ -60,9 +60,10 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         }
 
         [HttpGet]
-        public ActionResult GetPackageRestoreUptime()
+        public ActionResult ResponseTimeOverview()
         {
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("package.restore.downloadHourlyReport", "PackageRestoreResponseInMilleSec"));
+            string[] blobNames = new string[] { "feed.raw.packages.listHourlyReport", "package.restore.downloadHourlyReport", "package.restore.lookupHourlyReport", "feed.top.30.by.downloadsHourlyReport","packages.page.searchHourlyReport" };
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "PingdomResponsesInMillSec"));
         }             
 
         [HttpGet]
@@ -77,7 +78,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         {
             string[] blobNames = new string[8];
             for (int i = 0; i < 8; i++)
-                blobNames[i] = "package.restore.download" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i)) + "DetailedReport";
+                blobNames[i] = "package.restore.download" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow().AddDays(-i)) + "DetailedReport";
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "PackageRestoreThisWeek", 24, 800));
         }
         
