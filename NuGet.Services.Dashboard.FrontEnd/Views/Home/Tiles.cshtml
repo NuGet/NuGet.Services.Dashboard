@@ -38,7 +38,7 @@
         <div class="col-1-3">
             <div class="content">
 
-                <div class="tile bg-color-blue" title="New user registrations per hour">
+                <div class="tile bg-color-red" title="New user registrations per hour">
                     <div class="tile-content" onclick="ShowDetails('Details','Trending');">
                         <h2>New Users</h2>
                         <br />
@@ -49,7 +49,7 @@
                             <div id="CurrentUsers" class="badge"></div>
                         </div>*@
                 </div>
-                <div class="tile bg-color-blue" data-role="tile-slider" data-param-period="10000" onclick="ShowDetails('Details','Trending');" title="New packages uploaded per hour">
+                <div class="tile bg-color-red" data-role="tile-slider" data-param-period="10000" onclick="ShowDetails('Details','Trending');" title="New packages uploaded per hour">
                     <div class="tile-content">
                         <h2>New Packages</h2>
                         <br />
@@ -92,8 +92,8 @@
     <div class="col-1-3">
         <div class="content">
             <div id="PackageRestoreResponseTimeDiv" title="Package Restore response time">
-                @Html.Action("GetPackageRestoreUptime", "UpTime");
-                <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Response time for packageRestore in ms.Alerts will be sent by Pingdom</small></p>
+                @Html.Action("ResponseTimeOverview", "UpTime");
+                <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Response time for pingdom checks in milli secs.</small></p>
             </div>
         </div>
     </div>

@@ -186,6 +186,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                return outputMessage;
            }
 
-        #region PrivateMethods
+        #endregion PrivateMethods
     }    
 }
+

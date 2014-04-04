@@ -26,7 +26,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                string lastQueueed = string.Empty;             
                 if(job != null)
                 {
-                    lastQueueed = string.Format("{0:hh:mm}", job.queuedAt);
+                    lastQueueed = string.Format("{0} mins ago",Convert.ToInt32(DateTime.Now.Subtract(job.queuedAt).TotalMinutes));
                 }
                 else
                 {

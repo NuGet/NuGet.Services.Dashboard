@@ -27,7 +27,7 @@ namespace NuGetDashboard.Controllers.Trending
         {
             string[] blobNames = new string[4];
             for (int i = 0; i < 4; i++)
-                blobNames[i] = "Uploads" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i)) + "HourlyReport";
+                blobNames[i] = "Uploads" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow().AddDays(-i)) + "HourlyReport";
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "UploadsPerHour", 24, 800));
         }
 
@@ -36,14 +36,14 @@ namespace NuGetDashboard.Controllers.Trending
         {
             string[] blobNames = new string[4];
             for (int i = 0; i < 4; i++)
-                blobNames[i] = "Users" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime().AddDays(-i)) + "HourlyReport";
+                blobNames[i] = "Users" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow().AddDays(-i)) + "HourlyReport";
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "UsersPerHour", 24, 800));
         }
 
         [HttpGet]
         public JsonResult GetHourlyPackagetatus()
         {
-            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("Uploads" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime()) + "HourlyReport.json");
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("Uploads" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + "HourlyReport.json");
             //find the sum of values of each hour from today's report.
             int sum = 0;
             foreach(KeyValuePair<string,string> pair in dict)
@@ -57,7 +57,7 @@ namespace NuGetDashboard.Controllers.Trending
         [HttpGet]
         public JsonResult GetHourlyUsertatus()
         {
-            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("Users" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime()) + "HourlyReport.json");
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("Users" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + "HourlyReport.json");
             //find the sum of values of each hour from today's report.
             int sum = 0;
             foreach (KeyValuePair<string, string> pair in dict)

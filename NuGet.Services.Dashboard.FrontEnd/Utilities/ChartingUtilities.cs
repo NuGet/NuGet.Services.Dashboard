@@ -128,12 +128,24 @@ namespace NuGetDashboard.Utilities
                 seriesSet.Add(new DotNet.Highcharts.Options.Series
                 {
                     Data = new Data(yValues.ToArray()),
-                    Name = blobName
+                    Name = GetSanitizedTitleFromBlobName(blobName)
                 });
             }
 
             DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, xValues, title, chartDimensions);
             return chart;
+        }
+
+        /// <summary>
+        /// Returns the sanitized title for chartsbased on the blob Name
+        /// </summary>
+        /// <param name="blobName"></param>
+        /// <returns></returns>
+        private static string GetSanitizedTitleFromBlobName(string blobName)
+        {
+            blobName = blobName.Replace("Report", string.Empty);
+            blobName = blobName.Replace("Hourly", string.Empty);
+            return blobName;
         }
     }
 }
