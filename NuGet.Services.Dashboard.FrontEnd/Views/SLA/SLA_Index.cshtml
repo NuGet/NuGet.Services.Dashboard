@@ -17,7 +17,7 @@
             success: function (result) {
                 $("#CurrentError").html(result);
             }
-        });
+        });       
         $.ajax({
             url: '@Url.Action("GetHourlyPackagetatus", "Trending")',
             type: "GET",
@@ -40,6 +40,14 @@
             dataType: 'json',
             success: function (result) {
                 $("#CurrentInstanceCount").html("<h1>" + result + "</h1>");
+            }
+        });
+        $.ajax({
+            url: '@Url.Action("GetCurrentIndexingStatus", "ResourceMonitoring")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#CurrentIndexing").html("<h1>" + result + "</h1>");
             }
         });
         window.setTimeout(UpdateStatus, 5000 * 60);

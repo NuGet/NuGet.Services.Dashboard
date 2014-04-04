@@ -8,6 +8,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
 using NuGet.Services.Dashboard.Common;
+using NuGetDashboard.Utilities;
 
 namespace NuGetDashboard.Controllers.LiveSiteMonitoring
 {
@@ -16,6 +17,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public List<WorkJobInstanceDetails> instanceDetails;
         public ActionResult Index()
         {
+            instanceDetails = new JavaScriptSerializer().Deserialize<List<WorkJobInstanceDetails>>(BlobStorageService.Load("Configuration.WorkJobInstances.json"));
             List<Tuple<string, string,string>> jobResults = new List<Tuple<string, string,string>>();            
             foreach(WorkJobInstanceDetails jobDetails in instanceDetails)
             {
@@ -38,7 +40,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         private static bool IsLatestSuccessful(WorkJobInstanceDetails jobDetails,out WorkJobInvocation job)
         {          
             NetworkCredential nc = new NetworkCredential(ConfigurationManager.AppSettings["WorkServiceUserName"], ConfigurationManager.AppSettings["WorkServiceAdminKey"]);
-            WebRequest request = WebRequest.Create(string.Format("https://api-work-0.int.nugettest.org/work/invocations/instances/{0}?limit=2", jobDetails.JobInstanceName)); //get last 2 instances.
+            WebRequest request = WebRequest.Create(string.Format("https://api-work-0.nuget.org/work/invocations/instances/{0}?limit=2", jobDetails.JobInstanceName)); //get last 2 instances.
             request.Credentials = nc;
             request.PreAuthenticate = true;
             request.Method = "GET";

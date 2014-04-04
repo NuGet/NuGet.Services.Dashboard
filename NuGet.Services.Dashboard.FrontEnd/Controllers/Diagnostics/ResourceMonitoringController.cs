@@ -71,6 +71,14 @@ namespace NuGetDashboard.Controllers.Diagnostics
             return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
         }
 
+
+        [HttpGet]
+        public JsonResult GetCurrentIndexingStatus()
+        {
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IndexingDiffCount" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTime()) + "HourlyReport.json");
+            return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
+        }
+
         private ActionResult GetChart(string blobName)
         {   
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobName,blobName));
