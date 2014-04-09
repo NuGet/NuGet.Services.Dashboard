@@ -20,11 +20,11 @@ namespace NuGetDashboard.Controllers.Diagnostics
             return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_Index.cshtml");
         }
 
-        [HttpGet]
-        public ActionResult DBCPUTime()
-        {
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("DBCPUTime" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()), "DBCPUTimeInSeconds"));
-        }
+        //[HttpGet]
+        //public ActionResult DBCPUTime()
+        //{
+        //    return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("DBCPUTime" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()), "DBCPUTimeInSeconds"));
+        //}
 
         [HttpGet]
         public ActionResult DBRequests()
@@ -38,14 +38,14 @@ namespace NuGetDashboard.Controllers.Diagnostics
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("DBConnections" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()), "DBConnections", 12));           
         }      
 
-        [HttpGet]
-        public ActionResult DBCPUTimeThisWeek()
-        {
-            string[] blobNames = new string[8];
-            for (int i = 0; i < 8; i++)
-                blobNames[i] = "DBCPUTime" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow().AddDays(-i));
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "DBCPUTimeInSeconds", 50, 400));
-        }
+        //[HttpGet]
+        //public ActionResult DBCPUTimeThisWeek()
+        //{
+        //    string[] blobNames = new string[8];
+        //    for (int i = 0; i < 8; i++)
+        //        blobNames[i] = "DBCPUTime" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow().AddDays(-i));
+        //    return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "DBCPUTimeInSeconds", 50, 400));
+        //}
         [HttpGet]
         public ActionResult DBRequestsThisWeek()
         {
