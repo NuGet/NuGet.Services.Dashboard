@@ -55,7 +55,7 @@
     $(function () {
         setInterval(function () { $('#DRRequestsDiv').load('/ResourceMonitoring/DBRequests'); }, 15 * 60 * 1000);
         setInterval(function () { $('#DBConnectionsDiv').load('/ResourceMonitoring/DBConnections'); }, 15 * 60 * 1000);
-        setInterval(function () { $('#DBCPUTimeDiv').load('/ResourceMonitoring/DBCPUTime'); }, 15 * 60 * 1000);
+        setInterval(function () { $('#WorkJobStatusDiv').load('/WorkJob/Index'); }, 10 * 60 * 1000);       
         setInterval(function () { $('#RequestsPerHourDiv').load('/SLA/Throughput'); }, 15 * 60 * 1000);
         setInterval(function () { $('#ErrorsPerHourDiv').load('/SLA/ErrorRate'); }, 15 * 60 * 1000);
         setInterval(function () { $('#PackageRestoreResponseTimeDiv').load('/UpTime/GetPackageRestoreUpTime'); }, 15 * 60 * 1000);

@@ -23,16 +23,16 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             {
                WorkJobInvocation job;
                bool success =  IsLatestSuccessful(jobDetails,out job);
-               string lastQueueed = string.Empty;             
+               string lastCompleted = string.Empty;             
                 if(job != null)
                 {
-                    lastQueueed = string.Format("{0} mins ago",Convert.ToInt32(DateTime.Now.Subtract(job.queuedAt).TotalMinutes));
+                    lastCompleted = string.Format("{0} mins ago",Convert.ToInt32(DateTime.Now.Subtract(job.completedAt).TotalMinutes));
                 }
                 else
                 {
-                    lastQueueed = "N/A";
+                    lastCompleted = "N/A";
                 }
-               jobResults.Add(new Tuple<string,string,string>(jobDetails.JobInstanceName,success.ToString(),lastQueueed));
+               jobResults.Add(new Tuple<string,string,string>(jobDetails.JobInstanceName,success.ToString(),lastCompleted));
             }
 
             return PartialView("~/Views/WorkJobs/WorkJobs_Index.cshtml",jobResults);
@@ -53,7 +53,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                 if(objects.Any((item => item.status.Equals("Executed") && item.result.Equals("Completed"))))
                 {
                     job = objects.Where(item => item.status.Equals("Executed") && item.result.Equals("Completed")).ToList().FirstOrDefault(); 
-                    if (DateTime.Now.Subtract(job.queuedAt) > new TimeSpan(0, 2* jobDetails.FrequencyInMinutes,0)) //the time interval from the latest successful job instance cannot be more than twice the frequency.
+                    if (DateTime.Now.Subtract(job.completedAt) > new TimeSpan(0, 2* jobDetails.FrequencyInMinutes,0)) //the time interval from the latest successful job instance cannot be more than twice the frequency.
                     {
                         return false;
                     }
