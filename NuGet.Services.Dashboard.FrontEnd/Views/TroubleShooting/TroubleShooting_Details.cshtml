@@ -30,6 +30,7 @@
     </li>
     <li>
         <a href="#"> DataBase </a>
+        
         <div class="fg-color-darken">
             <h5>Events from SQL Azure DB</h5>
             <select id="NoofHoursdb" onchange="Toggle('db')">
@@ -39,16 +40,20 @@
             </select>
             <div style="width:800px;" class="fg-color-darken" id="1hourdivdb">
                 <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Events for last 1 hour. For more details connect to the database.</small></p>
-                @Html.Action("DBRequestsSummary", "TroubleShooting", new { hour = "1" })
+                @Html.Action("DBEventsSummary", "TroubleShooting", new { hour = "1" })
             </div>
             <div style="width:800px;display: none" class="fg-color-darken" id="6hourdivdb">
                 <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Events for last 6 hours.For more details connect to the database.</small></p>
-                @Html.Action("DBRequestsSummary", "TroubleShooting", new { hour = "6" })
+                @Html.Action("DBEventsSummary", "TroubleShooting", new { hour = "6" })
             </div>
             <div style="width:800px;display: none" class="fg-color-darken" id="24hourdivdb">
                 <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Events for last 24 hours.For more details connect to the database.</small></p>
-                @Html.Action("DBRequestsSummary", "TroubleShooting", new { hour = "24" })
+                @Html.Action("DBEventsSummary", "TroubleShooting", new { hour = "24" })
             </div>
+        </div>
+        <div class="fg-color-darken">
+            <h5>Active DB requests (refreshed every 30 minutes)</h5>
+            @Html.Action("DBRequestsSummary", "TroubleShooting")
         </div>
     </li>
 </ul>

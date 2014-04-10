@@ -2,46 +2,50 @@
 @using System.Collections.Generic;
 @using System.Linq;
 @using NuGet.Services.Dashboard.Common;
-@using NuGetDashboard.Utilities;
-@model List<ElmahError>
-
+@model List<DatabaseEvent>
 <table class="hovered">
     <tbody>
         <tr>
             <th>
-                Error
+                StartTime
             </th>
             <th>
-                Occurences
+                EndTime
             </th>
             <th>
-                First Reported
+                EventType
             </th>
             <th>
-                Last Reported
+                Eventcount
+            </th>
+            <th>
+                Description
             </th>
             <th>
                 Severity
             </th>
 
         </tr>
-        @foreach (ElmahError row in @Model)
+        @foreach (DatabaseEvent dbEvent in @Model)
         {
             <tr>
                 <td>
-                    <a href="@row.Link" target="_blank">@row.Error</a>
+                    @dbEvent.start_time
                 </td>
                 <td>
-                    @row.Occurecnes.ToString()
+                    @dbEvent.end_time
                 </td>
                 <td>
-                   @DateTimeUtility.ToPacificTime(@row.FirstReported).ToString()
+                    @dbEvent.event_type
                 </td>
                 <td>
-                    @DateTimeUtility.ToPacificTime(@row.LastReported).ToString()
+                    @dbEvent.event_count
                 </td>
                 <td>
-                    @if (@row.Severity == 0)
+                    @dbEvent.description
+                </td>
+                <td>
+                    @if (@dbEvent.event_type.Contains("throttling") || @dbEvent.event_type.Contains("deadlock"))
                     {
                         <span class="square bg-color-orange"></span>
                     }
@@ -51,7 +55,9 @@
                     }
                 </td>
             </tr>
-
         }
     </tbody>
 </table>
+<br />
+<br />
+

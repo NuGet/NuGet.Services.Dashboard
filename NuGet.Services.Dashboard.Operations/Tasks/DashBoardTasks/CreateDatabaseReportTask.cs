@@ -27,18 +27,17 @@ namespace NuGetGallery.Operations
         private string SqlQueryForConnectionCount = @"select count(*) from sys.dm_exec_connections";
         private string SqlQueryForRequestCount = @"select count(*) from sys.dm_exec_requests";
         private string SqlQueryForBlockedRequestCount = @"select count(*) from sys.dm_exec_requests where status = 'suspended'";
-
-
         public override void ExecuteCommand()
         {
-            DatabaseAlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<DatabaseAlertThresholds>(ReportHelpers.Load(StorageAccount,"Configuration.DatabaseThresholds.json",ContainerName));
+            AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount,"Configuration.AlertThresholds.json",ContainerName));
             GetCurrentValueAndAlert(SqlQueryForConnectionCount, "DBConnections", thresholdValues.DatabaseConnectionsThreshold);
             GetCurrentValueAndAlert(SqlQueryForRequestCount, "DBRequests", thresholdValues.DatabaseRequestsThreshold);
-            GetCurrentValueAndAlert(SqlQueryForBlockedRequestCount, "DBSuspendedRequests", thresholdValues.DatabaseBlockedRequestsThreshold, false);
+            GetCurrentValueAndAlert(SqlQueryForBlockedRequestCount, "DBSuspendedRequests", thresholdValues.DatabaseBlockedRequestsThreshold);
             CreateReportForDBCPUUsage();
+            CreateReportForRequestDetails();
         }
 
-        private void GetCurrentValueAndAlert(string sqlQuery,string blobName,int threshold,bool updateblob = true)
+        private void GetCurrentValueAndAlert(string sqlQuery,string blobName,int threshold)
         {
             List<Tuple<string, string>> connectionCountDataPoints = new List<Tuple<string, string>>();
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
@@ -57,9 +56,8 @@ namespace NuGetGallery.Operations
                             Component = "SQL Azure database"
                         }.ExecuteCommand();
                     }
-                    if(updateblob)
+                   
                     ReportHelpers.AppendDatatoBlob(StorageAccount, blobName + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), connectionCount.ToString()), 50, ContainerName);
-
                 }
             }                    
         }
@@ -87,6 +85,22 @@ namespace NuGetGallery.Operations
                 JArray reportObject = ReportHelpers.GetJson(usageDataPoints);
                 ReportHelpers.CreateBlob(StorageAccount, "DBCPUTime" + string.Format("{0:MMdd}", DateTime.Now) + ".json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
             }
+        }
+
+        private void CreateReportForRequestDetails()
+        {
+            List<Tuple<string, string>> connectionCountDataPoints = new List<Tuple<string, string>>();
+            using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
+            {
+                using (var dbExecutor = new SqlExecutor(sqlConnection))
+                {
+                    sqlConnection.Open();
+                    var requests = dbExecutor.Query<DatabaseRequest>("SELECT t.text, r.start_time, r.status, r.command, r.wait_type, r.wait_time FROM sys.dm_exec_requests r OUTER APPLY sys.dm_exec_sql_text(sql_handle) t​");
+                    var json = new JavaScriptSerializer().Serialize(requests);
+                    ReportHelpers.AppendDatatoBlob(StorageAccount, "DBRequestDetails" + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), json), 50, ContainerName);
+                }
+            }   
+          
         }
     }
 }

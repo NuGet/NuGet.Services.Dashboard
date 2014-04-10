@@ -1,12 +1,14 @@
 ﻿using DotNet.Highcharts.Enums;
 using DotNet.Highcharts.Helpers;
 using DotNet.Highcharts.Options;
+using NuGet.Services.Dashboard.Common;
 using NuGetDashboard.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Script.Serialization;
 
 namespace NuGetDashboard.Controllers.Diagnostics
 {
@@ -20,6 +22,10 @@ namespace NuGetDashboard.Controllers.Diagnostics
             return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_Index.cshtml");
         }
 
+        public ActionResult Details()
+        {
+            return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_Details.cshtml");
+        }
         //[HttpGet]
         //public ActionResult DBCPUTime()
         //{
@@ -36,7 +42,14 @@ namespace NuGetDashboard.Controllers.Diagnostics
         public ActionResult DBConnections()
         {
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("DBConnections" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()), "DBConnections", 12));           
-        }      
+        }
+
+        [HttpGet]
+        public ActionResult DBIndexFragmentation()
+        {
+            var listOfEvents = new JavaScriptSerializer().Deserialize<List<DatabaseIndex>>(BlobStorageService.Load("DBIndexFragmentation.json"));
+            return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_DBIndexDetails.cshtml", listOfEvents);
+        }
 
         //[HttpGet]
         //public ActionResult DBCPUTimeThisWeek()

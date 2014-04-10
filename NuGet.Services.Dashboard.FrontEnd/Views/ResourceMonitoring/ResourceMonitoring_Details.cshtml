@@ -1,0 +1,23 @@
+﻿<script src="~/Scripts/pagecontrol.js" type="text/javascript"></script>
+<div class="page-control" data-role="page-control" style="height: 100%">
+    <span class="menu-pull"></span>
+    <div class="menu-pull-bar"></div>
+    <ul>
+        <li class="active"><a href="#WeeklyTrend">Weekly Trend</a></li>
+        <li><a href="#IndexFragmentation">Index Fragmentation Details</a></li>        
+    </ul>
+    <div class="frames">
+        <div class="frame active" id="WeeklyTrend">
+            <div>
+                @Html.Action("DBRequestsThisWeek", "ResourceMonitoring")
+            </div>
+            <div>
+                @Html.Action("DBConnectionsThisWeek", "ResourceMonitoring")
+            </div>
+        </div>
+        <div class="frame" id="IndexFragmentation">@Html.Action("DBIndexFragmentation", "ResourceMonitoring")</div>
+    </div>
+
+</div>
+
+

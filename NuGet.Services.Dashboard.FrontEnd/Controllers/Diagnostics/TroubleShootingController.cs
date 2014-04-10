@@ -29,10 +29,22 @@ namespace NuGetDashboard.Controllers.Diagnostics
         /// </summary>
         /// <param name="hour"></param>
         /// <returns></returns>
-        public ActionResult DBRequestsSummary(string hour)
+        public ActionResult DBEventsSummary(string hour)
         {  
             var listOfEvents = new JavaScriptSerializer().Deserialize<List<DatabaseEvent>>(BlobStorageService.Load("DBDetailed" + hour + "Hour.json"));
-            return PartialView("~/Views/TroubleShooting/TroubleShooting_DBRequestsSummary.cshtml", listOfEvents);
+            return PartialView("~/Views/TroubleShooting/TroubleShooting_DBEventsSummary.cshtml", listOfEvents);
+        }
+
+        /// <summary>
+        /// Returns the active requests taken during the last snapshot
+        /// </summary>
+        /// <param name="hour"></param>
+        /// <returns></returns>
+        public ActionResult DBRequestsSummary()
+        {
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("DBRequestDetails" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + ".json");            
+            var listOfRequests = new JavaScriptSerializer().Deserialize<List<DatabaseRequest>>(dict.Values.ElementAt(dict.Count - 1));
+            return PartialView("~/Views/TroubleShooting/TroubleShooting_DBRequestsSummary.cshtml", listOfRequests);
         }
         /// <summary>
         /// Returns the detailed report on Elmah for the past N hours.
@@ -41,7 +53,7 @@ namespace NuGetDashboard.Controllers.Diagnostics
         /// <returns></returns>
         public ActionResult ElmahErrorSummary(string hour)
         {
-            var listOfEvents = new JavaScriptSerializer().Deserialize<List<ElmahError>>(BlobStorageService.Load("ElmahErrorsDetailed" + hour + "hours.json"));          
+            var listOfEvents = new JavaScriptSerializer().Deserialize<List<ElmahError>>(BlobStorageService.Load("ElmahErrorsDetailed" + hour + "hours.json"));            
             return PartialView("~/Views/TroubleShooting/TroubleShooting_ElmahErrorSummary.cshtml", listOfEvents);
 
         }
