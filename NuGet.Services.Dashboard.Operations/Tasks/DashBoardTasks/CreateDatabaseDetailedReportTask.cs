@@ -26,9 +26,14 @@ namespace NuGetGallery.Operations
     {
         [Option("LastNHours", AltName = "n")]
         public int LastNHours { get; set; }
+
+        private const string sqlQueryForIndexFragmentation = "SELECT objs.name AS ObjectName, idx.name AS IndexName, stats.avg_fragmentation_in_percent as Fragmentation "
+  + "FROM sys.indexes idx INNER JOIN sys.objects objs ON idx.object_id = objs.object_id CROSS APPLY sys.dm_db_index_physical_stats(DB_ID(), idx.[object_id], idx.index_id, 0, NULL) stats "
++ "WHERE stats.avg_fragmentation_in_percent > {0} ORDER BY stats.avg_fragmentation_in_percent DESC";
         public override void ExecuteCommand()
         {            
             CreateReportForDataBaseEvents();
+            CreateReportForIndexFragmentation();
         }    
 
         private void CreateReportForDataBaseEvents()
@@ -58,6 +63,22 @@ namespace NuGetGallery.Operations
                         }
                 }               
                
+            }
+        }
+
+        private void CreateReportForIndexFragmentation()
+        {        
+            using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
+            {
+                using (var dbExecutor = new SqlExecutor(sqlConnection))
+                {
+                    sqlConnection.Open();
+                    AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
+                    var fragmentationDetails = dbExecutor.Query<DatabaseIndex>(string.Format(sqlQueryForIndexFragmentation,thresholdValues.DatabaseIndexFragmentationPercentThreshold));
+                    var json = new JavaScriptSerializer().Serialize(fragmentationDetails);
+                    ReportHelpers.CreateBlob(StorageAccount, "DBIndexFragmentation.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
+                }
+
             }
         }
     }

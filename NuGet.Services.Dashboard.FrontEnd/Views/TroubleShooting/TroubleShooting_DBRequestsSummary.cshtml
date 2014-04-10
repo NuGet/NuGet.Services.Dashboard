@@ -2,57 +2,50 @@
 @using System.Collections.Generic;
 @using System.Linq;
 @using NuGet.Services.Dashboard.Common;
-@model List<DatabaseEvent>
+@model List<DatabaseRequest>
 <table class="hovered">
     <tbody>
         <tr>
             <th>
+                Sql
+            </th>
+            <th>
                 StartTime
             </th>
             <th>
-                EndTime
+                Status
             </th>
             <th>
-                EventType
+                Command
             </th>
             <th>
-                Eventcount
+                Wait type
             </th>
             <th>
-                Description
-            </th>
-            <th>
-                Severity
+                Wait time
             </th>
 
         </tr>
-        @foreach (DatabaseEvent dbEvent in @Model)
+        @foreach (DatabaseRequest dbEvent in @Model)
         {
             <tr>
+                <td>
+                    @dbEvent.text
+                </td>
                 <td>
                     @dbEvent.start_time
                 </td>
                 <td>
-                    @dbEvent.end_time
+                    @dbEvent.Status
                 </td>
                 <td>
-                    @dbEvent.event_type
+                    @dbEvent.Command
                 </td>
                 <td>
-                    @dbEvent.event_count
+                    @dbEvent.Wait_Type
                 </td>
                 <td>
-                    @dbEvent.description
-                </td>
-                <td>
-                    @if (@dbEvent.event_type.Contains("throttling") || @dbEvent.event_type.Contains("deadlock"))
-                    {
-                        <span class="square bg-color-orange"></span>
-                    }
-                    else
-                    {
-                        <span class="square bg-color-green"></span>
-                    }
+                   @dbEvent.wait_time
                 </td>
             </tr>
         }

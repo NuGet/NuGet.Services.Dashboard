@@ -10,15 +10,17 @@ namespace NuGet.Services.Dashboard.Common
     {
         public string Error;
         public int Occurecnes;
+        public DateTime FirstReported;
         public DateTime LastReported;
         public string Link;
         public string Detail;
         public int Severity;
 
-        public ElmahError(string error,int occurences,DateTime lastReported, string link, string detail,int severity)
+        public ElmahError(string error,int occurences,DateTime firstReported,DateTime lastReported, string link, string detail,int severity)
         {
             this.Error = error;
             this.Occurecnes = occurences;
+            this.FirstReported = firstReported;
             this.LastReported = lastReported;
             this.Link = link;
             this.Detail = detail;

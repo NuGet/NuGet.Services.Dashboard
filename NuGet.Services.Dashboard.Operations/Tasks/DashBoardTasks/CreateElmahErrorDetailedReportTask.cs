@@ -31,14 +31,15 @@ namespace NuGetGallery.Operations
         public string ElmahAccountCredentials { get; set; }
              
         public override void ExecuteCommand()
-        {
-            Dictionary<string, string> CriticalErrorDictionary = ReportHelpers.GetDictFromBlob(StorageAccount, "Configuration.ElmahCriticalErrors.json");
+        {         
+            List<string> nonCriticalErrorDictionary = new JavaScriptSerializer().Deserialize<List<string>>(ReportHelpers.Load(StorageAccount,"Configuration.ElmahNonCriticalErrors.json",ContainerName));
+            AlertThresholds thresholds = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
 
             TableErrorLog log = new TableErrorLog(string.Format(ElmahAccountCredentials));
             List<ErrorLogEntry> entities = new List<ErrorLogEntry>();
             
             log.GetErrors(0, 500 * LastNHours, entities); //retrieve n * LastNHours errors assuming a max of 500 errors per hour.
-             List<ElmahError> listOfErrors = new List<ElmahError>();
+            List<ElmahError> listOfErrors = new List<ElmahError>();
 
             //Get the error from Last N hours.
             if (entities.Any(entity => entity.Error.Time.ToUniversalTime() > DateTime.Now.Subtract(new TimeSpan(LastNHours,0,0)).ToUniversalTime()))
@@ -50,25 +51,23 @@ namespace NuGetGallery.Operations
             foreach (IGrouping<string, ErrorLogEntry> errorGroups in elmahGroups)
             {
                 Console.WriteLine(errorGroups.Key.ToString() + "  " + errorGroups.Count());              
-                int severity = 1;
-                if (CriticalErrorDictionary.Keys.Any(item => errorGroups.Key.ToString().Contains(item)))
+                int severity = 0;
+                if (nonCriticalErrorDictionary.Any(item => errorGroups.Key.ToString().Contains(item)))
                 {
-                    severity = 0;
+                    severity = 1; //sev 1 is low pri and sev 0 is high pri.
                 }
                 string link = "https://www.nuget.org/Admin/Errors.axd/detail?id={0}";
                 if(ContainerName.Contains("qa"))
                 {
                     link = "https://int.nugettest.org/Admin/Errors.axd/detail?id={0}";
                 }
-                listOfErrors.Add(new ElmahError(errorGroups.Key.ToString(),errorGroups.Count(), errorGroups.Max( item => item.Error.Time.ToLocalTime()),string.Format(link,errorGroups.First().Id),errorGroups.First().Error.Detail,severity));            
+                listOfErrors.Add(new ElmahError(errorGroups.Key.ToString(),errorGroups.Count(),errorGroups.Min( item => item.Error.Time.ToLocalTime()), errorGroups.Max( item => item.Error.Time.ToLocalTime()),string.Format(link,errorGroups.First().Id),errorGroups.First().Error.Detail,severity));            
                 if (severity == 0)
                 {
-                    string countThreshold = string.Empty;
-                    CriticalErrorDictionary.TryGetValue(errorGroups.Key,out countThreshold);
-                    if(errorGroups.Count() > (Convert.ToInt32(countThreshold)) && LastNHours == 1)
+                    string countThreshold = string.Empty;                    
+                    if(errorGroups.Count() > thresholds.ElmahCriticalErrorPerHourAlertThreshold && LastNHours == 1) 
                     {
                      new SendAlertMailTask {
-
                     AlertSubject = string.Format("Elmah Error Alert activated for {0}",errorGroups.Key.ToString()),
                     Details = String.Format("Number of {0} exceeded threshold limit during the last hour.Threshold per hour : {1}, Events recorded in the last hour: {2}" ,errorGroups.Key.ToString(),countThreshold.ToString(),errorGroups.Count().ToString()),
                     AlertName = string.Format("Elmah Error Alert for {0}",errorGroups.Key.ToString()),

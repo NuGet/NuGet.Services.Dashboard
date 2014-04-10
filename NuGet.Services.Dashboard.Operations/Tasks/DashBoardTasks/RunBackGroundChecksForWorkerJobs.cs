@@ -25,12 +25,15 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
     {
         private const string BackupPrefix = "Backup_";
         private const string PackagesContainerName = "packages";
-        private const string BackupPackagesContainerName = "backup";
+        private const string BackupPackagesContainerName = "package-backups";
+        public AlertThresholds thresholdValues;
+        
 
         [Option("PackagesStorageAccount", AltName = "iis")]
         public CloudStorageAccount PackagesStorage { get; set; }
         public override void ExecuteCommand()
         {
+            thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
             List<Tuple<string, string>> jobOutputs = new List<Tuple<string, string>>();
             jobOutputs.Add(new Tuple<string,string>("BackupDataBaseJob", CheckForBackUpDatabaseJob()));
             jobOutputs.Add(new Tuple<string, string>("CleanOnlineBackup", CheckForCleanOnlineDatabaseJob()));
@@ -52,7 +55,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 connection.Open();
                 var lastBackupTime = Util.GetLastBackupTime(db, BackupPrefix);
                 outputMessage = string.Format("Last backup time in utc as of {0} is {1}", DateTime.UtcNow, lastBackupTime);
-                if (lastBackupTime >= DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(60)))
+                if (lastBackupTime <= DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(thresholdValues.BackupDBAgeThresholdInMinutes)))
                 {
                     new SendAlertMailTask
                     {
@@ -88,7 +91,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 }
               
                 outputMessage = string.Format("No of online databases is {0}",onlineBackupCount);
-                if (onlineBackupCount != 4) // this should be exactly 4 even if there is a copy/export in progress. Need to cross check that.
+                if (onlineBackupCount >= thresholdValues.OnlineDBBackupsThreshold)
                 {
                     new SendAlertMailTask
                     {
@@ -111,7 +114,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     {
                         sqlConnection.Open();
                         //Get the count of records which are older than 7 days.
-                        var oldRecordCount = dbExecutor.Query<Int32>("select count(*) from dbo.PackageStatistics where TimeStamp <= '{0}'", string.Format("0:YYYY-MM-dd HH:mm:ss",DateTime.UtcNow.AddDays(-7))).SingleOrDefault();
+                        var oldRecordCount = dbExecutor.Query<Int32>(string.Format("select count(*) from dbo.PackageStatistics where TimeStamp <= '{0}'", DateTime.UtcNow.AddDays(thresholdValues.PurgeStatisticsThresholdInDays * -1).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
                         outputMessage = string.Format("No of Old stats record found online is {0}", oldRecordCount);
                         if(oldRecordCount > 0)
                         {
@@ -136,9 +139,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     using (var dbExecutor = new SqlExecutor(sqlConnection))
                     {
                         sqlConnection.Open();
-                        //get the edits that are pending for more than 3 hours.
-                        var pendingEditCount = dbExecutor.Query<Int32>("select count(*) from dbo.PackageEdits where TimeStamp <= '{0}'", string.Format("0:YYYY-MM-dd HH:mm:ss",DateTime.UtcNow.AddHours(-3))).SingleOrDefault();
-                        outputMessage = string.Format("No of Old stats record found online is {0}", pendingEditCount);
+                        //get the edits that are pending for more than 3 hours. Get only the edits that are submitted today ( else there are some stale pneding edits which are 4/5 months old and they will keep showing up.
+                        var pendingEditCount = dbExecutor.Query<Int32>(string.Format("select count(*) from dbo.PackageEdits where TimeStamp <= '{0}' and TimeStamp >= '{1}'", DateTime.UtcNow.AddHours(thresholdValues.PendingThresholdInHours * -1).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.UtcNow.AddHours( -24).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
+                        outputMessage = string.Format("No of pending edits is {0}", pendingEditCount);
                         if (pendingEditCount > 0)
                         {
                             new SendAlertMailTask
@@ -164,12 +167,12 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                    using (var dbExecutor = new SqlExecutor(sqlConnection))
                    {
                        sqlConnection.Open();
-                       newPackageCount = dbExecutor.Query<Int32>(string.Format("SELECT Count (*) FROM [dbo].[Packages] where [Created] >= '{0}'", DateTime.UtcNow.AddHours(-2).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();                            
+                       newPackageCount = dbExecutor.Query<Int32>(string.Format("SELECT Count (*) FROM [dbo].[Packages] where [Created] >= '{0}'", DateTime.UtcNow.AddHours(thresholdValues.BackupPackagesThresholdInHours * -1).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();                            
                    }
                }
                 CloudBlobClient blobClient = StorageAccount.CreateCloudBlobClient();
-                CloudBlobContainer container = blobClient.GetContainerReference("packages");
-                CloudBlobContainer destinationContainer = blobClient.GetContainerReference("backup");
+                CloudBlobContainer container = blobClient.GetContainerReference(PackagesContainerName);
+                CloudBlobContainer destinationContainer = blobClient.GetContainerReference(BackupPackagesContainerName);
                 int diff = container.ListBlobs().Count() - destinationContainer.ListBlobs().Count(); // ListBlobs() call might take quite some time. Need to check if we can set any attributes on the container regarding package count.
                 outputMessage = string.Format("No of packages yet to be backed up is {0}.",diff);
                //BackupPackages job runs every 10 minutes. But a 2 hour buffer is given just in case if there is a delay in the backup process.
