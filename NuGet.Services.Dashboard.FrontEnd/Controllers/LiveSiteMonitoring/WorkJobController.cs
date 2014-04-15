@@ -17,22 +17,27 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public List<WorkJobInstanceDetails> instanceDetails;
         public ActionResult Index()
         {
-            instanceDetails = new JavaScriptSerializer().Deserialize<List<WorkJobInstanceDetails>>(BlobStorageService.Load("Configuration.WorkJobInstances.json"));
-            List<Tuple<string, string,string>> jobResults = new List<Tuple<string, string,string>>();            
-            foreach(WorkJobInstanceDetails jobDetails in instanceDetails)
+            var content = BlobStorageService.Load("Configuration.WorkJobInstances.json");
+            List<Tuple<string, string, string>> jobResults = new List<Tuple<string, string, string>>();
+            if (content != null)
             {
-               WorkJobInvocation job;
-               bool success =  IsLatestSuccessful(jobDetails,out job);
-               string lastCompleted = string.Empty;             
-                if(job != null)
+                instanceDetails = new JavaScriptSerializer().Deserialize<List<WorkJobInstanceDetails>>(content);
+               
+                foreach (WorkJobInstanceDetails jobDetails in instanceDetails)
                 {
-                    lastCompleted = string.Format("{0} mins ago",Convert.ToInt32(DateTime.Now.Subtract(job.completedAt).TotalMinutes));
+                    WorkJobInvocation job;
+                    bool success = IsLatestSuccessful(jobDetails, out job);
+                    string lastCompleted = string.Empty;
+                    if (job != null)
+                    {
+                        lastCompleted = string.Format("{0} mins ago", Convert.ToInt32(DateTime.Now.Subtract(job.completedAt).TotalMinutes));
+                    }
+                    else
+                    {
+                        lastCompleted = "N/A";
+                    }
+                    jobResults.Add(new Tuple<string, string, string>(jobDetails.JobInstanceName, success.ToString(), lastCompleted));
                 }
-                else
-                {
-                    lastCompleted = "N/A";
-                }
-               jobResults.Add(new Tuple<string,string,string>(jobDetails.JobInstanceName,success.ToString(),lastCompleted));
             }
 
             return PartialView("~/Views/WorkJobs/WorkJobs_Index.cshtml",jobResults);

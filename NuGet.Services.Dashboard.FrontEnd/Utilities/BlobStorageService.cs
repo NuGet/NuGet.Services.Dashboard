@@ -28,17 +28,23 @@ namespace NuGetDashboard.Utilities
                 containerName = "qadashboard"; // To do :This value need to be taken from the configuration instead of hardcoding.
             else
                 containerName = "dashboard";
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(_connectionString);
-            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
-            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
-            CloudBlockBlob blob = container.GetBlockBlobReference(name);            
-            string content;
-            using (var memoryStream = new MemoryStream())
+            try
             {
-                blob.DownloadToStream(memoryStream);
-                content = System.Text.Encoding.UTF8.GetString(memoryStream.ToArray());
+                CloudStorageAccount storageAccount = CloudStorageAccount.Parse(_connectionString);
+                CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+                CloudBlobContainer container = blobClient.GetContainerReference(containerName);
+                CloudBlockBlob blob = container.GetBlockBlobReference(name);
+                string content;
+                using (var memoryStream = new MemoryStream())
+                {
+                    blob.DownloadToStream(memoryStream);
+                    content = System.Text.Encoding.UTF8.GetString(memoryStream.ToArray());
+                }
+                return content;
+            }catch(StorageException)
+            {
+                return null;
             }
-            return content;
         }      
 
         /// <summary>
