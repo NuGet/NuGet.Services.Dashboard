@@ -33,7 +33,19 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         public string SearchAdminKey { get; set; }
         public override void ExecuteCommand()
         {
+            AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
             int diff = GetTotalPackageCountFromDatabase() - GetTotalPackageCountFromLucene();
+            if(diff > thresholdValues.LuceneIndexLagAlertThreshold || diff < -50)
+            {
+                new SendAlertMailTask
+                {
+                    AlertSubject = "Search Service Alert activated for Lucene index lag",
+                    Details = string.Format("Delta between the packages between in database and lucene index is {0}", diff.ToString()),
+                    AlertName = "Alert for LuceneIndexLab",
+                    Component = "SearchService"
+                }.ExecuteCommand();
+            }
+
             ReportHelpers.AppendDatatoBlob(StorageAccount,  "IndexingDiffCount" + string.Format("{0:MMdd}", DateTime.Now) + "HourlyReport.json", new Tuple<string, string>(string.Format("{0:HH-mm}", DateTime.Now), diff.ToString()), 24, ContainerName);
         }
         private int GetTotalPackageCountFromDatabase()

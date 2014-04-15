@@ -25,7 +25,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
     {
         private const string BackupPrefix = "Backup_";
         private const string PackagesContainerName = "packages";
-        private const string BackupPackagesContainerName = "package-backups";
+        private const string BackupPackagesContainerName = "ng-backups";
         public AlertThresholds thresholdValues;
         
 
