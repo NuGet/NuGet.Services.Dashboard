@@ -44,28 +44,42 @@ namespace NuGetDashboard.Controllers.Trending
         public JsonResult GetHourlyPackagetatus()
         {
             Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("Uploads" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + "HourlyReport.json");
-            //find the sum of values of each hour from today's report.
-            int sum = 0;
-            foreach(KeyValuePair<string,string> pair in dict)
+            if (dict != null && dict.Count > 0)
             {
-                int count = Convert.ToInt32(pair.Value);
-                sum = sum + count;
+                //find the sum of values of each hour from today's report.
+                int sum = 0;
+                foreach (KeyValuePair<string, string> pair in dict)
+                {
+                    int count = Convert.ToInt32(pair.Value);
+                    sum = sum + count;
+                }
+                return Json(sum.ToString(), JsonRequestBehavior.AllowGet);
             }
-            return Json(sum.ToString(), JsonRequestBehavior.AllowGet);
+            else
+            {
+                return Json("N/A");
+            }
         }
 
         [HttpGet]
         public JsonResult GetHourlyUsertatus()
         {
             Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("Users" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + "HourlyReport.json");
-            //find the sum of values of each hour from today's report.
-            int sum = 0;
-            foreach (KeyValuePair<string, string> pair in dict)
+            if (dict != null && dict.Count > 0)
             {
-                int count = Convert.ToInt32(pair.Value);
-                sum = sum + count;
+                //find the sum of values of each hour from today's report.
+                int sum = 0;
+                foreach (KeyValuePair<string, string> pair in dict)
+                {
+                    int count = Convert.ToInt32(pair.Value);
+                    sum = sum + count;
+                }
+                return Json(sum.ToString(), JsonRequestBehavior.AllowGet);
             }
-            return Json(sum.ToString(), JsonRequestBehavior.AllowGet);
+            else
+            {
+                return Json("N/A");
+            }
         }
 
     }

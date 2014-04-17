@@ -22,12 +22,12 @@ namespace NuGetDashboard.Utilities
     {
         private static string _connectionString = ConfigurationManager.AppSettings["StorageConnection"];
 
-        public static string Load(string name,string containerName="dashboard")
-        {
+        public static string Load(string name,string containerName="prod0")
+        { 
             if (MvcApplication.currentEnvironmentName.Equals("QA")) 
-                containerName = "qadashboard"; // To do :This value need to be taken from the configuration instead of hardcoding.
+                containerName = ConfigurationManager.AppSettings["Int0StorageContainer"];
             else
-                containerName = "dashboard";
+                containerName = ConfigurationManager.AppSettings["Prod0StorageContainer"];
             try
             {
                 CloudStorageAccount storageAccount = CloudStorageAccount.Parse(_connectionString);
