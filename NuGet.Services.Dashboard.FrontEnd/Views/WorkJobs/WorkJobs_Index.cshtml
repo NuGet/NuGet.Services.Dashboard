@@ -17,7 +17,9 @@
                 </th>
 
             </tr>
-            @foreach (Tuple<string, string, string> jobDetail in @Model)
+            @if (@Model != null)
+            { 
+            foreach (Tuple<string, string, string> jobDetail in @Model)
             {
                 <tr>
                     <td>
@@ -37,6 +39,7 @@
                         @jobDetail.Item3
                     </td>
                 </tr>
+            }
             }
         </tbody>
     </table>
