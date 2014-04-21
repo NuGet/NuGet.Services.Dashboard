@@ -105,7 +105,7 @@ namespace NuGetGallery.Operations
                     startingTime = startingTime.AddHours(1);
                 }
                 JArray reportObject = ReportHelpers.GetJson(summaryValues);
-                ReportHelpers.CreateBlob(StorageAccount, checkAlias + string.Format("{0:MMdd}",startingTime.AddHours(-1)) + "DetailedReport.json", "dashboard", "application/json", ReportHelpers.ToStream(reportObject));
+                ReportHelpers.CreateBlob(StorageAccount, checkAlias + string.Format("{0:MMdd}",startingTime.AddHours(-1)) + "DetailedReport.json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
             }
         }
     }

@@ -52,7 +52,7 @@ namespace NuGetGallery.Operations
                     string checkAlias = o["name"].ToString();
                     checkAlias = checkAlias.Replace(" ",".");
                     checkAlias = checkAlias.Replace("(", "").Replace(")", "");
-                    ReportHelpers.CreateBlob(StorageAccount, checkAlias + Frequency + "Report.json", "dashboard", "application/json", ReportHelpers.ToStream(reportObject));              
+                    ReportHelpers.CreateBlob(StorageAccount, checkAlias + Frequency + "Report.json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));              
                 }
             }
         }

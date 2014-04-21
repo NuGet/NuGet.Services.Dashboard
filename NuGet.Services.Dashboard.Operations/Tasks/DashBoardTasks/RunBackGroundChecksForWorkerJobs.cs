@@ -39,7 +39,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             jobOutputs.Add(new Tuple<string, string>("CleanOnlineBackup", CheckForCleanOnlineDatabaseJob()));
             jobOutputs.Add(new Tuple<string, string>("PurgePackageStatistics", CheckForPurgePackagStatisticsJob()));
             jobOutputs.Add(new Tuple<string, string>("HandleQueuedPackageEdits", CheckForHandleQueuedPackageEditJob()));
-            jobOutputs.Add(new Tuple<string, string>("BackupPackages", CheckForBackupPackagesJob()));
+           // jobOutputs.Add(new Tuple<string, string>("BackupPackages", CheckForBackupPackagesJob())); commenting out this check temporarily as ListBlobs on ng-backups container is giving error.
             JArray reportObject = ReportHelpers.GetJson(jobOutputs);
             ReportHelpers.CreateBlob(StorageAccount, "RunBackGroundChecksForWorkerJobsReport.json", "dashboard", "application/json", ReportHelpers.ToStream(reportObject));              
         }
@@ -173,7 +173,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 CloudBlobClient blobClient = StorageAccount.CreateCloudBlobClient();
                 CloudBlobContainer container = blobClient.GetContainerReference(PackagesContainerName);
                 CloudBlobContainer destinationContainer = blobClient.GetContainerReference(BackupPackagesContainerName);
-                int diff = container.ListBlobs().Count() - destinationContainer.ListBlobs().Count(); // ListBlobs() call might take quite some time. Need to check if we can set any attributes on the container regarding package count.
+                int sourceCount = container.ListBlobs().Count();
+                int destCount = destinationContainer.ListBlobs().Count(); // ListBlobs() call might take quite some time. Need to check if we can set any attributes on the container regarding package count.
+                int diff = sourceCount - destCount;
                 outputMessage = string.Format("No of packages yet to be backed up is {0}.",diff);
                //BackupPackages job runs every 10 minutes. But a 2 hour buffer is given just in case if there is a delay in the backup process.
                if(diff > newPackageCount)
