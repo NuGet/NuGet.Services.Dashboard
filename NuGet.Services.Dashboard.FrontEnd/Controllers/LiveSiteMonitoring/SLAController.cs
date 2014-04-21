@@ -59,14 +59,20 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public JsonResult GetCurrentThroughputStatus()
         {
             Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IISRequests" + string.Format("{0:MMdd}",DateTimeUtility.GetPacificTimeNow()) + ".json");
-            return Json(dict.Values.ElementAt(dict.Count-1), JsonRequestBehavior.AllowGet);
+            if (dict != null && dict.Count > 0)
+                return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
+            else
+                return Json("N/A");
         }
 
         [HttpGet]
         public JsonResult GetCurrentErrorRateStatus()
         {
             Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("ErrorRate" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + ".json");
-            return Json(dict.Values.ElementAt(dict.Count-1), JsonRequestBehavior.AllowGet);
+            if (dict != null && dict.Count > 0)
+                return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
+            else
+                return Json("N/A");
         }
     }
 }

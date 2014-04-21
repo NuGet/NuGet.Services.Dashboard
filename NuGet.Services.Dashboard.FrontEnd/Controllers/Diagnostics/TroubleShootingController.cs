@@ -6,7 +6,6 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using NuGet.Services.Dashboard.Common;
-using Newtonsoft.Json.Linq;
 using System.Web.Script.Serialization;
 
 namespace NuGetDashboard.Controllers.Diagnostics
@@ -30,8 +29,13 @@ namespace NuGetDashboard.Controllers.Diagnostics
         /// <param name="hour"></param>
         /// <returns></returns>
         public ActionResult DBEventsSummary(string hour)
-        {  
-            var listOfEvents = new JavaScriptSerializer().Deserialize<List<DatabaseEvent>>(BlobStorageService.Load("DBDetailed" + hour + "Hour.json"));
+        {
+            var content = BlobStorageService.Load("DBDetailed" + hour + "Hour.json");
+            List<DatabaseEvent> listOfEvents = new List<DatabaseEvent>();
+            if (content != null)
+            {
+                listOfEvents = new JavaScriptSerializer().Deserialize<List<DatabaseEvent>>(content);
+            }
             return PartialView("~/Views/TroubleShooting/TroubleShooting_DBEventsSummary.cshtml", listOfEvents);
         }
 
@@ -42,8 +46,12 @@ namespace NuGetDashboard.Controllers.Diagnostics
         /// <returns></returns>
         public ActionResult DBRequestsSummary()
         {
-            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("DBRequestDetails" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + ".json");            
-            var listOfRequests = new JavaScriptSerializer().Deserialize<List<DatabaseRequest>>(dict.Values.ElementAt(dict.Count - 1));
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("DBRequestDetails" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + ".json");
+            List<DatabaseRequest> listOfRequests = new List<DatabaseRequest>();
+            if (dict != null && dict.Count > 0)
+            {
+                listOfRequests = new JavaScriptSerializer().Deserialize<List<DatabaseRequest>>(dict.Values.ElementAt(dict.Count - 1));
+            }
             return PartialView("~/Views/TroubleShooting/TroubleShooting_DBRequestsSummary.cshtml", listOfRequests);
         }
         /// <summary>
@@ -53,9 +61,13 @@ namespace NuGetDashboard.Controllers.Diagnostics
         /// <returns></returns>
         public ActionResult ElmahErrorSummary(string hour)
         {
-            var listOfEvents = new JavaScriptSerializer().Deserialize<List<ElmahError>>(BlobStorageService.Load("ElmahErrorsDetailed" + hour + "hours.json"));            
+            var content = BlobStorageService.Load("ElmahErrorsDetailed" + hour + "hours.json");
+            List<ElmahError> listOfEvents= new List<ElmahError>();
+            if (content != null)
+            {
+                listOfEvents = new JavaScriptSerializer().Deserialize<List<ElmahError>>(content);
+            }
             return PartialView("~/Views/TroubleShooting/TroubleShooting_ElmahErrorSummary.cshtml", listOfEvents);
-
         }
     }
 }

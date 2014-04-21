@@ -47,8 +47,13 @@ namespace NuGetDashboard.Controllers.Diagnostics
         [HttpGet]
         public ActionResult DBIndexFragmentation()
         {
-            var listOfEvents = new JavaScriptSerializer().Deserialize<List<DatabaseIndex>>(BlobStorageService.Load("DBIndexFragmentation.json"));
-            return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_DBIndexDetails.cshtml", listOfEvents);
+            List<DatabaseIndex> indexDetails = new List<DatabaseIndex>();
+            var content = BlobStorageService.Load("DBIndexFragmentation.json");
+            if (content != null)
+            {
+                indexDetails = new JavaScriptSerializer().Deserialize<List<DatabaseIndex>>(content);
+            }
+            return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_DBIndexDetails.cshtml", indexDetails);
         }
 
         //[HttpGet]
@@ -81,7 +86,10 @@ namespace NuGetDashboard.Controllers.Diagnostics
         {
             //TBD: Need to take the service name from the config.
             Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("nuget-prod-0-v2galleryInstanceCount" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + "HourlyReport.json");
-            return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
+            if (dict != null && dict.Count > 0)
+                return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
+            else
+                return Json("N/A");
         }
 
 
@@ -89,7 +97,10 @@ namespace NuGetDashboard.Controllers.Diagnostics
         public JsonResult GetCurrentIndexingStatus()
         {
             Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IndexingDiffCount" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + "HourlyReport.json");
-            return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
+            if (dict != null && dict.Count > 0)
+                return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
+            else
+                return Json("N/A");
         }
 
         private ActionResult GetChart(string blobName)
