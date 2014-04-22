@@ -21,7 +21,7 @@ using System.Configuration;
 
 namespace NuGetGallery.Operations
 {
-    [Command("CreateElmahErrorReportTask", "Creates error report from Elmah logs", AltName = "ceert")]
+    [Command("SendAlertMailTask", "Creates a pager duty incident or sends an alert email based on configuration", AltName = "samt")]
     public class SendAlertMailTask : OpsTask 
     {
         [Option("ErrorDetails", AltName = "e")]
@@ -30,7 +30,7 @@ namespace NuGetGallery.Operations
         [Option("AlertSubject", AltName = "s")]
         public string AlertSubject { get; set; }
 
-        [Option("AlertName", AltName = "s")]
+        [Option("AlertName", AltName = "n")]
         public string AlertName { get; set; }
         
         [Option("Component", AltName = "c")]
@@ -39,18 +39,56 @@ namespace NuGetGallery.Operations
 
         public override void ExecuteCommand()
         {
+            //Either create an incident or send mail based on the current settings.
+            if (ConfigurationManager.AppSettings["UsePagerDuty"].Equals("true", StringComparison.OrdinalIgnoreCase))
+            {
+                CreateIncident();  
+            }
+            else
+            {
+                SendEmail();
+            }          
+        }
+
+        private void CreateIncident()
+        {
+            WebClient client = new WebClient();
+            client.Headers[HttpRequestHeader.Accept] = "application/json";
+            client.Headers[HttpRequestHeader.ContentType] = "application/json";
+
+            client.UploadStringCompleted += (object source, UploadStringCompletedEventArgs e) =>
+            {
+                if (e.Error != null || e.Cancelled)
+                {
+                    Console.WriteLine("Error" + e.Error);
+                    Console.ReadKey();
+                }
+            };
+
+            JavaScriptSerializer js = new JavaScriptSerializer();
+            TriggerDetails triggerDetails = new TriggerDetails(Component, Details);
+            var detailJson = js.Serialize(triggerDetails);
+
+            Trigger trigger = new Trigger(ConfigurationManager.AppSettings["PagerDutyServiceKey"],AlertName,AlertSubject,detailJson);           
+            var triggerJson = js.Serialize(trigger);
+            client.UploadString(new Uri("https://events.pagerduty.com/generic/2010-04-15/create_event.json"), triggerJson); 
+            
+        }
+
+        private void SendEmail()
+        {
             SmtpClient sc = new SmtpClient("smtphost");
             NetworkCredential nc = new NetworkCredential(ConfigurationManager.AppSettings["SmtpUserName"], ConfigurationManager.AppSettings["SmtpPassword"]);
             sc.UseDefaultCredentials = true;
             sc.Credentials = nc;
             sc.Host = "outlook.office365.com";
             sc.EnableSsl = true;
-            sc.Port = 587;          
+            sc.Port = 587;
             //ServicePointManager.ServerCertificateValidationCallback = delegate(object s, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) { return true; };
             System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage();
             message.From = new MailAddress(ConfigurationManager.AppSettings["SmtpUserName"], "NuGet Gallery Live site monitor");
-            message.To.Add(new MailAddress(ConfigurationManager.AppSettings["MailRecepientAddress"], ConfigurationManager.AppSettings["MailRecepientAddress"]));          
-            message.Subject = string.Format("[NuGet Gallery LiveSite Monitoring]: {0}",AlertSubject);
+            message.To.Add(new MailAddress(ConfigurationManager.AppSettings["MailRecepientAddress"], ConfigurationManager.AppSettings["MailRecepientAddress"]));
+            message.Subject = string.Format("[NuGet Gallery LiveSite Monitoring]: {0}", AlertSubject);
             message.IsBodyHtml = true;
             message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(@"<html><body>" + GetMailContent() + "</body></html>", new ContentType("text/html")));
 
@@ -63,7 +101,6 @@ namespace NuGetGallery.Operations
                 Console.WriteLine(" Error in sending mail : {0}", ex.Message);
                 Console.ReadKey();
             }
-          
         }
 
         private string GetMailContent()
@@ -76,10 +113,54 @@ namespace NuGetGallery.Operations
             mailBody = mailBody.Replace("{Alert}", AlertName);
             mailBody = mailBody.Replace("{AlertDescription}", Details);
             mailBody = mailBody.Replace("{AlertTime}", DateTime.Now.ToString());
-            return mailBody;
-
-          
+            return mailBody;          
         }      
 
+    }
+    /// <summary>
+    /// Defines a "Trigger" event for PagerDuty.
+    /// </summary>
+    public class Trigger
+    {
+        public string service_key ;
+        public string incident_key;
+        public string event_type = "trigger";
+        public string description;
+        public object details;
+        public string client;
+        public string client_url;
+
+        public Trigger()
+        {
+
+        }
+        public Trigger(string serviceKey,string incidentKey,string description,object details)
+        {
+            this.service_key = serviceKey;
+            this.incident_key = incidentKey;
+            this.description = description;           
+            this.details = details;
+            this.event_type = "trigger";
+            this.client = "NuGet Dashboard";
+            this.client_url = "https://dashboard.nuget.org";
+        }
+    }
+    /// <summary>
+    /// Defines additional details for a trigger.
+    /// </summary>
+    public class TriggerDetails
+    {
+        public string component;       
+        public string ErrorMessage;
+
+        public TriggerDetails()
+        {
+
+        }
+        public TriggerDetails(string componentName, string errorMessage)
+        {
+            this.component = componentName;           
+            this.ErrorMessage = errorMessage;
+        }
     }
 }
