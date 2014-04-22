@@ -143,7 +143,6 @@
     <Compile Include="Tasks\DashBoardTasks\CreateElmahErrorDetailedReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateElmahErrorOverviewReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreatePingdomDetailedReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreatePingdomMonthlyReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreatePingdomWeeklyAndHourlyReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateRequestsPerHourReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateSearchIndexingStatusReportTask.cs" />
@@ -181,11 +180,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Readme\Elmah.txt" />
-    <Content Include="External\DashboardAlertMail.htm">
+    <Content Include="ScriptsAndReferences\DashboardAlertMail.htm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="External\NuGetGallery.Core.dll" />
-    <Content Include="External\NuGetGallery.dll" />
+    <Content Include="ScriptsAndReferences\NuGetGallery.Core.dll" />
+    <Content Include="ScriptsAndReferences\NuGetGallery.dll" />
     <Content Include="Tasks\DashboardAlertMail.htm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

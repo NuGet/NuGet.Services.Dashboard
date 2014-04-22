@@ -47,8 +47,8 @@ CreateTask "CreateElmaherror6HourDetailedReport" "ceedrt -ea `"$FrontEndStorageC
 CreateTask "CreateElmaherror24HourDetailedReport" "ceedrt -ea `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 1" 30
 
 #Pingdom Tasks
-CreateTask "CreatePingdomHourlyReport" "cpdwr -user $PingdomUserName -password $PingdomPassword -appkey `"$PingdomAppKey`" -frequency Hourly -st `"$DashboardStorageConnectionString`"" 60
-CreateTask "CreatePackageResponeWeeklyDetailedReport" "cpdrt -user $PingdomUserName -password $PingdomPassword -appkey `"$PingdomAppKey`" -n 7 -id 958101 -st `"$DashboardStorageConnectionString`""  1440
+CreateTask "CreatePingdomHourlyReport" "cpdwr -user $PingdomUserName -password $PingdomPassword -appkey `"$PingdomAppKey`" -frequency Hourly -st `"$DashboardStorageConnectionString`"" -ct $DashboardStorageContainerName" 60
+CreateTask "CreatePackageResponeWeeklyDetailedReport" "cpdrt -user $PingdomUserName -password $PingdomPassword -appkey `"$PingdomAppKey`" -n 7 -id 958101 -st `"$DashboardStorageConnectionString`"" -ct $DashboardStorageContainerName" 1440
 
 #worker Tasks
 CreateTask "RunBackgroundChecksForWorkerJobs" "rbgc -db `"$FrontEndDBConnectionString`" -iis `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
