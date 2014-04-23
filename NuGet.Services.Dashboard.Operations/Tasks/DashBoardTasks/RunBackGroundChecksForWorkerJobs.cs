@@ -41,7 +41,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             jobOutputs.Add(new Tuple<string, string>("HandleQueuedPackageEdits", CheckForHandleQueuedPackageEditJob()));
            // jobOutputs.Add(new Tuple<string, string>("BackupPackages", CheckForBackupPackagesJob())); commenting out this check temporarily as ListBlobs on ng-backups container is giving error.
             JArray reportObject = ReportHelpers.GetJson(jobOutputs);
-            ReportHelpers.CreateBlob(StorageAccount, "RunBackGroundChecksForWorkerJobsReport.json", "dashboard", "application/json", ReportHelpers.ToStream(reportObject));              
+            ReportHelpers.CreateBlob(StorageAccount, "RunBackGroundChecksForWorkerJobsReport.json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));              
         }
 
         #region PrivateMethods

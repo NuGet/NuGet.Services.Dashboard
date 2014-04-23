@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using NLog;
 using NuGetGallery.Operations.Common;
+using System.Configuration;
 
 namespace NuGetGallery.Operations
 {
@@ -86,13 +87,16 @@ namespace NuGetGallery.Operations
                     ExecuteCommand();
                 }catch(Exception e)
                 {
-                    new SendAlertMailTask
+                    if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["SmtpUserName"]) && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["SmtpPassword"]))
                     {
-                        AlertSubject = string.Format("Error executing task {0}",this.GetType().ToString()),
-                        Details = String.Format("Exception thrown while executing task {0}. Exception Message : {1}, Stack Trace : {2}",this.GetType().ToString(),e.Message,e.StackTrace),
-                        AlertName = "Exception from Dashboard OpsTask",
-                        Component = "Dashboard Ops"
-                    }.ExecuteCommand();
+                        new SendAlertMailTask
+                        {
+                            AlertSubject = string.Format("Error executing task {0}", this.GetType().ToString()),
+                            Details = String.Format("Exception thrown while executing task {0}. Exception Message : {1}, Stack Trace : {2}", this.GetType().ToString(), e.Message, e.StackTrace),
+                            AlertName = "Exception from Dashboard OpsTask",
+                            Component = "Dashboard Ops"
+                        }.ExecuteCommand();
+                    }
                     throw e;
                 }
             }
