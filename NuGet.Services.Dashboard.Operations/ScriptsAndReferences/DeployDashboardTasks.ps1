@@ -2,9 +2,11 @@
 param(
   [Parameter(Mandatory=$true)][string]$FrontEndDeploymentId,
   [Parameter(Mandatory=$true)][string]$FrontEndStorageConnectionString,
-  [Parameter(Mandatory=$true)][string]$FrontEndDBConnectionString,
+  [Parameter(Mandatory=$true)][string]$FrontEndLegacyDBConnectionString,
   [Parameter(Mandatory=$true)][string]$SubscriptionId,
   [Parameter(Mandatory=$false)][string]$FrontEndCloudServiceName="nuget-prod-0-v2gallery",
+  [Parameter(Mandatory=$true)][string]$PrimaryDBConnectionString,
+  [Parameter(Mandatory=$true)][string]$WareHouseDBConnectionString,
   [Parameter(Mandatory=$false)][string]$ProdManagementCertName="bhuvak-dashboard.cer",
   [Parameter(Mandatory=$true)][string]$PingdomUserName,
   [Parameter(Mandatory=$true)][string]$PingdomPassword,
@@ -34,27 +36,28 @@ Register-ScheduledTask -TaskName $taskName -TaskPath "\NuGetDashboard\$EnvName" 
 
 
 # Database related tasks
-CreateTask "CreateDataBaseOverviewReport" "cdrt -db `"$FrontEndDBConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 30
-CreateTask "CreateDataBase1HourDetailedReport" "cddrt -db `"$FrontEndDBConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 1" 30
-CreateTask "CreateDataBase6HourDetailedReport" "cddrt -db `"$FrontEndDBConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 6" 30
-CreateTask "CreateDataBase24HourDetailedReport" "cddrt -db `"$FrontEndDBConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 24" 30
-CreateTask "CreateTrendingOverviewReport" "cshr -db `"$FrontEndDBConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
+CreateTask "CreateDataBaseOverviewReport" "cdrt -db `"$FrontEndLegacyDBConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 30
+CreateTask "CreateDataBase1HourDetailedReport" "cddrt -db `"$FrontEndLegacyDBConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 1" 30
+CreateTask "CreateDataBase6HourDetailedReport" "cddrt -db `"$FrontEndLegacyDBConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 6" 30
+CreateTask "CreateDataBase24HourDetailedReport" "cddrt -db `"$FrontEndLegacyDBConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 24" 30
+CreateTask "CreateTrendingOverviewReport" "cshr -db `"$FrontEndLegacyDBConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
+CreateTask "CreateDataSizeReport" "cdsrt -lbd  `"$FrontEndLegacyDBConnectionString`" -wdb `"$WareHouseDBConnectionString`"  -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60 * 24
 
 #ElmahError related tasks
 CreateTask "CreateElmaherrorOverviewReport" "ceeort -ea `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 CreateTask "CreateElmaherror1HourDetailedReport" "ceedrt -ea `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 1" 30
-CreateTask "CreateElmaherror6HourDetailedReport" "ceedrt -ea `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 1" 30
-CreateTask "CreateElmaherror24HourDetailedReport" "ceedrt -ea `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 1" 30
+CreateTask "CreateElmaherror6HourDetailedReport" "ceedrt -ea `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 6" 30
+CreateTask "CreateElmaherror24HourDetailedReport" "ceedrt -ea `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 24" 30
 
 #Pingdom Tasks
 CreateTask "CreatePingdomHourlyReport" "cpdwr -user $PingdomUserName -password $PingdomPassword -appkey `"$PingdomAppKey`" -frequency Hourly -st `"$DashboardStorageConnectionString`"" -ct $DashboardStorageContainerName" 60
 CreateTask "CreatePackageResponeWeeklyDetailedReport" "cpdrt -user $PingdomUserName -password $PingdomPassword -appkey `"$PingdomAppKey`" -n 7 -id 958101 -st `"$DashboardStorageConnectionString`"" -ct $DashboardStorageContainerName" 1440
 
 #worker Tasks
-CreateTask "RunBackgroundChecksForWorkerJobs" "rbgc -db `"$FrontEndDBConnectionString`" -iis `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
+CreateTask "RunBackgroundChecksForWorkerJobs" "rbgc -db `"$FrontEndLegacyDBConnectionString`" -iis `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 
 #SearchService Tasks
-CreateTask "CreateSearchIndexingLagReport" "csisrt -db `"$FrontEndDBConnectionString`" -se $SearchServiceEndPoint -sa $SearchServiceAdminUser -sk $SearchServiceAdminKey -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
+CreateTask "CreateSearchIndexingLagReport" "csisrt -db `"$FrontEndLegacyDBConnectionString`" -se $SearchServiceEndPoint -sa $SearchServiceAdminUser -sk $SearchServiceAdminKey -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 
 #Misc
 CreateTask "CreateRequestsCountOverviewReport" "crphrt -di $FrontEndDeploymentId -iis `"$FrontEndStorageConnectionString`" -retry 3 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60 
