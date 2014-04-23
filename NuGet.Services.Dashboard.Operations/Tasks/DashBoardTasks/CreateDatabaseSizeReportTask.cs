@@ -75,7 +75,7 @@ namespace NuGetGallery.Operations
                         new SendAlertMailTask
                         {
                             AlertSubject = string.Format("SQL Azure database size alert activated for {0}",dbName),
-                            Details = string.Format("DB Size excced the threshold percent.Current Used % {0}, Threshold : {1}", percentUsed, threshold ),
+                            Details = string.Format("DB Size excced the threshold percent.Current Used % {0}, Threshold % : {1}", percentUsed, threshold ),
                             AlertName = "SQL Azure DB alert for database size limit",
                             Component = string.Format("SQL Azure database-{0}",dbName)
                         }.ExecuteCommand();

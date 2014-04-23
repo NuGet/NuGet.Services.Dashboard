@@ -51,7 +51,7 @@ namespace NuGetGallery.Operations
                         new SendAlertMailTask
                         {
                             AlertSubject = string.Format("SQL Azure database alert activated for {0}", blobName),
-                            Details = string.Format("Number of {0} exceeded the threshold value. Threshold value {1}, Current value : {2}",blobName,threshold,connectionCount),                          
+                            Details = string.Format("Number of {0} exceeded the threshold value. Threshold value  {1}, Current value : {2}",blobName,threshold,connectionCount),                          
                             AlertName = "SQL Azure DB alert for connections/requests count",
                             Component = "SQL Azure database"
                         }.ExecuteCommand();
