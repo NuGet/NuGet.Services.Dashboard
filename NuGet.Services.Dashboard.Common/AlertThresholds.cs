@@ -13,6 +13,8 @@ namespace NuGet.Services.Dashboard.Common
         public int DatabaseBlockedRequestsThreshold = 20; // Specifies the limit on the number of suspended/Blocked requests in DB.
         public int DatabaseThrottlingEventThreshold = 10;
         public int DatabaseIndexFragmentationPercentThreshold = 20;
+        public int DatabaseSizeWarningPercentThreshold = 75; //specifies the warning limit on DB size (% used in maxsize)
+        public int DatabaseSizeErrorPercentThreshold = 90;  //specifies the error limit on DB size (% used in maxsize)
         public int ElmahCriticalErrorPerHourAlertThreshold = 200;// specifies the limit on the number of critical errors in a specific category per hour in Elmah.
         public int LuceneIndexLagAlertThreshold = 100; // Specifies the limit on the delta between number of packages in DB and Lucene Index.
         public int BackupDBAgeThresholdInMinutes = 120; //A back up no older than 1 hour should be present. But make it 2 hours just to provide extra buffer if in case the worker job is taking time.

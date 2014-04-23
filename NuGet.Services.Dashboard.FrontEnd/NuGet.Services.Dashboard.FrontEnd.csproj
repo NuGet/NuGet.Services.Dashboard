@@ -389,6 +389,7 @@
     <Content Include="Views\ResourceMonitoring\ResourceMonitoring_DBIndexDetails.cshtml" />
     <Content Include="Views\ResourceMonitoring\ResourceMonitoring_Details.cshtml" />
     <Content Include="Views\TroubleShooting\TroubleShooting_DBRequestsSummary.cshtml" />
+    <Content Include="Views\ResourceMonitoring\ResourceMonitoring_DBSizeDetails.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

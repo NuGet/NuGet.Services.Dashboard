@@ -56,6 +56,18 @@ namespace NuGetDashboard.Controllers.Diagnostics
             return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_DBIndexDetails.cshtml", indexDetails);
         }
 
+        [HttpGet]
+        public ActionResult DBSize()
+        {
+            List<DatabaseSize> sizeDetails = new List<DatabaseSize>();
+            var content = BlobStorageService.Load("DBSize.json");
+            if (content != null)
+            {
+                sizeDetails = new JavaScriptSerializer().Deserialize<List<DatabaseSize>>(content);
+            }
+            return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_DBSizeDetails.cshtml", sizeDetails);
+        }
+
         //[HttpGet]
         //public ActionResult DBCPUTimeThisWeek()
         //{

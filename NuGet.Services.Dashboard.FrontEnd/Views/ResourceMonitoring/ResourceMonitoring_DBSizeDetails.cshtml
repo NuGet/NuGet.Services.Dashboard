@@ -1,0 +1,58 @@
+﻿@using System;
+@using System.Collections.Generic;
+@using System.Linq;
+@using NuGet.Services.Dashboard.Common;
+@model List<DatabaseSize>
+
+<div class="fg-color-darken" style="width:600px">
+    <table class="hovered">
+        <tbody>
+            <tr>
+                <th>
+                    Database Name
+                </th>
+                <th>
+                    Edition
+                </th>
+                <th>
+                    Size (Mb)
+                </th>
+                <th>
+                    Max Allowed (Mb)
+                </th>    
+                <th>
+                   Used Percent
+                </th>           
+
+            </tr>
+            @foreach (DatabaseSize dbSize in @Model)
+            {             
+                <tr>
+                    <td>
+                        @dbSize.DBName
+                    </td>
+                    <td>
+                        @dbSize.Edition
+                    </td>
+                    <td>                     
+                       @dbSize.SizeInMb
+                    </td>
+                    <td>
+                      @dbSize.MaxSizeInMb
+                    </td>                     
+                    <td>                      
+                        <meter value="0" id=@dbSize.DBName high="0.75">0%</meter>
+                        <script>                           
+                            var input = document.getElementById('@dbSize.DBName');
+                            var percentvalue = @dbSize.SizeInMb/@dbSize.MaxSizeInMb;                                                        
+                            input.setAttribute("value", percentvalue.toString());                            
+                        </script>   
+                    </td>   
+                          
+                </tr>
+            }
+        </tbody>
+    </table>   
+     
+</div>
+

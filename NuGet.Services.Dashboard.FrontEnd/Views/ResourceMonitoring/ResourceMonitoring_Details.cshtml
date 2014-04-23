@@ -4,7 +4,8 @@
     <div class="menu-pull-bar"></div>
     <ul>
         <li class="active"><a href="#WeeklyTrend">Weekly Trend</a></li>
-        <li><a href="#IndexFragmentation">Index Fragmentation Details</a></li>        
+        <li><a href="#IndexFragmentation">Index Fragmentation Details</a></li>      
+        <li><a href="#DBSize">Db Size</a></li>  
     </ul>
     <div class="frames">
         <div class="frame active" id="WeeklyTrend">
@@ -16,6 +17,7 @@
             </div>
         </div>
         <div class="frame" id="IndexFragmentation">@Html.Action("DBIndexFragmentation", "ResourceMonitoring")</div>
+        <div class="frame" id="DBSize">@Html.Action("DBSize", "ResourceMonitoring")</div>
     </div>
 
 </div>

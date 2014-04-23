@@ -43,6 +43,7 @@
     <Compile Include="DatabaseEvent.cs" />
     <Compile Include="DatabaseIndex.cs" />
     <Compile Include="DatabaseRequest.cs" />
+    <Compile Include="DatabaseSize.cs" />
     <Compile Include="ElmahError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WorkJobInstanceDetails.cs" />
