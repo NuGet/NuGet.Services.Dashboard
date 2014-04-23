@@ -30,8 +30,8 @@ param([string]$taskName, [string]$argument, [int]$interval)
 $settings = New-ScheduledTaskSettingsSet -MultipleInstances P
 $Action = New-ScheduledTaskAction -Execute "$WorkingDir\galops.exe" -WorkingDirectory $WorkingDir -Argument  $argument
 $trigger = New-ScheduledTaskTrigger -Once -At  $time  -RepetitionDuration  ([Timespan]::MaxValue) -RepetitionInterval (New-TimeSpan -Minutes $interval)
-Unregister-ScheduledTask -TaskName $taskName -TaskPath "\NuGetDashboard\$EnvName" -ErrorAction SilentlyContinue
-Register-ScheduledTask -TaskName $taskName -TaskPath "\NuGetDashboard\$EnvName" -User $env:USERDOMAIN\$env:USERNAME -Password $CurrentUserPassword -Action $Action -Trigger $trigger -Settings $settings
+Unregister-ScheduledTask -TaskName $taskName -TaskPath "\NuGetDashboard\$EnvName\" -ErrorAction SilentlyContinue -Confirm:$false
+Register-ScheduledTask -TaskName $taskName -TaskPath "\NuGetDashboard\$EnvName\" -User $env:USERDOMAIN\$env:USERNAME -Password $CurrentUserPassword -Action $Action -Trigger $trigger -Settings $settings
 }
 
 
@@ -41,7 +41,7 @@ CreateTask "CreateDataBase1HourDetailedReport" "cddrt -db `"$FrontEndLegacyDBCon
 CreateTask "CreateDataBase6HourDetailedReport" "cddrt -db `"$FrontEndLegacyDBConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 6" 30
 CreateTask "CreateDataBase24HourDetailedReport" "cddrt -db `"$FrontEndLegacyDBConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 24" 30
 CreateTask "CreateTrendingOverviewReport" "cshr -db `"$FrontEndLegacyDBConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
-CreateTask "CreateDataSizeReport" "cdsrt -lbd  `"$FrontEndLegacyDBConnectionString`" -wdb `"$WareHouseDBConnectionString`"  -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60 * 24
+CreateTask "CreateDataSizeReport" "cdsrt -ldb  `"$FrontEndLegacyDBConnectionString`" -wdb `"$WareHouseDBConnectionString`"  -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 1440
 
 #ElmahError related tasks
 CreateTask "CreateElmaherrorOverviewReport" "ceeort -ea `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
@@ -50,8 +50,8 @@ CreateTask "CreateElmaherror6HourDetailedReport" "ceedrt -ea `"$FrontEndStorageC
 CreateTask "CreateElmaherror24HourDetailedReport" "ceedrt -ea `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -n 24" 30
 
 #Pingdom Tasks
-CreateTask "CreatePingdomHourlyReport" "cpdwr -user $PingdomUserName -password $PingdomPassword -appkey `"$PingdomAppKey`" -frequency Hourly -st `"$DashboardStorageConnectionString`"" -ct $DashboardStorageContainerName" 60
-CreateTask "CreatePackageResponeWeeklyDetailedReport" "cpdrt -user $PingdomUserName -password $PingdomPassword -appkey `"$PingdomAppKey`" -n 7 -id 958101 -st `"$DashboardStorageConnectionString`"" -ct $DashboardStorageContainerName" 1440
+CreateTask "CreatePingdomHourlyReport" "cpdwr -user $PingdomUserName -password $PingdomPassword -appkey `"$PingdomAppKey`" -frequency Hourly -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
+CreateTask "CreatePackageResponeWeeklyDetailedReport" "cpdrt -user $PingdomUserName -password $PingdomPassword -appkey `"$PingdomAppKey`" -n 7 -id 958101 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 1440
 
 #worker Tasks
 CreateTask "RunBackgroundChecksForWorkerJobs" "rbgc -db `"$FrontEndLegacyDBConnectionString`" -iis `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
