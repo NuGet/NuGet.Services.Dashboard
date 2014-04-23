@@ -164,6 +164,9 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="ScriptsAndReferences\DeployDashboardTasks.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Common\CommonResources.resx">
@@ -184,8 +187,12 @@
     <Content Include="ScriptsAndReferences\DashboardAlertMail.htm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="ScriptsAndReferences\NuGetGallery.Core.dll" />
-    <Content Include="ScriptsAndReferences\NuGetGallery.dll" />
+    <Content Include="ScriptsAndReferences\NuGetGallery.Core.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ScriptsAndReferences\NuGetGallery.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Tasks\DashboardAlertMail.htm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
