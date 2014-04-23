@@ -22,7 +22,7 @@ using NuGet.Services.Dashboard.Common;
 namespace NuGetGallery.Operations
 {
     [Command("CreateDatabaseReportTask", "Creates database report task", AltName = "cdrt")]
-    public class CreateDatabaseReportTask : DatabaseAndStorageTask
+    public class CreateDatabaseMetricsReportTask : DatabaseAndStorageTask
     {
         private string SqlQueryForConnectionCount = @"select count(*) from sys.dm_exec_connections";
         private string SqlQueryForRequestCount = @"select count(*) from sys.dm_exec_requests";
