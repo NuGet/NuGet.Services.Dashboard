@@ -18,7 +18,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public ActionResult Index()
         {
             var content = BlobStorageService.Load("Configuration.WorkJobInstances.json");
-            List<Tuple<string, string, string>> jobResults = new List<Tuple<string, string, string>>();
+            List<Tuple<string, string, string,string>> jobResults = new List<Tuple<string,string, string, string>>();
             if (content != null)
             {
                 instanceDetails = new JavaScriptSerializer().Deserialize<List<WorkJobInstanceDetails>>(content);
@@ -36,7 +36,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                     {
                         lastCompleted = "N/A";
                     }
-                    jobResults.Add(new Tuple<string, string, string>(jobDetails.JobInstanceName, success.ToString(), lastCompleted));
+                    jobResults.Add(new Tuple<string, string, string,string>(jobDetails.JobInstanceName, job.logUrl, success.ToString(), lastCompleted));
                 }
             }
 
