@@ -1,7 +1,7 @@
 ﻿@using System;
 @using System.Collections.Generic;
 @using System.Linq;
-@model List<Tuple<string, string, string>>
+@model List<Tuple<string, string, string,string>>
 <div class="fg-color-darken">
     <table class="hovered">
         <tbody>
@@ -19,14 +19,14 @@
             </tr>
             @if (@Model != null)
             { 
-            foreach (Tuple<string, string, string> jobDetail in @Model)
+            foreach (Tuple<string, string, string,string> jobDetail in @Model)
             {
                 <tr>
                     <td>
-                        @jobDetail.Item1
+                       <a href="@jobDetail.Item2" target="_blank">@jobDetail.Item1</a> 
                     </td>
                     <td>
-                        @if (jobDetail.Item2.Equals("True"))
+                        @if (jobDetail.Item3.Equals("True"))
                         {
                             <span class="square bg-color-green"></span>
                         }
@@ -36,7 +36,7 @@
                         }
                     </td>
                     <td>
-                        @jobDetail.Item3
+                        @jobDetail.Item4
                     </td>
                 </tr>
             }

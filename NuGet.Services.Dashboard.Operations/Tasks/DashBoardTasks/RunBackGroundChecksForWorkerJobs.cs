@@ -54,7 +54,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             {
                 connection.Open();
                 var lastBackupTime = Util.GetLastBackupTime(db, BackupPrefix);
-                outputMessage = string.Format("Last backup time in utc as of {0} is {1}", DateTime.UtcNow, lastBackupTime);
+                outputMessage = string.Format("Last backup time in utc as of {0} is {1}. Acceptable Threshold lag in minutes : {2}", DateTime.UtcNow, lastBackupTime, thresholdValues.BackupDBAgeThresholdInMinutes.ToString());
                 if (lastBackupTime <= DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(thresholdValues.BackupDBAgeThresholdInMinutes)))
                 {
                     new SendAlertMailTask
@@ -89,8 +89,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 {
                     onlineBackupCount = allBackups.Count();
                 }
-              
-                outputMessage = string.Format("No of online databases is {0}",onlineBackupCount);
+
+                outputMessage = string.Format("No of online databases is {0}. Acceptable threshold count : {1}", onlineBackupCount, thresholdValues.OnlineDBBackupsThreshold.ToString());
                 if (onlineBackupCount >= thresholdValues.OnlineDBBackupsThreshold)
                 {
                     new SendAlertMailTask
@@ -115,7 +115,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         sqlConnection.Open();
                         //Get the count of records which are older than 7 days.
                         var oldRecordCount = dbExecutor.Query<Int32>(string.Format("select count(*) from dbo.PackageStatistics where TimeStamp <= '{0}'", DateTime.UtcNow.AddDays(thresholdValues.PurgeStatisticsThresholdInDays * -1).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
-                        outputMessage = string.Format("No of Old stats record found online is {0}", oldRecordCount);
+                        outputMessage = string.Format("No of Old stats record found online is {0}. Acceptable threshold lag in no. of days: {1}", oldRecordCount, thresholdValues.PurgeStatisticsThresholdInDays.ToString());
                         if(oldRecordCount > 0)
                         {
                             new SendAlertMailTask
@@ -141,7 +141,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         sqlConnection.Open();
                         //get the edits that are pending for more than 3 hours. Get only the edits that are submitted today ( else there are some stale pneding edits which are 4/5 months old and they will keep showing up.
                         var pendingEditCount = dbExecutor.Query<Int32>(string.Format("select count(*) from dbo.PackageEdits where TimeStamp <= '{0}' and TimeStamp >= '{1}'", DateTime.UtcNow.AddHours(thresholdValues.PendingThresholdInHours * -1).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.UtcNow.AddHours( -24).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
-                        outputMessage = string.Format("No of pending edits is {0}", pendingEditCount);
+                        outputMessage = string.Format("No of pending edits is {0}. Acceptable lag in no. of hours: {1}", pendingEditCount,thresholdValues.PendingThresholdInHours.ToString());
                         if (pendingEditCount > 0)
                         {
                             new SendAlertMailTask
