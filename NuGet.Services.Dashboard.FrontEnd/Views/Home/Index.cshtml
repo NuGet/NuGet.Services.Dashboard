@@ -17,6 +17,18 @@
 
     };
 
+    function RefreshElmah() {
+        $.ajax({
+            url: '@Url.Action("RefreshElmah", "TroubleShooting")',
+            type: "GET",
+            dataType: 'html',
+            success: function (result) {
+                $("#1hourdivelmah").html(result);
+            }
+        });
+
+    };
+
     function UpdateTime() {
         $.ajax({
             url: '@Url.Action("GetCurrentPacificTime", "Home")',
