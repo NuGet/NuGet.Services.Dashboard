@@ -29,6 +29,33 @@
         window.setTimeout(UpdateTime, 1000 * 60);
     };
 
+    function RefreshDBEvent() {
+        $.ajax({
+            url: '@Url.Action("RefreshDatabaseEvent", "TroubleShooting")',
+            type: "GET",
+            dataType: 'html',
+            success: function (result) {
+                $("#1hourdivdb").html(result);
+            }
+        });
+    }
+
+    function RefreshDBRequest() {
+        $.ajax({
+            url: '@Url.Action("RefreshDatabaseRequest", "TroubleShooting")',
+            type: "GET",
+            dataType: 'html',
+            success: function (result) {
+                $("#DBrequest").html(result);
+            }
+        });
+    }
+
+    function RefreshDB() {
+        RefreshDBEvent();
+        RefreshDBRequest();
+    }
+
     function Toggle(divName) {
         debugger
         var onehour = document.getElementById('1hourdiv' + divName);
