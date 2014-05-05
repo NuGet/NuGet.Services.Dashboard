@@ -34,6 +34,10 @@ namespace NuGetGallery.Operations
         [Option("Retry", AltName = "retry")]
         public int RetryCount { get; set; }
 
+        [Option("ServiceName", AltName = "servicename")]
+        public string ServiceName { get; set; }
+
+
 
         public override void ExecuteCommand()
         {            
@@ -91,7 +95,11 @@ namespace NuGetGallery.Operations
             foreach (IISRequestDetails stem in UriStems)
             {
                 int requestCount = GetDataForUriStem(stem.UriStem, "count (*)", info.FullName);
-                int avgTime = GetDataForUriStem(stem.UriStem, "avg (time-taken)", info.FullName);
+                int avgTime = 0 ;
+                if (requestCount > 0)
+                {
+                    avgTime = GetDataForUriStem(stem.UriStem, "avg (time-taken)", info.FullName);
+                }
                 requestDetails.Add(new IISRequestDetails(stem.ScenarioName, stem.UriStem, avgTime, requestCount));
             }
             var json = new JavaScriptSerializer().Serialize(requestDetails);
@@ -142,7 +150,8 @@ namespace NuGetGallery.Operations
         /// <returns></returns>
         private  int GetCurrentInstanceCountInGallery()
         {
-           Dictionary<string,string> instanceCountDict =  ReportHelpers.GetDictFromBlob(StorageAccount, "nuget-prod-0-v2galleryInstanceCount" + string.Format("{0:MMdd}", DateTime.Now) + "HourlyReport.json", ContainerName);
+           
+           Dictionary<string,string> instanceCountDict =  ReportHelpers.GetDictFromBlob(StorageAccount,  ServiceName + "InstanceCount" + string.Format("{0:MMdd}", DateTime.Now) + "HourlyReport.json", ContainerName);
            if (instanceCountDict != null && instanceCountDict.Count > 0)
              {
                  return Convert.ToInt32(instanceCountDict.Values.ElementAt(instanceCountDict.Count - 1));
