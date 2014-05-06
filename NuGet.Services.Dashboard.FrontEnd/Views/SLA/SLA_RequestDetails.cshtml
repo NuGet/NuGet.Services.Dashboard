@@ -1,0 +1,40 @@
+﻿@using System;
+@using System.Collections.Generic;
+@using System.Linq;
+@using NuGet.Services.Dashboard.Common;
+@model List<Tuple<string, string, double>>
+
+<div class="fg-color-darken" style="width:600px">
+    <P>Below table shows the average request trend from IIS log for today (from 00.00 AM PST)</P>
+    <table class="hovered">
+        <tbody>
+            <tr>
+                <th>
+                   Scenario
+                </th>
+                <th>
+                    Average requests per hour
+                </th>
+                <th>
+                    Avg time taken in Milli seconds
+                </th>
+            </tr>
+            @foreach (Tuple<string, string, double> scenario in @Model)
+            {
+                <tr>
+                    <td>
+                        @scenario.Item1
+                    </td>
+                    <td>
+                        @scenario.Item2
+                    </td>
+                    <td>
+                       @scenario.Item3
+                    </td>                 
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
+
