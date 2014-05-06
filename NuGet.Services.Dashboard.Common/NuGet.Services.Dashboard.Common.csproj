@@ -45,6 +45,7 @@
     <Compile Include="DatabaseRequest.cs" />
     <Compile Include="DatabaseSize.cs" />
     <Compile Include="ElmahError.cs" />
+    <Compile Include="IISRequestDetails.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WorkJobInstanceDetails.cs" />
     <Compile Include="WorkJobInvocation.cs" />

@@ -139,7 +139,7 @@ namespace NuGetGallery.Operations.Common
         public static Dictionary<string, string> GetDictFromBlob(CloudStorageAccount account, string blobName,string container="dashboard")
         {
 
-            string json = Load(account, blobName);
+            string json = Load(account, blobName,container);
             if (json == null)
             {
                 return null;

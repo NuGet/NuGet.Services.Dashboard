@@ -60,7 +60,7 @@ CreateTask "RunBackgroundChecksForWorkerJobs" "rbgc -db `"$FrontEndLegacyDBConne
 CreateTask "CreateSearchIndexingLagReport" "csisrt -db `"$FrontEndLegacyDBConnectionString`" -se $SearchServiceEndPoint -sa $SearchServiceAdminUser -sk $SearchServiceAdminKey -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 
 #Misc
-CreateTask "CreateRequestsCountOverviewReport" "crphrt -di $FrontEndDeploymentId -iis `"$FrontEndStorageConnectionString`" -retry 3 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60 
+CreateTask "CreateRequestsCountOverviewReport" "crphrt -di $FrontEndDeploymentId -iis `"$FrontEndStorageConnectionString`" -retry 3 -servicename $FrontEndCloudServiceName  -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60 
 CreateTask "CreateV2GalleryInstanceCountReport" "ccsdrt -id $SubscriptionId -name $FrontEndCloudServiceName -cername $ProdManagementCertName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 
 
