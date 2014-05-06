@@ -24,7 +24,7 @@ namespace NuGetDashboard.Utilities
 
         public static string Load(string name,string containerName="prod0")
         { 
-            if (MvcApplication.currentEnvironmentName.Equals("QA")) 
+            if (MvcApplication.currentEnvironmentName.Equals("Int0")) 
                 containerName = ConfigurationManager.AppSettings["Int0StorageContainer"];
             else
                 containerName = ConfigurationManager.AppSettings["Prod0StorageContainer"];

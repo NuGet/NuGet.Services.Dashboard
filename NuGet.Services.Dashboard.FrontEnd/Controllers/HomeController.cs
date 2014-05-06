@@ -15,22 +15,26 @@ namespace NuGetDashboard.Controllers
     public class HomeController : Controller
     {
         public ActionResult Index()
-        {        
-            return View((object)MvcApplication.currentEnvironmentName);
+        {
+            ViewBag.var = MvcApplication.currentEnvironmentName;
+            return View();
         }
 
         public ActionResult UpdateEnvironment(string envName)
         {            
-            if(MvcApplication.currentEnvironmentName == "Prod")
-                 MvcApplication.currentEnvironmentName = "QA";
-            else
-                MvcApplication.currentEnvironmentName = "Prod";
+            //if(MvcApplication.currentEnvironmentName == "Prod")
+            //     MvcApplication.currentEnvironmentName = "QA";
+            //else
+            //    MvcApplication.currentEnvironmentName = "Prod";
+            MvcApplication.currentEnvironmentName = envName;
+            MvcApplication.update();
            return RedirectToAction("Index");
         }
 
         public ActionResult Tiles()
         {
-            return PartialView("~/Views/Home/Tiles.cshtml", MvcApplication.currentEnvironmentName);
+           
+            return PartialView("~/Views/Home/Tiles.cshtml",MvcApplication.currentEnvironmentName);
         }
 
         [HttpGet]

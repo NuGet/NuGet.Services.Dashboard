@@ -44,7 +44,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         }
         private static bool IsLatestSuccessful(WorkJobInstanceDetails jobDetails,out WorkJobInvocation job)
         {          
-            NetworkCredential nc = new NetworkCredential(ConfigurationManager.AppSettings["WorkServiceUserName"], ConfigurationManager.AppSettings["WorkServiceAdminKey"]);
+            NetworkCredential nc = new NetworkCredential(MvcApplication.WorkServiceUserName, MvcApplication.WorkServiceAdminKey);
             WebRequest request = WebRequest.Create(string.Format("https://api-work-0.nuget.org/work/invocations/instances/{0}?limit=2", jobDetails.JobInstanceName)); //get last 2 instances.
             request.Credentials = nc;
             request.PreAuthenticate = true;

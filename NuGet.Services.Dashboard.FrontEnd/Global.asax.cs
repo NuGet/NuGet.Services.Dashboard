@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Web;
 using System.Web.Http;
@@ -14,7 +15,28 @@ namespace NuGetDashboard
 
     public class MvcApplication : System.Web.HttpApplication
     {
-        public static string currentEnvironmentName = "Prod";
+        public static string currentEnvironmentName = "Prod0";
+
+        public static string WorkServiceUserName = ConfigurationManager.AppSettings["WorkServiceUserNameProd0"];
+
+        public static string WorkServiceAdminKey = ConfigurationManager.AppSettings["WorkServiceAdminKeyProd0"];
+
+        public static string DBConnectionString = ConfigurationManager.AppSettings["DBConnectionStringProd0"];
+
+        public static string ElmahAccountCredentials = ConfigurationManager.AppSettings["ElmahAccountCredentialsProd0"];
+
+        private const string WorkServiceUserNamePrefix = "WorkServiceUserName";
+        private const string WorkServiceAdminKeyPrefix = "WorkServiceAdminKey";
+        private const string DBConnectionStringPrefix = "DBConnectionString";
+        private const string ElmahAccountCredentialsPrefix = "ElmahAccountCredentials";
+
+        public static void update()
+        {
+            WorkServiceUserName = ConfigurationManager.AppSettings[WorkServiceUserNamePrefix + currentEnvironmentName];
+            WorkServiceAdminKey = ConfigurationManager.AppSettings[WorkServiceAdminKeyPrefix + currentEnvironmentName];
+            DBConnectionString = ConfigurationManager.AppSettings[DBConnectionStringPrefix + currentEnvironmentName];
+            ElmahAccountCredentials = ConfigurationManager.AppSettings[ElmahAccountCredentials + currentEnvironmentName];
+        }
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
