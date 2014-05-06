@@ -46,8 +46,7 @@ namespace NuGetGallery.Operations
             AddMetricToReport("DB Connections", GetMetricValuesForInt("DBConnections" + dateSuffix + ".json"), GetMetricValuesForProd("DBConnections" + dateSuffixForPreviousDay + ".json").Average());
             AddMetricToReport("DB Suspended Requests", GetMetricValuesForInt("DBSuspendedRequests" + dateSuffix + ".json"), GetMetricValuesForProd("DBSuspendedRequests" + dateSuffixForPreviousDay + ".json").Average());
             AddMetricToReport("IISRequests", GetMetricValuesForInt("IISRequests" + dateSuffix + ".json"), GetMetricValuesForProd("IISRequests" + dateSuffixForPreviousDay + ".json").Average());
-            AddMetricToReport("Gallery Instance Count", GetMetricValuesForInt("nuget-int-0-v2galleryInstanceCount" + dateSuffix + "HourlyReport.json"), GetMetricValuesForProd("nuget-prod-0-v2galleryInstanceCount" + dateSuffixForPreviousDay + "HourlyReport.json").Average());
-            AddMetricToReport("Package Restore Response Time In Millisec", GetMetricValuesForInt("package.restore.downloadHourlyReport.json"), GetMetricValuesForProd("package.restore.downloadHourlyReport.json").Average());
+            AddMetricToReport("Gallery Instance Count", GetMetricValuesForInt("nuget-int-0-v2galleryInstanceCount" + dateSuffix + "HourlyReport.json"), GetMetricValuesForProd("nuget-prod-0-v2galleryInstanceCount" + dateSuffixForPreviousDay + "HourlyReport.json").Average());            
 
             List<Tuple<string,double,double>> scenarios = GetScenarioValuesFromBlob("IISRequestDetails" + dateSuffix + ".json", intContainerName, StartTime, EndTime);
             foreach (Tuple<string, double, double> scenario in scenarios)
