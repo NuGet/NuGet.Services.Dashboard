@@ -7,6 +7,8 @@ using System.Web;
 using System.Web.Mvc;
 using NuGetDashboard.Utilities;
 using DotNet.Highcharts.Helpers;
+using NuGet.Services.Dashboard.Common;
+using System.Web.Script.Serialization;
 
 namespace NuGetDashboard.Controllers.LiveSiteMonitoring
 {
@@ -41,6 +43,26 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             for (int i = 0; i < 8;i++)
                    blobNames[i] = "IISRequests" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow().AddDays(-i));
                 return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "RequestsPerHour", 24, 800));
+        }
+
+        [HttpGet]
+        public ActionResult RequestsToday()
+        {
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IISRequestDetails" + String.Format("{0:MMdd}", DateTime.Now) + ".json");
+            List<IISRequestDetails> requestDetails = new List<IISRequestDetails>();
+            foreach (KeyValuePair<string, string> keyValuePair in dict)
+            {
+                requestDetails.AddRange(new JavaScriptSerializer().Deserialize<List<IISRequestDetails>>(keyValuePair.Value));             
+            }
+
+            var requestGroups = requestDetails.GroupBy(item => item.ScenarioName);
+            List<Tuple<string, string, double>> scenarios = new List<Tuple<string, string, double>>();
+            foreach (IGrouping<string, IISRequestDetails> group in requestGroups)
+            {               
+                scenarios.Add(new Tuple<string, string, double>(group.Key, Convert.ToInt32((group.Average(item => item.RequestsPerHour) / 1000)) + "K" , Convert.ToInt32(group.Average(item => item.AvgTimeTakenInMilliSeconds))));
+            }
+           
+            return PartialView("~/Views/SLA/SLA_RequestDetails.cshtml", scenarios);
         }
 
         [HttpGet]
