@@ -25,11 +25,29 @@ namespace NuGet.Services.Dashboard.Common
     
     public class RefreshElmahError
     {
-        public string ElmahAccountCredentials { get; set; }
-        public int LastNHours { get; set; }
-        public CloudStorageAccount StorageAccount { get; set; }
-        public string ContainerName { get; set; }
-        public string ConnectionString { get; set; }
+        private string ElmahAccountCredentials { get; set; }
+        private int LastNHours { get; set; }
+        private CloudStorageAccount StorageAccount { get; set; }
+        private string ContainerName { get; set; }
+        private string ConnectionString { get; set; }
+
+        public RefreshElmahError(string ConnectionString, string ContainerName, int LastNHours, string ElmahAccountCredentials)
+        {
+            this.ConnectionString = ConnectionString;
+            this.ContainerName = ContainerName;
+            this.LastNHours = LastNHours;
+            this.ElmahAccountCredentials = ElmahAccountCredentials;
+        }
+
+        public RefreshElmahError(CloudStorageAccount StorageAccount, string ContainerName, int LastNHours, string ElmahAccountCredentials)
+        {
+            this.StorageAccount = StorageAccount;
+            this.ContainerName = ContainerName;
+            this.LastNHours = LastNHours;
+            this.ElmahAccountCredentials = ElmahAccountCredentials;
+        }
+
+
 
 
         public List<ElmahError> ExecuteRefresh()

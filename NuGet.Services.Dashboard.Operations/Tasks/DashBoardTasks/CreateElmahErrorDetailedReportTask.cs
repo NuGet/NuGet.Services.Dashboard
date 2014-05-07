@@ -36,12 +36,8 @@ namespace NuGetGallery.Operations
             AlertThresholds thresholds = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
             
             List<ElmahError> listOfErrors = new List<ElmahError>();
-            RefreshElmahError RefreshExecute = new RefreshElmahError();
-            RefreshExecute.ElmahAccountCredentials = ElmahAccountCredentials;
-            RefreshExecute.LastNHours = LastNHours;
-            RefreshExecute.ContainerName = ContainerName;
-            RefreshExecute.StorageAccount = StorageAccount;
-
+            RefreshElmahError RefreshExecute = new RefreshElmahError(StorageAccount, ContainerName, LastNHours, ElmahAccountCredentials);
+           
             listOfErrors = RefreshExecute.ExecuteRefresh();
 
             foreach (ElmahError error in listOfErrors)

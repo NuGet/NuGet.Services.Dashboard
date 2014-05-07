@@ -17,6 +17,7 @@ namespace NuGetDashboard
         public static string currentEnvironmentName = "Prod";
         protected void Application_Start()
         {
+            // comment this line, since Nugetgallery MVC conflict with Dashboard MVC
          //   AreaRegistration.RegisterAllAreas();
 
             WebApiConfig.Register(GlobalConfiguration.Configuration);

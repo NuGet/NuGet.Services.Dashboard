@@ -74,11 +74,11 @@ namespace NuGetDashboard.Controllers.Diagnostics
         public ActionResult RefreshElmah() 
         {
             List<ElmahError> listOfEvents = new List<ElmahError>();
-            RefreshElmahError RefreshExecute = new RefreshElmahError();
-            RefreshExecute.ElmahAccountCredentials = ConfigurationManager.AppSettings["Prod0ElmahAccountCredentials"];
-            RefreshExecute.LastNHours = 12;
-            RefreshExecute.ContainerName = ConfigurationManager.AppSettings["RefreshElmahContainerName"];
-            RefreshExecute.ConnectionString = ConfigurationManager.AppSettings["RefreshElmahStorageAccount"];
+            RefreshElmahError RefreshExecute = new RefreshElmahError(ConfigurationManager.AppSettings["StorageConnection"],
+                                                                     ConfigurationManager.AppSettings["Int0StorageContainer"], 
+                                                                     1, 
+                                                                     ConfigurationManager.AppSettings["Prod0ElmahAccountCredentials"]);
+            
 
             listOfEvents = RefreshExecute.ExecuteRefresh();
 
