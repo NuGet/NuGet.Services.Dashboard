@@ -71,6 +71,22 @@ namespace NuGetDashboard.Controllers.Diagnostics
             return PartialView("~/Views/TroubleShooting/TroubleShooting_ElmahErrorSummary.cshtml", listOfEvents);
         }
 
+        public ActionResult RefreshDatabaseEvent()
+        {
+            List<DatabaseEvent> listOfEvents = new List<DatabaseEvent>();
+            RefreshDB Refresh = new RefreshDB(ConfigurationManager.AppSettings["DBConnectionString"], 1);
+            listOfEvents = Refresh.RefreshDatabaseEvent();
+            return PartialView("~/Views/TroubleShooting/TroubleShooting_DBEventsSummary.cshtml", listOfEvents);
+        }
+
+        public ActionResult RefreshDatabaseRequest()
+        {
+            List<DatabaseRequest> listOfRequests = new List<DatabaseRequest>();
+            RefreshDB Refresh = new RefreshDB(ConfigurationManager.AppSettings["DBConnectionString"], 1);
+            listOfRequests = Refresh.RefreshDatebaseRequest();
+
+            return PartialView("~/Views/TroubleShooting/TroubleShooting_DBRequestsSummary.cshtml", listOfRequests);
+        }
         public ActionResult RefreshElmah() 
         {
             List<ElmahError> listOfEvents = new List<ElmahError>();
