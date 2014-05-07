@@ -13,13 +13,15 @@ namespace NuGet.Services.Dashboard.Common
 {
     public class RefreshDB
     {
-       // public CloudStorageAccount storageAccount { get; set; }
-       
-      //  public string ContainerName { get; set; }
+        private string ConnectionString { get; set; }
 
-        public string ConnectionString { get; set; }
+        private int LastNHours { get; set; }
 
-        public int LastNHours { get; set; }
+        public RefreshDB(string ConnectionString, int LastNHours)
+        {
+            this.ConnectionString = ConnectionString;
+            this.LastNHours = LastNHours;
+        }
 
         public List<DatabaseEvent> RefreshDatabaseEvent() 
         {
@@ -36,7 +38,6 @@ namespace NuGet.Services.Dashboard.Common
                 }
 
             }
-            //return usageSeconds;
         }
 
         public List<DatabaseRequest> RefreshDatebaseRequest() 
@@ -51,7 +52,6 @@ namespace NuGet.Services.Dashboard.Common
                     return requests.ToList();
                 }
             }   
-           // return null;
         }
     }
 }

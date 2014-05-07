@@ -74,10 +74,7 @@ namespace NuGetDashboard.Controllers.Diagnostics
         public ActionResult RefreshDatabaseEvent()
         {
             List<DatabaseEvent> listOfEvents = new List<DatabaseEvent>();
-            RefreshDB Refresh = new RefreshDB();
-            Refresh.ConnectionString = ConfigurationManager.AppSettings["DBConnectionString"];
-            Refresh.LastNHours = 1;
-
+            RefreshDB Refresh = new RefreshDB(ConfigurationManager.AppSettings["DBConnectionString"], 1);
             listOfEvents = Refresh.RefreshDatabaseEvent();
             return PartialView("~/Views/TroubleShooting/TroubleShooting_DBEventsSummary.cshtml", listOfEvents);
         }
@@ -85,10 +82,7 @@ namespace NuGetDashboard.Controllers.Diagnostics
         public ActionResult RefreshDatabaseRequest()
         {
             List<DatabaseRequest> listOfRequests = new List<DatabaseRequest>();
-            RefreshDB Refresh = new RefreshDB();
-            Refresh.ConnectionString = ConfigurationManager.AppSettings["DBConnectionString"];
-            Refresh.LastNHours = 1;
-
+            RefreshDB Refresh = new RefreshDB(ConfigurationManager.AppSettings["DBConnectionString"], 1);
             listOfRequests = Refresh.RefreshDatebaseRequest();
 
             return PartialView("~/Views/TroubleShooting/TroubleShooting_DBRequestsSummary.cshtml", listOfRequests);
