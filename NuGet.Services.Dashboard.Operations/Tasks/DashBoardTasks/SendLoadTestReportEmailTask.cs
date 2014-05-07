@@ -31,7 +31,10 @@ namespace NuGetGallery.Operations
         [Option("EndTime", AltName = "end")]
         public int EndTime { get; set; }
 
-        [Option("RequestsPerHour", AltName = "rph")]
+        [Option("Date", AltName = "date")]
+        public string Date { get; set; }
+
+              
         public int LoadTestRequestPerHour { get; set; }
 
         private HtmlTextWriter metricWriter = new HtmlTextWriter(new StringWriter());
@@ -39,13 +42,11 @@ namespace NuGetGallery.Operations
         private string prodContainerName = "test";
         private string intContainerName = "int0";
         public override void ExecuteCommand()
-        {           
-            string dateSuffix = String.Format("{0:MMdd}", DateTime.Now.AddDays(-1));
-            string dateSuffixForPreviousDay = String.Format("{0:MMdd}", DateTime.Now.AddDays(-1));
+        {
+            string dateSuffix = Date;          
             AddMetricToReport("DB Requests", GetMetricValuesForInt("DBRequests" + dateSuffix + ".json"), 25);
             AddMetricToReport("DB Connections", GetMetricValuesForInt("DBConnections" + dateSuffix + ".json"), 50);
-            AddMetricToReport("DB Suspended Requests", GetMetricValuesForInt("DBSuspendedRequests" + dateSuffix + ".json"), 10);
-            //AddMetricToReport("IISRequests", GetMetricValuesForInt("IISRequests" + dateSuffix + ".json"), 500000);
+            AddMetricToReport("DB Suspended Requests", GetMetricValuesForInt("DBSuspendedRequests" + dateSuffix + ".json"), 10);          
             AddMetricToReport("Gallery Instance Count", GetMetricValuesForInt("nuget-int-0-v2galleryInstanceCount" + dateSuffix + "HourlyReport.json"), 3);            
 
             List<Tuple<string,string,double>> scenarios = GetScenarioValuesFromBlob("IISRequestDetails" + dateSuffix + ".json", intContainerName, StartTime, EndTime);
@@ -75,10 +76,7 @@ namespace NuGetGallery.Operations
                 {
                     values.Add(Convert.ToInt32(keyValuePair.Value));
                 }
-            }
-            Console.WriteLine("Average : {0}", values.Average());
-            Console.WriteLine("Max : {0}", values.Max());
-            Console.WriteLine("Min: {0}", values.Min());
+            }         
             return values;
         }
 
@@ -101,7 +99,10 @@ namespace NuGetGallery.Operations
             foreach(IGrouping<string,IISRequestDetails> group in requestGroups)
             {
                 if (group.Key.Contains("Over all requests"))
+                {
+                    LoadTestRequestPerHour = Convert.ToInt32((group.Average(item => item.RequestsPerHour)));
                     continue;
+                }
                 scenarios.Add(new Tuple<string, string, double>(group.Key, Convert.ToInt32((group.Average(item => item.RequestsPerHour)/LoadTestRequestPerHour)*100) + "%", group.Average(item => item.AvgTimeTakenInMilliSeconds)));
             }
             return scenarios;
@@ -185,7 +186,7 @@ namespace NuGetGallery.Operations
             string mailBody = sr.ReadToEnd();
             sr.Close();
             string duration = (EndTime - StartTime).ToString();
-            duration = duration.Insert(duration.Length-3,":");
+            duration = duration.Insert(duration.Length-2,":");
             mailBody = mailBody.Replace("{Duration}",duration + "hours");
             mailBody = mailBody.Replace("{rph}", (LoadTestRequestPerHour / 1000).ToString());
             mailBody = mailBody.Replace("{Metrics}", metricWriter.InnerWriter.ToString());
