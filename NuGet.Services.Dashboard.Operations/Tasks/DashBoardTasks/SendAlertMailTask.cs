@@ -105,7 +105,7 @@ namespace NuGetGallery.Operations
 
         private string GetMailContent()
         {
-            StreamReader sr = new StreamReader(@"External\DashboardAlertMail.htm");
+            StreamReader sr = new StreamReader(@"ScriptsAndReferences\DashboardAlertMail.htm");
             string mailBody = sr.ReadToEnd();
             sr.Close();
             mailBody = mailBody.Replace("{AlertSubjectLine}", AlertSubject);

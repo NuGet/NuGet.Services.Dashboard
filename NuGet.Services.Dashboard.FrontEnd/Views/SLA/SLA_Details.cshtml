@@ -3,21 +3,17 @@
     <span class="menu-pull"></span>
     <div class="menu-pull-bar"></div>    
     <ul>
-        <li class="active"><a href="#Requests">Requests Weekly Trend</a></li>
+        
+        <li class="active"><a href="#RequestsToday">Today's requests</a></li>
+        <li ><a href="#RequestsThisWeek">Requests Weekly Trend</a></li>
         <li><a href="#Errors">Errors Weekly Trend</a></li>
-        <li><a href="#DataBase">Database Weekly Trend</a></li>
+      
     </ul>    
     <div class="frames">
-        <div class="frame active" id="Requests">@Html.Action("RequestsThisWeek", "SLA");</div>
+        <div class="frame active" id="RequestsToday">@Html.Action("RequestsToday", "SLA");</div>
+        <div class="frame" id="RequestsThisWeek">@Html.Action("RequestsThisWeek", "SLA");</div>
         <div class="frame" id="Errors">@Html.Action("ErrorsThisWeek", "SLA");</div>
-        <div class="frame" id="DataBase">
-            <div>
-                @Html.Action("DBRequestsThisWeek", "ResourceMonitoring")
-            </div>
-            <div>
-                @Html.Action("DBConnectionsThisWeek", "ResourceMonitoring")
-            </div>
-        </div>
+       
     </div>
 
 </div>
