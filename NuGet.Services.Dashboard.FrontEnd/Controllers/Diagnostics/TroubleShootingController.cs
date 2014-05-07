@@ -7,6 +7,7 @@ using System.Web;
 using System.Web.Mvc;
 using NuGet.Services.Dashboard.Common;
 using System.Web.Script.Serialization;
+using System.Configuration;
 
 namespace NuGetDashboard.Controllers.Diagnostics
 {
@@ -67,6 +68,20 @@ namespace NuGetDashboard.Controllers.Diagnostics
             {
                 listOfEvents = new JavaScriptSerializer().Deserialize<List<ElmahError>>(content);
             }
+            return PartialView("~/Views/TroubleShooting/TroubleShooting_ElmahErrorSummary.cshtml", listOfEvents);
+        }
+
+        public ActionResult RefreshElmah() 
+        {
+            List<ElmahError> listOfEvents = new List<ElmahError>();
+            RefreshElmahError RefreshExecute = new RefreshElmahError(ConfigurationManager.AppSettings["StorageConnection"],
+                                                                     ConfigurationManager.AppSettings["Int0StorageContainer"], 
+                                                                     1, 
+                                                                     ConfigurationManager.AppSettings["Prod0ElmahAccountCredentials"]);
+            
+
+            listOfEvents = RefreshExecute.ExecuteRefresh();
+
             return PartialView("~/Views/TroubleShooting/TroubleShooting_ElmahErrorSummary.cshtml", listOfEvents);
         }
     }
