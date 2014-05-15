@@ -122,7 +122,11 @@ namespace NuGetGallery.Operations
             int exitCode = InvokeNugetProcess(@"-i:IISW3C -o:CSV " + @"""" +query + @"""" + " -stats:OFF", out standardError, out standardOutput);
             Console.WriteLine(exitCode);
             Console.WriteLine(standardOutput);
-            string metricValue = standardOutput.Trim();
+            string metricValue = "0";
+            if (!string.IsNullOrEmpty(standardOutput))
+            {
+                metricValue = standardOutput.Trim();
+            }
             return Convert.ToInt32(metricValue);           
         }
 
