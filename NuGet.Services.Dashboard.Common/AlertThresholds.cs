@@ -22,6 +22,9 @@ namespace NuGet.Services.Dashboard.Common
         public int PurgeStatisticsThresholdInDays = 8; //Purge stats job purges records older than 7 days. Settings the threshold to 8 to provide some buffer.
         public int PendingThresholdInHours = 3; //Specifies the limit on the no. of hours a package can remain in Pending state.
         public int BackupPackagesThresholdInHours = 2; //Specifies the limit lag between "packages" container and "backup" container.
+        public int FailoverDBAgeThresholdInMinutes = 180; //Specifies the lag between the primary DC's database and failover database in minutes.
+        public int FailoverDBAndBlobLag = 20; //Specifies the allowed lag between failover DB and blob in terms of number of packages.
+
 
 
     }
