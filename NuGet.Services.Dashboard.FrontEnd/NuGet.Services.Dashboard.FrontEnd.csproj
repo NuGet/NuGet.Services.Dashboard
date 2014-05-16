@@ -399,6 +399,8 @@
     <Content Include="Views\TroubleShooting\TroubleShooting_DBRequestsSummary.cshtml" />
     <Content Include="Views\ResourceMonitoring\ResourceMonitoring_DBSizeDetails.cshtml" />
     <Content Include="Views\SLA\SLA_RequestDetails.cshtml" />
+    <Content Include="Views\Trending\VsTrend.cshtml" />
+    <Content Include="Views\Trending\OperationTrend.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

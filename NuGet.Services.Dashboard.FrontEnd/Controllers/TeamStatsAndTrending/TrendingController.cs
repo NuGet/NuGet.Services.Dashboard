@@ -1,12 +1,14 @@
 ﻿using DotNet.Highcharts;
 using DotNet.Highcharts.Helpers;
 using DotNet.Highcharts.Options;
+using NuGet.Services.Dashboard.Common;
 using NuGetDashboard.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Script.Serialization;
 
 namespace NuGetDashboard.Controllers.Trending
 {
@@ -81,6 +83,30 @@ namespace NuGetDashboard.Controllers.Trending
                 return Json("N/A");
             }
         }
+        
+        [HttpGet]
+        public ActionResult VsTrend()
+        {
+            Dictionary<string, string> content = BlobStorageService.GetDictFromBlob("VsTrend" + "120Day.json");
+            return PartialView("~/Views/Trending/VsTrend.cshtml", content);
+        }
+
+        [HttpGet]
+        public ActionResult OperationTrend()
+        {
+            //var content = BlobStorageService.Load("OptTrend" + "120Day.json");
+            //List<OperationRequest> listOfEvents = new List<OperationRequest>();
+            //if (content != null)
+            //{
+            //    listOfEvents = new JavaScriptSerializer().Deserialize<List<OperationRequest>>(content);
+            //}
+            //return PartialView("~/Views/Trending/OperationTrend.cshtml", listOfEvents);
+            string[] blobNames = { "Install120Day", "(unknown)120Day", "Install-Dependency120Day", "Restore120Day", "Restore-Dependency120Day", "Update120Day", "Update-Dependency120Day" };
+
+            //string[] blobNames = new string[] { "feed.raw.packages.listHourlyReport", "package.restore.downloadHourlyReport", "package.restore.lookupHourlyReport", "feed.top.30.by.downloadsHourlyReport", "packages.page.searchHourlyReport" };
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "OperationForLast120Day",24,800));
+        }
+
 
     }
 }

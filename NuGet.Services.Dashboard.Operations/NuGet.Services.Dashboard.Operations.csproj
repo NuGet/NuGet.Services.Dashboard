@@ -153,6 +153,7 @@
     <Compile Include="Tasks\DashBoardTasks\CreateSearchIndexingStatusReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateStatsHourlyReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateStatsMonthlyReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\CreateVsTrendingReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateWADPerformanceDiagnosticsReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\RunBackGroundChecksForWorkerJobs.cs" />
     <Compile Include="Tasks\DashBoardTasks\SendAlertMailTask.cs" />

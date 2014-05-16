@@ -5,9 +5,14 @@
     <ul>
         <li class="active"><a href="#Packages">Packages Weekly Trend</a></li>
         <li><a href="#UsersThisWeek">Users Weekly Trend</a></li>
+        <li><a href="#VsTrending">VsTrend</a></li>
+        <li><a href="#OperationTrending">OperationTrend</a></li>
     </ul>    
     <div class="frames">
         <div class="frame active" id="Packages">@Html.Action("PackagesThisWeek", "Trending");</div>
         <div class="frame" id="UsersThisWeek">@Html.Action("UsersThisWeek", "Trending");</div>
+        <div class="frame" id="VsTrending">@Html.Action("VsTrend","Trending")</div>
+        <div class="frame" id="OperationTrending">@Html.Action("OperationTrend", "Trending")</div>
+
     </div>
 </div>
