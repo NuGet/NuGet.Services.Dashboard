@@ -88,7 +88,7 @@ namespace NuGetGallery.Operations
                     {
                         AlertSubject = "Failover Datacentre alert activated for Incomplete Import",
                         Details = outputMessage,
-                        AlertName = "Alert for ImportDatabaseToFailoverDC",
+                        AlertName = "Alert for InCompleteDBImportInFailoverDC",
                         Component = "ImportDatabaseToFailOverDC"
                     }.ExecuteCommand();
                 }

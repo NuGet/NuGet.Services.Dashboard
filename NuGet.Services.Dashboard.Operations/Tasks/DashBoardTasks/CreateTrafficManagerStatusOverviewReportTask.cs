@@ -46,8 +46,31 @@ namespace NuGetGallery.Operations
             //Schema of the response would be as specified in http://msdn.microsoft.com/en-us/library/azure/hh758251.aspx
             Console.WriteLine(respose);
             using (var reader = new StreamReader(respose.GetResponseStream()))
-            {
-                Console.WriteLine(reader.ReadToEnd());
+            {               
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(reader.ReadToEnd());
+                XmlNodeList parentNode = doc.GetElementsByTagName("Endpoint", "http://schemas.microsoft.com/windowsazure");
+                List<Tuple<string, string>> endpointValues = new List<Tuple<string, string>>();
+                foreach (XmlNode node in parentNode)
+                {
+                    string endpointName = node.ChildNodes[0].InnerText;
+                    string endpointStatus = node.ChildNodes[3].InnerText;                             
+                    Console.WriteLine(string.Format("End point name {0}, status {1}", endpointName, endpointStatus));
+                    endpointValues.Add(new Tuple<string, string>(endpointName, endpointStatus));
+                    if(!endpointStatus.Equals("Online",StringComparison.OrdinalIgnoreCase))
+                    {
+                        new SendAlertMailTask
+                        {
+                            AlertSubject = string.Format("Traffic manager endpoint alert activated for {0}",endpointName),
+                            Details = string.Format("The status of the endpoint {0} monitoring by traffic manager {1} is {2}", endpointName, ProfileName, endpointStatus),
+                            AlertName = "Alert for TrafficManagerEndpoint",
+                            Component = "TrafficManager"
+                        }.ExecuteCommand();
+                    }
+                   
+                }
+                     JArray reportObject = ReportHelpers.GetJson(endpointValues);
+                     ReportHelpers.CreateBlob(StorageAccount, "TrafficManagerStatus.json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
             }
         }
 
