@@ -154,15 +154,21 @@ namespace NuGetGallery.Operations
         /// <returns></returns>
         private  int GetCurrentInstanceCountInGallery()
         {
-           
-           Dictionary<string,string> instanceCountDict =  ReportHelpers.GetDictFromBlob(StorageAccount,  ServiceName + "InstanceCount" + string.Format("{0:MMdd}", DateTime.Now) + "HourlyReport.json", ContainerName);
-           if (instanceCountDict != null && instanceCountDict.Count > 0)
-             {
-                 return Convert.ToInt32(instanceCountDict.Values.ElementAt(instanceCountDict.Count - 1));
-             }            
-           else
+            try
             {
-               return 3; //default instance count in Gallery
+
+                Dictionary<string, string> instanceCountDict = ReportHelpers.GetDictFromBlob(StorageAccount, ServiceName + "InstanceCount" + string.Format("{0:MMdd}", DateTime.Now) + "HourlyReport.json", ContainerName);
+                if (instanceCountDict != null && instanceCountDict.Count > 0)
+                {
+                    return Convert.ToInt32(instanceCountDict.Values.ElementAt(instanceCountDict.Count - 1));
+                }
+                else
+                {
+                    return 3; //default instance count in Gallery
+                }
+            }catch
+            {
+                return 3; //return 3 by default as we don't want to fail if the expected blob is not present.
             }
         }
     }
