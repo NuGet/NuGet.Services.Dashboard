@@ -16,17 +16,6 @@ namespace NuGetGallery.Operations
     {
         [Option("LastNDays", AltName = "n")]
         public int LastNDays { get; set; }
-
-        private string[] VsQuery = {"10.0","11.0","12.0"};
-        private string[] Operation = { "Install", "(unknown)", "Install-Dependency", "Restore", "Restore-Dependency", "Update", "Update-Dependency" };
-
-//        private const string sqlQueryForOperation = @"SELECT [Operation], sum([DownloadCount]) as download
-//                                                      FROM  [dbo].[Dimension_Date] join [dbo].[Fact_Download] 
-//                                                      on [dbo].[Fact_Download].[Dimension_Date_Id] = [dbo].[Dimension_Date].[Id]
-//                                                      join [dbo].[Dimension_Operation]
-//                                                      on [dbo].[Fact_Download].[Dimension_Operation_Id] = [dbo].[Dimension_Operation].[Id]
-//                                                      where [dbo].[Dimension_Date].[Date] >= '{0}'
-//                                                      group by [Operation]";
         private const string sqlQueryForOperation = @"SELECT sum([DownloadCount]) 
                                                     FROM  [dbo].[Dimension_Date] join [dbo].[Fact_Download] 
                                                     on [dbo].[Fact_Download].[Dimension_Date_Id] = [dbo].[Dimension_Date].[Id]
@@ -34,7 +23,7 @@ namespace NuGetGallery.Operations
                                                     on [dbo].[Fact_Download].[Dimension_UserAgent_Id] = [dbo].[Dimension_UserAgent].[Id]
                                                     join [dbo].[Dimension_Operation]
                                                     on [dbo].[Fact_Download].[Dimension_Operation_Id] = [dbo].[Dimension_Operation].[Id]
-                                                    where [ClientMajorVersion] = 2 and [ClientMinorVersion] = {0} and [Operation] = '{1}' and [dbo].[Dimension_Date].[Date] >= '{2}'";
+                                                    where [ClientMajorVersion] = {0} and [ClientMinorVersion] = {1} and [Operation] = '{2}' and [dbo].[Dimension_Date].[Date] >= '{3}'";
 
         private const string sqlQueryForVS = @"SELECT sum([DownloadCount]) 
                                                 FROM  [dbo].[Dimension_Date] join [dbo].[Fact_Download] 
@@ -52,6 +41,7 @@ namespace NuGetGallery.Operations
 
         private void CreateReportForVSTask()
         {
+            string[] VsQuery = new JavaScriptSerializer().Deserialize<string[]>(ReportHelpers.Load(StorageAccount, "VsVersion.json", ContainerName));
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
             {
                 using (var dbExecutor = new SqlExecutor(sqlConnection))
@@ -85,6 +75,10 @@ namespace NuGetGallery.Operations
         private void CreateReportForOperationTask()
         {
             DateTime date = DateTime.UtcNow.AddDays(-LastNDays);
+            string[] agentVersion = new JavaScriptSerializer().Deserialize<string[]>(ReportHelpers.Load(StorageAccount, "agentVersion.json", ContainerName));
+            string[] Operation = new JavaScriptSerializer().Deserialize<string[]>(ReportHelpers.Load(StorageAccount, "OperationType.json", ContainerName));
+           
+
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
             {
                 using (var dbExecutor = new SqlExecutor(sqlConnection))
@@ -94,17 +88,20 @@ namespace NuGetGallery.Operations
                     foreach (string opt in Operation)
                     {
                         List<agentRequest> result = new List<agentRequest>();
-                        for (int version = 5; version < 9; version++)
+                        foreach (string version in agentVersion)
                         {
+                       
+                            string major = version[0].ToString();
+                            string minor = version[2].ToString();
                             try
                             {
-                                var requests = dbExecutor.Query<Int32>(string.Format(sqlQueryForOperation, version, opt, date.ToString("yyyy-MM-dd"))).SingleOrDefault();
-                                result.Add(new agentRequest("2." + version.ToString(), requests));
+                                var requests = dbExecutor.Query<Int32>(string.Format(sqlQueryForOperation, major, minor, opt, date.ToString("yyyy-MM-dd"))).SingleOrDefault();
+                                result.Add(new agentRequest(version, requests));
                             }
 
                             catch
                             {
-                                result.Add(new agentRequest("2." + version.ToString(), 0));
+                                result.Add(new agentRequest(version, 0));
                             }
                         }
 

@@ -94,17 +94,15 @@ namespace NuGetDashboard.Controllers.Trending
         [HttpGet]
         public ActionResult OperationTrend()
         {
-            //var content = BlobStorageService.Load("OptTrend" + "120Day.json");
-            //List<OperationRequest> listOfEvents = new List<OperationRequest>();
-            //if (content != null)
-            //{
-            //    listOfEvents = new JavaScriptSerializer().Deserialize<List<OperationRequest>>(content);
-            //}
-            //return PartialView("~/Views/Trending/OperationTrend.cshtml", listOfEvents);
-            string[] blobNames = { "Install120Day", "(unknown)120Day", "Install-Dependency120Day", "Restore120Day", "Restore-Dependency120Day", "Update120Day", "Update-Dependency120Day" };
+            int hour = 30;
+            string[] Operation = new JavaScriptSerializer().Deserialize<string[]>(BlobStorageService.Load("OperationType.json"));
 
-            //string[] blobNames = new string[] { "feed.raw.packages.listHourlyReport", "package.restore.downloadHourlyReport", "package.restore.lookupHourlyReport", "feed.top.30.by.downloadsHourlyReport", "packages.page.searchHourlyReport" };
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "OperationForLast120Day",24,800));
+            List<string> blobNames = new List<string>();
+            foreach (string opt in Operation)
+            {
+                blobNames.Add(opt + hour + "Day");
+            }
+           return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames.ToArray(), "OperationForLast"+ hour +"Day",24,800));
         }
 
 
