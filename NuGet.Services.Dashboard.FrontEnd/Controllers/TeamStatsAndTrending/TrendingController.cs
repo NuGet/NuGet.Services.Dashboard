@@ -108,7 +108,7 @@ namespace NuGetDashboard.Controllers.Trending
             {
                 blobNames.Add(opt + hour + "Day");
             }
-           return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames.ToArray(), "Ohter_Operation_Trend_For_Last_"+ hour +"_Day",24,500));
+           return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames.ToArray(), "Download_Operations_Trend_For_Last_"+ hour +"_Day",24,500));
         }
 
         [HttpGet]
