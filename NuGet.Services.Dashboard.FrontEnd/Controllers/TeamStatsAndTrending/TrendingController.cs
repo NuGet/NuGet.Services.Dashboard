@@ -85,16 +85,16 @@ namespace NuGetDashboard.Controllers.Trending
         }
         
         [HttpGet]
-        public ActionResult VsTrend()
+        public ActionResult VsDownloadTrend()
         {
             Dictionary<string, string> content = BlobStorageService.GetDictFromBlob("VsTrend" + "120Day.json");
-            return PartialView("~/Views/Trending/VsTrend.cshtml", content);
+            return PartialView("~/Views/Trending/VsDownloadTrend.cshtml", content);
         }
 
         [HttpGet]
-        public ActionResult OperationTrend()
+        public ActionResult DonwloadOperationTrend()
         {
-            return PartialView("~/Views/Trending/OperationTrend.cshtml");
+            return PartialView("~/Views/Trending/DonwloadOperationTrend.cshtml");
         }
         
         [HttpGet]
