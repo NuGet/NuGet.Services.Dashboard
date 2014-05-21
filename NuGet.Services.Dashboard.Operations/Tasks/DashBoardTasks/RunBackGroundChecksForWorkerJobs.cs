@@ -23,7 +23,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
     [Command("RunBackGroundChecksForWorkerJobs", "Runs background checks for the worker jobs", AltName = "rbgc")]
     public class RunBackGroundChecksForWorkerJobs : DatabaseAndStorageTask
     {
-        private const string BackupPrefix = "Backup_";
+        private const string BackupPrefix = "backup_";
         private const string PackagesContainerName = "packages";
         private const string BackupPackagesContainerName = "ng-backups";
         public AlertThresholds thresholdValues;
