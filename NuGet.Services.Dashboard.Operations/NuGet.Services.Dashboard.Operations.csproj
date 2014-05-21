@@ -154,7 +154,9 @@
     <Compile Include="Tasks\DashBoardTasks\CreateStatsHourlyReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateStatsMonthlyReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateVsTrendingReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\CreateTrafficManagerStatusOverviewReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateWADPerformanceDiagnosticsReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\RunBackgroundCheckForFailoverDC.cs" />
     <Compile Include="Tasks\DashBoardTasks\RunBackGroundChecksForWorkerJobs.cs" />
     <Compile Include="Tasks\DashBoardTasks\SendAlertMailTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\SendLoadTestReportEmailTask.cs" />
