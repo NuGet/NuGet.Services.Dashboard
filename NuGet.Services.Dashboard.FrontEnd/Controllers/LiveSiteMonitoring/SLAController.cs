@@ -16,8 +16,6 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
     /// Provides details about the server side SLA : Error rate ans requests per hour.
     public class SLAController : Controller
     {
-        
-        private  DotNet.Highcharts.Highcharts charttest;
         public ActionResult Index()
         {            
             return PartialView("~/Views/SLA/SLA_Index.cshtml" );
@@ -45,19 +43,17 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             for (int i = 0; i < 8;i++)
                    blobNames[i] = "IISRequests" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow().AddDays(-i));
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "RequestsPerHour", 24, 800));
-
         }
 
         [HttpGet]
         public ActionResult RequestsToday()
         {
             List<Tuple<string, string, double>> scenarios = GetRequestsData(String.Format("{0:MMdd}", DateTime.Now));
-           
             return PartialView("~/Views/SLA/SLA_RequestDetails.cshtml", scenarios);
         }
 
         [HttpGet]
-        public ActionResult RequestTrendThisWeek()
+        public ActionResult AverageRequestPerHourTrendThisWeek()
         {
             List<string> value = new List<string>();
             Dictionary<string, List<object>> request = new Dictionary<string, List<object>>();
@@ -74,7 +70,6 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                     {
                         request[scenarios[j].Item1].Add(scenarios[j].Item2);
                     }
-
                     else
                     {
                         List<object> Yvalue = new List<object>();
@@ -82,27 +77,22 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                         request.Add(scenarios[j].Item1, Yvalue);
                     }
                 }
-
             }
            
-     
             foreach (KeyValuePair<string, List<object>> each in request)
             {
-                
                 seriesSet.Add(new DotNet.Highcharts.Options.Series
                 {
                     Data = new Data(each.Value.ToArray()),
                     Name = each.Key.Replace(" ","_")
                 });
             }
-            
-          
-            DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, value, "WeeklyRequestTrend", 500);
+            DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, value, "WeeklyAvgRequestPerHourTrend", 500);
             return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
         }
 
         [HttpGet]
-        public ActionResult TimeTrendThisWeek()
+        public ActionResult AverageTimeTakenInMsTrendThisWeek()
         {
             List<string> value = new List<string>();
             Dictionary<string, List<object>> time = new Dictionary<string, List<object>>();
@@ -117,7 +107,6 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                 {
                     if (time.ContainsKey(scenarios[j].Item1))
                     {
-
                         time[scenarios[j].Item1].Add(scenarios[j].Item3.ToString());
                     }
 
@@ -128,20 +117,17 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                         time.Add(scenarios[j].Item1, Yvalue);
                     }
                 }
-
             }
-
 
             foreach (KeyValuePair<string, List<object>> each in time)
             {
-
                 seriesSet.Add(new DotNet.Highcharts.Options.Series
                 {
                     Data = new Data(each.Value.ToArray()),
                     Name = each.Key.Replace(" ", "_")
                 });
             }
-            DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, value, "WeeklyTimeTrend", 500);
+            DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, value, "WeeklyAvgTimeInMsTrend", 500);
             return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
         }
 
