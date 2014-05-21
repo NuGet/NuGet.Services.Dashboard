@@ -83,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlertThresholds.cs" />
+    <Compile Include="VsTrending.cs" />
     <Compile Include="RefreshElmahError.cs" />
     <Compile Include="DatabaseEvent.cs" />
     <Compile Include="DatabaseIndex.cs" />

@@ -1,12 +1,14 @@
 ﻿using DotNet.Highcharts;
 using DotNet.Highcharts.Helpers;
 using DotNet.Highcharts.Options;
+using NuGet.Services.Dashboard.Common;
 using NuGetDashboard.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Script.Serialization;
 
 namespace NuGetDashboard.Controllers.Trending
 {
@@ -81,6 +83,42 @@ namespace NuGetDashboard.Controllers.Trending
                 return Json("N/A");
             }
         }
+        
+        [HttpGet]
+        public ActionResult VsDownloadTrend()
+        {
+            Dictionary<string, string> content = BlobStorageService.GetDictFromBlob("VsTrend" + "120Day.json");
+            return PartialView("~/Views/Trending/VsDownloadTrend.cshtml", content);
+        }
+
+        [HttpGet]
+        public ActionResult DonwloadOperationTrend()
+        {
+            return PartialView("~/Views/Trending/DonwloadOperationTrend.cshtml");
+        }
+        
+        [HttpGet]
+        public ActionResult OtherOperationTrend()
+        {
+            int hour = 120;
+            string[] Operation = new JavaScriptSerializer().Deserialize<string[]>(BlobStorageService.Load("OperationType.json"));
+
+            List<string> blobNames = new List<string>();
+            foreach (string opt in Operation)
+            {
+                blobNames.Add(opt + hour + "Day");
+            }
+           return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames.ToArray(), "Other_Operations_Trend_For_Last_"+ hour +"_Day",24,700));
+        }
+
+        [HttpGet]
+        public ActionResult RestoreTrend()
+        {
+            int hour = 120;
+            string blobName = "Restore" + hour + "Day";
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobName, "Restore_Trend_For_Last_"+hour+"_Day", 24, 700));
+        }
+
 
     }
 }

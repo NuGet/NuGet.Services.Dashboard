@@ -400,6 +400,8 @@
     <Content Include="Views\TroubleShooting\TroubleShooting_DBRequestsSummary.cshtml" />
     <Content Include="Views\ResourceMonitoring\ResourceMonitoring_DBSizeDetails.cshtml" />
     <Content Include="Views\SLA\SLA_RequestDetails.cshtml" />
+    <Content Include="Views\Trending\VsDownloadTrend.cshtml" />
+    <Content Include="Views\Trending\DonwloadOperationTrend.cshtml" />
     <Content Include="Views\UpTime\TrafficManager_Index.cshtml" />
   </ItemGroup>
   <ItemGroup>

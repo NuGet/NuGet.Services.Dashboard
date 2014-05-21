@@ -1,13 +1,18 @@
 ﻿<script src="~/Scripts/pagecontrol.js" type="text/javascript"></script>
-<div class="page-control" data-role="page-control" style="width: 800px;">   
+<div class="page-control" data-role="page-control" style="width: 900px;">   
     <span class="menu-pull"></span>
     <div class="menu-pull-bar"></div>    
     <ul>
-        <li class="active"><a href="#Packages">Packages Weekly Trend</a></li>
+        <li class="active"><a href="#Packages">Packages Upload Weekly Trend</a></li>
         <li><a href="#UsersThisWeek">Users Weekly Trend</a></li>
+        <li><a href="#VsTrending">VS Download Trend</a></li>
+        <li><a href="#OperationTrending">Packages Download Operation Trend</a></li>
     </ul>    
     <div class="frames">
         <div class="frame active" id="Packages">@Html.Action("PackagesThisWeek", "Trending");</div>
         <div class="frame" id="UsersThisWeek">@Html.Action("UsersThisWeek", "Trending");</div>
+        <div class="frame" id="VsTrending">@Html.Action("VsDownloadTrend", "Trending")</div>
+        <div class="frame" id="OperationTrending">@Html.Action("DonwloadOperationTrend", "Trending")</div>
+
     </div>
 </div>
