@@ -92,15 +92,13 @@ namespace NuGetDashboard.Controllers.Trending
         }
 
         [HttpGet]
-        public ActionResult OptTrend()
+        public ActionResult OperationTrend()
         {
-            return PartialView("~/Views/Trending/OptTrend.cshtml");
+            return PartialView("~/Views/Trending/OperationTrend.cshtml");
         }
         
-        
-        
         [HttpGet]
-        public ActionResult OperationTrend()
+        public ActionResult OtherOperationTrend()
         {
             int hour = 30;
             string[] Operation = new JavaScriptSerializer().Deserialize<string[]>(BlobStorageService.Load("OperationType.json"));
