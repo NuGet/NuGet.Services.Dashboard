@@ -45,10 +45,7 @@ namespace NuGetGallery.Operations
         {
             var allBackups = dbExecutor.Query<Db>(
                 "SELECT name, state FROM sys.databases WHERE name LIKE '" + backupNamePrefix + "%' AND state = @state",
-                new { state = OnlineState });
-            string dbName = allBackups.ElementAt(0).Name;
-            Match regex = BackupNameFormat.Match(dbName);
-            string timestamp =regex.Groups["timestamp"].Value;
+                new { state = OnlineState });        
             var orderedBackups = from db in allBackups
                                  let t = ParseNewTimestamp(BackupNameFormat.Match(db.Name).Groups["timestamp"].Value)
                                  where t != null
