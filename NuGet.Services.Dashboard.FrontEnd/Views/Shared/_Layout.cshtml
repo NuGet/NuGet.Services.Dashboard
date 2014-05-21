@@ -7,8 +7,9 @@
         <meta name="viewport" content="width=device-width" />
          @Styles.Render("~/Content/css")
          @Scripts.Render("~/bundles/jquery")  
-         @Scripts.Render("~/bundles/metro")                          
-         @Scripts.Render("//code.highcharts.com/highcharts.js")
+         @Scripts.Render("~/bundles/metro")
+         @* Schemeless URL was getting transformed to http *@
+        <script src="//code.highcharts.com/highcharts.js"></script>
     </head>
  <body class="metrouicss">         
        <div class="page">
@@ -16,7 +17,7 @@
                 <div class="nav-bar-inner padding10">
                     <span class="pull-menu"></span>
                         <a href="/"><span class="element brand">
-                             <img class="place-left" src="images/logo32.png" style="height: 20px"/>
+                             <img class="place-left" src="images/nuget_32.png" style="height: 20px"/>
                                 NuGet <small>Dashboard</small>
                             </span></a>
                        <div class="divider"></div>
@@ -33,7 +34,6 @@
         </div>
     </div>    
       @RenderBody()
-     <br />
 <br />
 <br />
 <br />
@@ -45,10 +45,11 @@
 <br />
 <br />
 <br />
-     <br />
 <br />
 <br />
-     <br />
+<br />
+<br />
+<br />
 <br />
 <br />
 
