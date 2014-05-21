@@ -100,7 +100,7 @@ namespace NuGetDashboard.Controllers.Trending
         [HttpGet]
         public ActionResult OtherOperationTrend()
         {
-            int hour = 30;
+            int hour = 120;
             string[] Operation = new JavaScriptSerializer().Deserialize<string[]>(BlobStorageService.Load("OperationType.json"));
 
             List<string> blobNames = new List<string>();
@@ -108,15 +108,15 @@ namespace NuGetDashboard.Controllers.Trending
             {
                 blobNames.Add(opt + hour + "Day");
             }
-           return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames.ToArray(), "Download_Operations_Trend_For_Last_"+ hour +"_Day",24,500));
+           return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames.ToArray(), "Other_Operations_Trend_For_Last_"+ hour +"_Day",24,700));
         }
 
         [HttpGet]
         public ActionResult RestoreTrend()
         {
-            int hour = 30;
+            int hour = 120;
             string blobName = "Restore" + hour + "Day";
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobName, "Restore_Trend_For_Last_"+hour+"_Day", 24, 500));
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobName, "Restore_Trend_For_Last_"+hour+"_Day", 24, 700));
         }
 
 
