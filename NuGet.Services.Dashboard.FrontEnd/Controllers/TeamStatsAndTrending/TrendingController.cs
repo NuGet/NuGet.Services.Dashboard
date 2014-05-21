@@ -92,6 +92,14 @@ namespace NuGetDashboard.Controllers.Trending
         }
 
         [HttpGet]
+        public ActionResult OptTrend()
+        {
+            return PartialView("~/Views/Trending/OptTrend.cshtml");
+        }
+        
+        
+        
+        [HttpGet]
         public ActionResult OperationTrend()
         {
             int hour = 30;
@@ -102,7 +110,15 @@ namespace NuGetDashboard.Controllers.Trending
             {
                 blobNames.Add(opt + hour + "Day");
             }
-           return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames.ToArray(), "OperationForLast"+ hour +"Day",24,800));
+           return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames.ToArray(), "OperationForLast"+ hour +"Day",24,500));
+        }
+
+        [HttpGet]
+        public ActionResult RestoreTrend()
+        {
+            int hour = 30;
+            string blobName = "Restore" + hour + "Day";
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobName, "RestoreForLast" + hour + "Day", 24, 500));
         }
 
 
