@@ -403,6 +403,7 @@
     <Content Include="Views\Trending\VsDownloadTrend.cshtml" />
     <Content Include="Views\Trending\DonwloadOperationTrend.cshtml" />
     <Content Include="Views\UpTime\TrafficManager_Index.cshtml" />
+    <Content Include="Views\ResourceMonitoring\ResourceMonitoring_CloudServiceInstances.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
