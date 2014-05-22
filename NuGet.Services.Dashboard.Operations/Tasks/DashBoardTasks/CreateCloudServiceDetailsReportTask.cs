@@ -39,7 +39,7 @@ namespace NuGetGallery.Operations
         public override void ExecuteCommand()
         {
             X509Certificate cert = X509Certificate.CreateFromCertFile(CertificateName);
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format("https://management.core.windows.net/{0}/services/hostedservices/{1}?embed-detail=true", SubscriptionId, ServiceName));
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format("https://management.core.windows.net/{0}/services/hostedservices/{1}/deploymentslots/Production?embed-detail=true", SubscriptionId, ServiceName));
             request.ClientCertificates.Add(cert);
             request.Headers.Add("x-ms-version: 2014-02-01");        
             request.PreAuthenticate = true;
@@ -49,19 +49,38 @@ namespace NuGetGallery.Operations
             using (var reader = new StreamReader(respose.GetResponseStream()))
             {            
                 XmlDocument doc = new XmlDocument();
-                doc.LoadXml(reader.ReadToEnd());             
-                XmlNodeList parentNode = doc.GetElementsByTagName("Deployment","http://schemas.microsoft.com/windowsazure");               
-                foreach(XmlNode node in parentNode)
+                doc.LoadXml(reader.ReadToEnd());
+                CreateInstanceCountReport(doc);
+                CreateInstanceStateReport(doc);              
+            }
+        }
+
+        private void CreateInstanceCountReport(XmlDocument doc)        
+        {
+            XmlNodeList roleInstanceNodes = doc.GetElementsByTagName("RoleInstance", "http://schemas.microsoft.com/windowsazure");
+            Console.WriteLine(roleInstanceNodes.Count);
+            ReportHelpers.AppendDatatoBlob(StorageAccount, ServiceName + "InstanceCount" + string.Format("{0:MMdd}", DateTime.Now) + "HourlyReport.json", new Tuple<string, string>(string.Format("{0:HH-mm}", DateTime.Now), roleInstanceNodes.Count.ToString()), 24, ContainerName);           
+        }
+        private void CreateInstanceStateReport(XmlDocument doc)
+        {
+            XmlNodeList roleInstanceNodes = doc.GetElementsByTagName("RoleInstance", "http://schemas.microsoft.com/windowsazure");
+            List<Tuple<string, string>> instanceStatuses = new List<Tuple<string, string>>();
+            foreach(XmlNode node in roleInstanceNodes)
+            {
+                instanceStatuses.Add(new Tuple<string, string>(node.ChildNodes[1].InnerText, node.ChildNodes[2].InnerText));
+                if (!node.ChildNodes[2].InnerText.Equals("ReadyRole",StringComparison.OrdinalIgnoreCase))
                 {
-                    //get the instance count of the production slot.
-                    if (!node.ChildNodes[1].InnerText.Equals("Production"))
-                        continue;
-                    parentNode = node.ChildNodes;
-                    int count = parentNode.Item(7).ChildNodes.Count;
-                    Console.WriteLine(string.Format("No of instances in production slot of {0} is {1}", ServiceName, count));
-                    ReportHelpers.AppendDatatoBlob(StorageAccount, ServiceName + "InstanceCount" + string.Format("{0:MMdd}", DateTime.Now) + "HourlyReport.json", new Tuple<string, string>(string.Format("{0:HH-mm}", DateTime.Now), count.ToString()), 24, ContainerName);
+                    new SendAlertMailTask
+                    {
+                        AlertSubject = string.Format("Role Instance alert activated for {0} cloud service", ServiceName),
+                        Details = string.Format("The status of the instance {0} in cloud service {1} is {2}", node.ChildNodes[1].InnerText, ServiceName,node.ChildNodes[2].InnerText),
+                        AlertName = "Alert for Role Instance status",
+                        Component = "CloudService"
+                    }.ExecuteCommand();
                 }
             }
+            JArray reportObject = ReportHelpers.GetJson(instanceStatuses);
+            ReportHelpers.CreateBlob(StorageAccount,  ServiceName + "InstanceStatus.json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
         }
     }
 }

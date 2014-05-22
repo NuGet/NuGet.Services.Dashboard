@@ -1,0 +1,33 @@
+﻿<script type="text/javascript">
+     function UpdateCloudServiceStatus() {
+        $.ajax({
+            url: '@Url.Action("GetCloudServiceInstanceStatus", "ResourceMonitoring", new { CloudServiceName = "nuget-prod-0-v2gallery" })',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                $("#v2gallery").html(result);
+            }
+        });
+         $.ajax({
+             url: '@Url.Action("GetCloudServiceInstanceStatus", "ResourceMonitoring", new { CloudServiceName = "nuget-prod-0-search" })',
+             type: "GET",
+             dataType: 'json',
+             success: function (result) {
+                 $("#search").html(result);
+             }
+         });
+         window.setTimeout(UpdateStatus, 5000 * 60);
+     };
+</script>
+
+
+<div class="tile double outline-color-green" data-role="tile-slider" data-param-period="25000" id="TrafficManagerDiv" title="Traffic manager status">
+    <div id="v2gallery" class="tile-content bg-color-red">
+    </div>
+    <div id="search" class="tile-content bg-color-red">
+    </div>
+    <div class="brand bg-color-red">
+        <p class="text"><em>Cloud Service Instance status</em></p>
+    </div>
+
+</div>
