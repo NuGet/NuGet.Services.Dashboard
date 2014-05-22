@@ -16,7 +16,6 @@ using System.Web.Script.Serialization;
 using NuGetGallery;
 using NuGetGallery.Infrastructure;
 using Elmah;
-using System.IO;
 using System.Diagnostics;
 using NuGet.Services.Dashboard.Common;
 
@@ -25,9 +24,6 @@ namespace NuGetGallery.Operations
     [Command("CreateRequestsPerHourReportTask", "Creates the report for the number of requests per hour from IIS logs", AltName = "crphrt")]
     public class CreateRequestsPerHourReportTask : StorageTask
     {
-        [Option("DeploymentID", AltName = "di")]
-        public string DeploymentID { get; set; }
-
         [Option("IISStorageAccount", AltName = "iis")]
         public CloudStorageAccount IISStorageAccount { get; set; }
 
@@ -42,6 +38,7 @@ namespace NuGetGallery.Operations
         public override void ExecuteCommand()
         {            
            //Get the logs for the previous Hour as the current one is being used by Azure.
+           string DeploymentID = new JavaScriptSerializer().Deserialize<string>(ReportHelpers.Load(StorageAccount, "DeploymentId.json", ContainerName)); 
            string latestLogName = "u_ex" + string.Format("{0:yyMMddHH}", DateTime.UtcNow.AddHours(-1)) + ".log";
            DirectoryInfo info = new System.IO.DirectoryInfo(Path.Combine(Environment.CurrentDirectory, latestLogName));
            //Downlog the logs for the last hour.

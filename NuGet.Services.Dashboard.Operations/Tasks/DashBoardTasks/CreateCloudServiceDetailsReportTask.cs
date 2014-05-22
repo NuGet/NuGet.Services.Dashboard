@@ -51,8 +51,17 @@ namespace NuGetGallery.Operations
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(reader.ReadToEnd());
                 CreateInstanceCountReport(doc);
-                CreateInstanceStateReport(doc);              
+                CreateInstanceStateReport(doc);
+                CreateDepolymentIdReport(doc);
             }
+        }
+
+        private void CreateDepolymentIdReport(XmlDocument doc)
+        {
+            XmlNodeList depolymentIdNode = doc.GetElementsByTagName("PrivateID", "http://schemas.microsoft.com/windowsazure");
+            string depolyId = depolymentIdNode[0].InnerText;
+            var json = new JavaScriptSerializer().Serialize(depolyId);
+            ReportHelpers.CreateBlob(StorageAccount, "DeploymentId.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
         }
 
         private void CreateInstanceCountReport(XmlDocument doc)        
