@@ -71,7 +71,7 @@ namespace NuGetGallery.Operations
                 string instanceStatus = node.ChildNodes[2].InnerText;
                 instanceStatuses.Add(new Tuple<string, string>(instanceName,instanceStatus));
                 //Loist of instance status @ http://msdn.microsoft.com/en-us/library/azure/ee460804.aspx#RoleInstanceList. Only Ready and unknown are acceptable.
-                if (!instanceStatus.Equals("ReadyRole",StringComparison.OrdinalIgnoreCase) || !instanceStatus.Equals("RoleStateUnknown",StringComparison.OrdinalIgnoreCase))
+                if (!instanceStatus.Equals("ReadyRole",StringComparison.OrdinalIgnoreCase) && !instanceStatus.Equals("RoleStateUnknown",StringComparison.OrdinalIgnoreCase))
                 {
                     new SendAlertMailTask
                     {
