@@ -5,7 +5,8 @@
 @model List<Tuple<string, string, double>>
 
 <div class="fg-color-darken" style="width:600px">
-    <P>Below table shows the average request trend from IIS log for today (from 00.00 AM PST)</P>
+    <h2>Today's hourly Average</h2>
+    <P>Below table shows the average request trend from IIS log for today (from 00.00 AM PST)</P>   
     <table class="hovered">
         <tbody>
             <tr>
@@ -37,7 +38,7 @@
     </table>
 
 </div>
-
+<h2>Weekly drill down of requests</h2>
 <div id="requesttrend">@Html.Action("AverageRequestPerHourTrendThisWeek", "SLA");</div>
 <div id="timetrend">@Html.Action("AverageTimeTakenInMsTrendThisWeek", "SLA");</div>
 

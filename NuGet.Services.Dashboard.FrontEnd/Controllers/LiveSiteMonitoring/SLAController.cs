@@ -58,12 +58,12 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             List<string> value = new List<string>();
             Dictionary<string, List<object>> request = new Dictionary<string, List<object>>();
             List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
-            DateTime start = DateTimeUtility.GetPacificTimeNow().AddDays(-7);
+            DateTime start = DateTimeUtility.GetPacificTimeNow().AddDays(-8);
             for (int i = 0; i < 8; i++)
             {
                 string date = string.Format("{0:MMdd}", start.AddDays(i));
                 List<Tuple<string, string, double>> scenarios = GetRequestsData(date);
-                value.Add(date);
+                value.Add(string.Format("{0:MM/dd}", start.AddDays(i)));
                 for (int j = 1; j < scenarios.Count; j++)
                 {
                     if (request.ContainsKey(scenarios[j].Item1))
@@ -97,12 +97,12 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             List<string> value = new List<string>();
             Dictionary<string, List<object>> time = new Dictionary<string, List<object>>();
             List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
-            DateTime start = DateTimeUtility.GetPacificTimeNow().AddDays(-7);
+            DateTime start = DateTimeUtility.GetPacificTimeNow().AddDays(-8);
             for (int i = 0; i < 8; i++)
             {
                 string date = string.Format("{0:MMdd}", start.AddDays(i));
                 List<Tuple<string, string, double>> scenarios = GetRequestsData(date);
-                value.Add(date);
+                value.Add(string.Format("{0:MM/dd}", start.AddDays(i)));
                 for (int j = 1; j < scenarios.Count; j++)
                 {
                     if (time.ContainsKey(scenarios[j].Item1))
