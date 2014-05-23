@@ -44,7 +44,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             string[] checkNames = new string[] { "feed.raw.packages.list", "package.restore.download", "package.restore.lookup","feed.top.30.by.downloads" };
             List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
             List<string> xValues = new List<string>();
-            List<Object> yValues = new List<Object>();
+            List<object> yValues = new List<object>();
             foreach (string check in checkNames)
             {
                 //Get the response values from pre-created blobs for each check.

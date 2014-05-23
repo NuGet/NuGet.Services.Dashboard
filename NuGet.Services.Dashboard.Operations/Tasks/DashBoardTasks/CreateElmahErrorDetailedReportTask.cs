@@ -32,50 +32,30 @@ namespace NuGetGallery.Operations
              
         public override void ExecuteCommand()
         {         
-            List<string> nonCriticalErrorDictionary = new JavaScriptSerializer().Deserialize<List<string>>(ReportHelpers.Load(StorageAccount,"Configuration.ElmahNonCriticalErrors.json",ContainerName));
-            AlertThresholds thresholds = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
-
-            TableErrorLog log = new TableErrorLog(string.Format(ElmahAccountCredentials));
-            List<ErrorLogEntry> entities = new List<ErrorLogEntry>();
             
-            log.GetErrors(0, 500 * LastNHours, entities); //retrieve n * LastNHours errors assuming a max of 500 errors per hour.
+            AlertThresholds thresholds = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
+            
             List<ElmahError> listOfErrors = new List<ElmahError>();
-
-            //Get the error from Last N hours.
-            if (entities.Any(entity => entity.Error.Time.ToUniversalTime() > DateTime.Now.Subtract(new TimeSpan(LastNHours,0,0)).ToUniversalTime()))
-            {
-             entities = entities.Where(entity => entity.Error.Time.ToUniversalTime() > DateTime.Now.Subtract(new TimeSpan(LastNHours,0,0)).ToUniversalTime()).ToList();
-             var elmahGroups = entities.GroupBy(item => item.Error.Message);                      
+            RefreshElmahError RefreshExecute = new RefreshElmahError(StorageAccount, ContainerName, LastNHours, ElmahAccountCredentials);
            
-            //Group the error based on exception and send alerts if critical errors exceed the thresold values.
-            foreach (IGrouping<string, ErrorLogEntry> errorGroups in elmahGroups)
+            listOfErrors = RefreshExecute.ExecuteRefresh();
+
+            foreach (ElmahError error in listOfErrors)
             {
-                Console.WriteLine(errorGroups.Key.ToString() + "  " + errorGroups.Count());              
-                int severity = 0;
-                if (nonCriticalErrorDictionary.Any(item => errorGroups.Key.ToString().Contains(item)))
+                if (error.Severity == 0)
                 {
-                    severity = 1; //sev 1 is low pri and sev 0 is high pri.
-                }
-                string link = "https://www.nuget.org/Admin/Errors.axd/detail?id={0}";
-                if(ContainerName.Contains("qa"))
-                {
-                    link = "https://int.nugettest.org/Admin/Errors.axd/detail?id={0}";
-                }
-                listOfErrors.Add(new ElmahError(errorGroups.Key.ToString(),errorGroups.Count(),errorGroups.Min( item => item.Error.Time.ToLocalTime()), errorGroups.Max( item => item.Error.Time.ToLocalTime()),string.Format(link,errorGroups.First().Id),errorGroups.First().Error.Detail,severity));            
-                if (severity == 0)
-                {
-                    string countThreshold = string.Empty;                    
-                    if(errorGroups.Count() > thresholds.ElmahCriticalErrorPerHourAlertThreshold && LastNHours == 1) 
+                    string countThreshold = string.Empty;
+                    if (error.Occurecnes > thresholds.ElmahCriticalErrorPerHourAlertThreshold && LastNHours == 1)
                     {
-                     new SendAlertMailTask {
-                    AlertSubject = string.Format("Elmah Error Alert activated for {0}",errorGroups.Key.ToString()),
-                    Details = String.Format("Number of {0} exceeded threshold limit during the last hour.Threshold error count per hour : {1}, Events recorded in the last hour: {2}" ,errorGroups.Key.ToString(),countThreshold.ToString(),errorGroups.Count().ToString()),
-                    AlertName = string.Format("Elmah Error Alert for {0}",errorGroups.Key.ToString()),
-                    Component = "Web Server"                                      
-                }.ExecuteCommand();
+                        new SendAlertMailTask
+                        {
+                            AlertSubject = string.Format("Elmah Error Alert activated for {0}", error.Error),
+                            Details = String.Format("Number of {0} exceeded threshold limit during the last hour.Threshold error count per hour : {1}, Events recorded in the last hour: {2}", error.Error, countThreshold.ToString(), error.Occurecnes.ToString()),
+                            AlertName = string.Format("Elmah Error Alert for {0}", error.Error),
+                            Component = "Web Server"
+                        }.ExecuteCommand();
                     }
-                }            
-            }
+                }
             }
 
             var json = new JavaScriptSerializer().Serialize(listOfErrors);          

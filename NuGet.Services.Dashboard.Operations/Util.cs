@@ -15,7 +15,7 @@ namespace NuGetGallery.Operations
     public static class Util
     {
         public const byte OnlineState = 0;
-        private static readonly Regex BackupNameFormat = new Regex(@"^(?<name>.+)_(?<timestamp>\d{4}[A-Za-z]{3}\d{2}_\d{4})Z$"); // Backup_2013Apr12_1452Z
+        private static readonly Regex BackupNameFormat = new Regex(@"^(?<name>.+)_(?<timestamp>\d{4}[A-Za-z]{3}\d{2}_\d{4})Z$",RegexOptions.IgnoreCase); // Backup_2013Apr12_1452Z
         public static string GetDbName(string connectionString)
         {
             var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
@@ -45,7 +45,7 @@ namespace NuGetGallery.Operations
         {
             var allBackups = dbExecutor.Query<Db>(
                 "SELECT name, state FROM sys.databases WHERE name LIKE '" + backupNamePrefix + "%' AND state = @state",
-                new { state = OnlineState });
+                new { state = OnlineState });        
             var orderedBackups = from db in allBackups
                                  let t = ParseNewTimestamp(BackupNameFormat.Match(db.Name).Groups["timestamp"].Value)
                                  where t != null

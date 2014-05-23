@@ -39,7 +39,8 @@ namespace NuGetDashboard
         }
         protected void Application_Start()
         {
-            AreaRegistration.RegisterAllAreas();
+            // comment this line, since Nugetgallery MVC conflict with Dashboard MVC
+         //   AreaRegistration.RegisterAllAreas();
 
             WebApiConfig.Register(GlobalConfiguration.Configuration);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);

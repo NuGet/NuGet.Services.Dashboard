@@ -9,6 +9,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
+using System.Text;
 
 namespace NuGetDashboard.Controllers.Diagnostics
 {
@@ -22,16 +23,16 @@ namespace NuGetDashboard.Controllers.Diagnostics
             return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_Index.cshtml");
         }
 
+        public ActionResult CloudService_Index()
+        {
+            return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_CloudServiceInstances.cshtml");
+        }
+
         public ActionResult Details()
         {
             return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_Details.cshtml");
         }
-        //[HttpGet]
-        //public ActionResult DBCPUTime()
-        //{
-        //    return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("DBCPUTime" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()), "DBCPUTimeInSeconds"));
-        //}
-
+       
         [HttpGet]
         public ActionResult DBRequests()
         {                   
@@ -67,15 +68,7 @@ namespace NuGetDashboard.Controllers.Diagnostics
             }
             return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_DBSizeDetails.cshtml", sizeDetails);
         }
-
-        //[HttpGet]
-        //public ActionResult DBCPUTimeThisWeek()
-        //{
-        //    string[] blobNames = new string[8];
-        //    for (int i = 0; i < 8; i++)
-        //        blobNames[i] = "DBCPUTime" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow().AddDays(-i));
-        //    return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "DBCPUTimeInSeconds", 50, 400));
-        //}
+     
         [HttpGet]
         public ActionResult DBRequestsThisWeek()
         {
@@ -104,7 +97,6 @@ namespace NuGetDashboard.Controllers.Diagnostics
                 return Json("N/A");
         }
 
-
         [HttpGet]
         public JsonResult GetCurrentIndexingStatus()
         {
@@ -115,6 +107,23 @@ namespace NuGetDashboard.Controllers.Diagnostics
                 return Json("N/A");
         }
 
+        [HttpGet]        
+        public JsonResult GetCloudServiceInstanceStatus(string CloudServiceName)
+        {
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob(CloudServiceName + "InstanceStatus.json");
+            if (dict != null && dict.Count > 0)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("<h1>" + CloudServiceName + "</h1> </br>");
+                foreach(KeyValuePair<string,string> kvp in dict)
+                {
+                    sb.Append(kvp.Key + "-" + kvp.Value + "</br>");
+                }
+                return Json(sb.ToString(), JsonRequestBehavior.AllowGet);
+            }
+            else
+                return Json("N/A", JsonRequestBehavior.AllowGet);
+        }
         private ActionResult GetChart(string blobName)
         {   
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobName,blobName));

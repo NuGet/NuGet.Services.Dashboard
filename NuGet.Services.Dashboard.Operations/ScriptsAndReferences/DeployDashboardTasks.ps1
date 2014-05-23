@@ -5,8 +5,11 @@ param(
   [Parameter(Mandatory=$true)][string]$FrontEndLegacyDBConnectionString,
   [Parameter(Mandatory=$true)][string]$SubscriptionId,
   [Parameter(Mandatory=$false)][string]$FrontEndCloudServiceName="nuget-prod-0-v2gallery",
+  [Parameter(Mandatory=$false)][string]$TrafficManagerProfileName="nuget-prod-v2gallery",
   [Parameter(Mandatory=$true)][string]$PrimaryDBConnectionString,
   [Parameter(Mandatory=$true)][string]$WareHouseDBConnectionString,
+  [Parameter(Mandatory=$true)][string]$FrontEndLegacyDBConnectionStringForFailOverDC,
+  [Parameter(Mandatory=$true)][string]$FrontEndStorageConnectionStringForFailOverDC,
   [Parameter(Mandatory=$false)][string]$ProdManagementCertName="bhuvak-dashboard.cer",
   [Parameter(Mandatory=$true)][string]$PingdomUserName,
   [Parameter(Mandatory=$true)][string]$PingdomPassword,
@@ -55,12 +58,15 @@ CreateTask "CreatePackageResponeWeeklyDetailedReport" "cpdrt -user $PingdomUserN
 
 #worker Tasks
 CreateTask "RunBackgroundChecksForWorkerJobs" "rbgc -db `"$FrontEndLegacyDBConnectionString`" -iis `"$FrontEndStorageConnectionString`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
+CreateTask "RunBackgroundCheckForFailoverDC" "rbgfdc -db `"$FrontEndLegacyDBConnectionStringForFailOverDC`" -pst `"$FrontEndStorageConnectionStringForFailOverDC`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
+
 
 #SearchService Tasks
 CreateTask "CreateSearchIndexingLagReport" "csisrt -db `"$FrontEndLegacyDBConnectionString`" -se $SearchServiceEndPoint -sa $SearchServiceAdminUser -sk $SearchServiceAdminKey -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 
 #Misc
-CreateTask "CreateRequestsCountOverviewReport" "crphrt -di $FrontEndDeploymentId -iis `"$FrontEndStorageConnectionString`" -retry 3 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60 
+CreateTask "CreateRequestsCountOverviewReport" "crphrt -di $FrontEndDeploymentId -iis `"$FrontEndStorageConnectionString`" -retry 3 -servicename $FrontEndCloudServiceName  -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60 
+CreateTask "CreateTrafficManagerStatusOverviewReport" "ctmort -id $SubscriptionId -name $TrafficManagerProfileName -cername $ProdManagementCertName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 5
 CreateTask "CreateV2GalleryInstanceCountReport" "ccsdrt -id $SubscriptionId -name $FrontEndCloudServiceName -cername $ProdManagementCertName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 
 
