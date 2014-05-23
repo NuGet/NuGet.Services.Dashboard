@@ -43,7 +43,7 @@ namespace NuGetGallery.Operations
             request.ClientCertificates.Add(cert);
             request.Headers.Add("x-ms-version: 2014-02-01");        
             request.PreAuthenticate = true;
-            request.Method = "GET";
+            request.Method = "GET";            
             WebResponse respose = request.GetResponse();
             //Get the instance count from the response. Schema of the response would be as specified in http://msdn.microsoft.com/en-us/library/windowsazure/gg592580.aspx
             using (var reader = new StreamReader(respose.GetResponseStream()))
@@ -67,14 +67,17 @@ namespace NuGetGallery.Operations
             List<Tuple<string, string>> instanceStatuses = new List<Tuple<string, string>>();
             foreach(XmlNode node in roleInstanceNodes)
             {
-                instanceStatuses.Add(new Tuple<string, string>(node.ChildNodes[1].InnerText, node.ChildNodes[2].InnerText));
-                if (!node.ChildNodes[2].InnerText.Equals("ReadyRole",StringComparison.OrdinalIgnoreCase))
+                string instanceName = node.ChildNodes[1].InnerText;
+                string instanceStatus = node.ChildNodes[2].InnerText;
+                instanceStatuses.Add(new Tuple<string, string>(instanceName,instanceStatus));
+                //Loist of instance status @ http://msdn.microsoft.com/en-us/library/azure/ee460804.aspx#RoleInstanceList. Only Ready and unknown are acceptable.
+                if (!instanceStatus.Equals("ReadyRole",StringComparison.OrdinalIgnoreCase) || !instanceStatus.Equals("RoleStateUnknown",StringComparison.OrdinalIgnoreCase))
                 {
                     new SendAlertMailTask
                     {
                         AlertSubject = string.Format("Role Instance alert activated for {0} cloud service", ServiceName),
-                        Details = string.Format("The status of the instance {0} in cloud service {1} is {2}", node.ChildNodes[1].InnerText, ServiceName,node.ChildNodes[2].InnerText),
-                        AlertName = "Alert for Role Instance status",
+                        Details = string.Format("The status of the instance {0} in cloud service {1} is {2}", instanceName, instanceStatus),
+                        AlertName = string.Format("Alert for Role Instance status for {0}",ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
                         Component = "CloudService"
                     }.ExecuteCommand();
                 }
