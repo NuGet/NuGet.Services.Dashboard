@@ -76,7 +76,7 @@ namespace NuGetGallery.Operations
                     new SendAlertMailTask
                     {
                         AlertSubject = string.Format("Role Instance alert activated for {0} cloud service", ServiceName),
-                        Details = string.Format("The status of the instance {0} in cloud service {1} is {2}", instanceName, instanceStatus),
+                        Details = string.Format("The status of the instance {0} in cloud service {1} is {2}", instanceName, ServiceName, instanceStatus),
                         AlertName = string.Format("Alert for Role Instance status for {0}",ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
                         Component = "CloudService"
                     }.ExecuteCommand();
