@@ -15,37 +15,40 @@ namespace NuGetDashboard
 
     public class MvcApplication : System.Web.HttpApplication
     {
-        public static string currentEnvironmentName = "Prod0";
-
         public static string WorkServiceUserName = ConfigurationManager.AppSettings["WorkServiceUserNameProd0"];
 
         public static string WorkServiceAdminKey = ConfigurationManager.AppSettings["WorkServiceAdminKeyProd0"];
 
-        public static string DBConnectionString = ConfigurationManager.AppSettings["DBConnectionStringProd0"];
+        public static string DBConnectionString = ConfigurationManager.AppSettings["V2GalleryDBConnectionStringProd0"];
 
-        public static string ElmahAccountCredentials = ConfigurationManager.AppSettings["ElmahAccountCredentialsProd0"];
+        public static string ElmahAccountCredentials = ConfigurationManager.AppSettings["ElmahAccountProd0"];
 
-        private const string WorkServiceUserNamePrefix = "WorkServiceUserName";
-        private const string WorkServiceAdminKeyPrefix = "WorkServiceAdminKey";
-        private const string DBConnectionStringPrefix = "DBConnectionString";
-        private const string ElmahAccountCredentialsPrefix = "ElmahAccountCredentials";
+        public static string StorageContainer = ConfigurationManager.AppSettings["StorageContainerProd0"];
 
-        public static void update()
-        {
-            WorkServiceUserName = ConfigurationManager.AppSettings[WorkServiceUserNamePrefix + currentEnvironmentName];
-            WorkServiceAdminKey = ConfigurationManager.AppSettings[WorkServiceAdminKeyPrefix + currentEnvironmentName];
-            DBConnectionString = ConfigurationManager.AppSettings[DBConnectionStringPrefix + currentEnvironmentName];
-            ElmahAccountCredentials = ConfigurationManager.AppSettings[ElmahAccountCredentials + currentEnvironmentName];
-        }
+        public const string WorkServiceUserNamePrefix = "WorkServiceUserName";
+        public const string WorkServiceAdminKeyPrefix = "WorkServiceAdminKey";
+        public const string DBConnectionStringPrefix = "V2GalleryDBConnectionString";
+        public const string ElmahAccountCredentialsPrefix = "ElmahAccount";
+        public const string StorageContainerPrefix = "StorageContainer";
+
         protected void Application_Start()
         {
             // comment this line, since Nugetgallery MVC conflict with Dashboard MVC
          //   AreaRegistration.RegisterAllAreas();
-
+            
             WebApiConfig.Register(GlobalConfiguration.Configuration);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
+
+        protected void Session_Start()
+        {
+            Session["currentEnvironmentName"] = "Prod0";
+        }
+
+        
+
+
     }
 }

@@ -46,13 +46,9 @@
     };
 
 
-    function ConfigSetting() {
-       
+    function ConfigSetting() {      
         if (tag == "Prod0") document.getElementById("configSetting").selectedIndex = 0;
         if (tag == "Int0") document.getElementById("configSetting").selectedIndex = 1;
-        if (tag == "Prod1") document.getElementById("configSetting").selectedIndex = 2;
-        if (tag == "Int1") document.getElementById("configSetting").selectedIndex = 3;
-
     };
 
     function RefreshDBEvent() {
@@ -140,7 +136,7 @@
 
     $(document).ready(function () {
         GetPingdomStatusUpdate();
-        //UpdateStatus();
+        UpdateStatus();
         UpdateTime();
         ConfigSetting();
         UpdateTMStatus()
@@ -163,8 +159,6 @@
             <select id="configSetting" onchange="location = configSetting.options[configSetting.selectedIndex].value">
                 <option value="@Url.Action("UpdateEnvironment", "Home",new {envName = "Prod0"})" id="prod0option">prod0</option>
                 <option value="@Url.Action("UpdateEnvironment", "Home",new {envName = "Int0"})" id="int0option" >int0</option>
-                <option value="@Url.Action("UpdateEnvironment", "Home",new {envName = "Prod1"})" id="prod1option">prod1</option>
-                <option value="@Url.Action("UpdateEnvironment", "Home",new {envName = "Int1"})" id="int1option">int1</option>
             </select>
         </div>
     </div>

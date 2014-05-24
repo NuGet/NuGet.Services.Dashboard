@@ -16,25 +16,20 @@ namespace NuGetDashboard.Controllers
     {
         public ActionResult Index()
         {
-            ViewBag.var = MvcApplication.currentEnvironmentName;
+            ViewBag.var = Session["currentEnvironmentName"];
             return View();
         }
 
         public ActionResult UpdateEnvironment(string envName)
         {            
-            //if(MvcApplication.currentEnvironmentName == "Prod")
-            //     MvcApplication.currentEnvironmentName = "QA";
-            //else
-            //    MvcApplication.currentEnvironmentName = "Prod";
-            MvcApplication.currentEnvironmentName = envName;
-            MvcApplication.update();
-           return RedirectToAction("Index");
+            Session["currentEnvironmentName"] = envName;
+            update();
+            return RedirectToAction("Index");
         }
 
         public ActionResult Tiles()
         {
-           
-            return PartialView("~/Views/Home/Tiles.cshtml",MvcApplication.currentEnvironmentName);
+            return PartialView("~/Views/Home/Tiles.cshtml", Session["currentEnvironmentName"]);
         }
 
         [HttpGet]
@@ -42,6 +37,17 @@ namespace NuGetDashboard.Controllers
         {
             //Returns the current pacific time. The dates in the charts are all in local time (pacific time) as of now. Hence displayed a clock with pacific time in the home page for reference.
             return Json(string.Format("{0:HH:mm:ss}",DateTimeUtility.GetPacificTimeNow()), JsonRequestBehavior.AllowGet);
+        }
+
+        private void update()
+        {
+            object envName = Session["currentEnvironmentName"];
+            MvcApplication.WorkServiceUserName = ConfigurationManager.AppSettings[MvcApplication.WorkServiceUserNamePrefix + envName];
+            MvcApplication.WorkServiceAdminKey = ConfigurationManager.AppSettings[MvcApplication.WorkServiceAdminKeyPrefix + envName];
+            MvcApplication.DBConnectionString = ConfigurationManager.AppSettings[MvcApplication.DBConnectionStringPrefix + envName];
+            MvcApplication.ElmahAccountCredentials = ConfigurationManager.AppSettings[MvcApplication.ElmahAccountCredentials + envName];
+            MvcApplication.StorageContainer = ConfigurationManager.AppSettings[MvcApplication.StorageContainer + envName];
+
         }
     
     }
