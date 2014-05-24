@@ -45,8 +45,8 @@ namespace NuGetDashboard.Controllers
             MvcApplication.WorkServiceUserName = ConfigurationManager.AppSettings[MvcApplication.WorkServiceUserNamePrefix + envName];
             MvcApplication.WorkServiceAdminKey = ConfigurationManager.AppSettings[MvcApplication.WorkServiceAdminKeyPrefix + envName];
             MvcApplication.DBConnectionString = ConfigurationManager.AppSettings[MvcApplication.DBConnectionStringPrefix + envName];
-            MvcApplication.ElmahAccountCredentials = ConfigurationManager.AppSettings[MvcApplication.ElmahAccountCredentials + envName];
-            MvcApplication.StorageContainer = ConfigurationManager.AppSettings[MvcApplication.StorageContainer + envName];
+            MvcApplication.ElmahAccountCredentials = ConfigurationManager.AppSettings[MvcApplication.ElmahAccountCredentialsPrefix + envName];
+            MvcApplication.StorageContainer = ConfigurationManager.AppSettings[MvcApplication.StorageContainerPrefix + envName];
 
         }
     
