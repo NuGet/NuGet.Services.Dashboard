@@ -77,13 +77,18 @@ namespace NuGetGallery.Operations
             List<Tuple<string, string>> instanceStatuses = new List<Tuple<string, string>>();
             string[] invalidStatus = { "CyclingRole", "FailedStartingRole", "FailedStartingVM", "UnresponsiveRole", "StoppedDeallocated", "Preparing" };
             int unReadyInstanceCount = 0;
+            List<string> unReadyInstanceStatus = new List<string>();
             foreach(XmlNode node in roleInstanceNodes)
             {
                 string instanceName = node.ChildNodes[1].InnerText;
                 string instanceStatus = node.ChildNodes[2].InnerText;
                 instanceStatuses.Add(new Tuple<string, string>(instanceName,instanceStatus));
                 //Loist of instance status @ http://msdn.microsoft.com/en-us/library/azure/ee460804.aspx#RoleInstanceList. Only Ready and unknown are acceptable.
-                if (!instanceStatus.Equals("ReadyRole")) unReadyInstanceCount++;
+                if (!instanceStatus.Equals("ReadyRole", StringComparison.OrdinalIgnoreCase))
+                {
+                    unReadyInstanceCount++;
+                    unReadyInstanceStatus.Add(instanceName + "-" + instanceStatus);
+                }
                 if (invalidStatus.Contains(instanceStatus))
                 {
                     new SendAlertMailTask
@@ -97,12 +102,13 @@ namespace NuGetGallery.Operations
             }
             if(unReadyInstanceCount > (roleInstanceCount / 2)) 
             {
+                string unReadyReport = string.Join(",", unReadyInstanceStatus.ToArray());
                 new SendAlertMailTask
                     {
-                        AlertSubject = string.Format("Role Instance alert activated for {0} cloud service", ServiceName),
-                        Details = string.Format("More than half instances of {0} cloud service is not in ReadyRole status",  ServiceName),
+                        AlertSubject = string.Format("Alert for Multiple role instances statuses for {0}", ServiceName),
+                        Details = string.Format("More than half instances of {0} cloud service: {1} is not in ReadyRole status",  ServiceName, unReadyReport),
                         AlertName = string.Format("Alert for Role Instance status for {0}",ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
-                        Component = "CloudService"
+                        Component = "CloudService" + ServiceName
                     }.ExecuteCommand();
             }
 
