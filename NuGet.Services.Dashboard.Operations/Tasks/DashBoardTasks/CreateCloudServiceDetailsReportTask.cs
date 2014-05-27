@@ -73,14 +73,18 @@ namespace NuGetGallery.Operations
         private void CreateInstanceStateReport(XmlDocument doc)
         {
             XmlNodeList roleInstanceNodes = doc.GetElementsByTagName("RoleInstance", "http://schemas.microsoft.com/windowsazure");
+            int roleInstanceCount = roleInstanceNodes.Count;
             List<Tuple<string, string>> instanceStatuses = new List<Tuple<string, string>>();
+            string[] invalidStatus = { "CyclingRole", "FailedStartingRole", "FailedStartingVM", "UnresponsiveRole", "StoppedDeallocated", "Preparing" };
+            int unReadyInstanceCount = 0;
             foreach(XmlNode node in roleInstanceNodes)
             {
                 string instanceName = node.ChildNodes[1].InnerText;
                 string instanceStatus = node.ChildNodes[2].InnerText;
                 instanceStatuses.Add(new Tuple<string, string>(instanceName,instanceStatus));
                 //Loist of instance status @ http://msdn.microsoft.com/en-us/library/azure/ee460804.aspx#RoleInstanceList. Only Ready and unknown are acceptable.
-                if (!instanceStatus.Equals("ReadyRole",StringComparison.OrdinalIgnoreCase) && !instanceStatus.Equals("RoleStateUnknown",StringComparison.OrdinalIgnoreCase))
+                if (!instanceStatus.Equals("ReadyRole")) unReadyInstanceCount++;
+                if (invalidStatus.Contains(instanceStatus))
                 {
                     new SendAlertMailTask
                     {
@@ -91,6 +95,17 @@ namespace NuGetGallery.Operations
                     }.ExecuteCommand();
                 }
             }
+            if(unReadyInstanceCount > (roleInstanceCount / 2)) 
+            {
+                new SendAlertMailTask
+                    {
+                        AlertSubject = string.Format("Role Instance alert activated for {0} cloud service", ServiceName),
+                        Details = string.Format("More than half instances of {0} cloud service is not in ReadyRole status",  ServiceName),
+                        AlertName = string.Format("Alert for Role Instance status for {0}",ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
+                        Component = "CloudService"
+                    }.ExecuteCommand();
+            }
+
             JArray reportObject = ReportHelpers.GetJson(instanceStatuses);
             ReportHelpers.CreateBlob(StorageAccount,  ServiceName + "InstanceStatus.json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
         }
