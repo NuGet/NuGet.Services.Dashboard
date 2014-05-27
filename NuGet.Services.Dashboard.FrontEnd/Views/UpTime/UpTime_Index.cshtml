@@ -1,5 +1,5 @@
 ﻿<script type="text/javascript">
-    function GetPingdomStatusUpdate() {
+    @*function GetPingdomStatusUpdate() {
         $.ajax({
             url: '@Url.Action("GetStatus", "UpTime")',
              type: "GET",
@@ -20,7 +20,7 @@
                  window.setTimeout(GetPingdomStatusUpdate, 1000 * 60 * 3);
              }
          });
-     };
+     };*@
 </script>
 
 

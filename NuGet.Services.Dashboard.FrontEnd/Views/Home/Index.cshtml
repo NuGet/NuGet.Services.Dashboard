@@ -1,6 +1,10 @@
-﻿@model string
+﻿@{
+    @ViewBag.var
+}
+
 <script type="text/javascript">
 
+    var tag = @Html.Raw(Json.Encode(@ViewBag.var))
     function ShowDetails(action, controller) {
 
         $.ajax({
@@ -41,6 +45,12 @@
         window.setTimeout(UpdateTime, 1000 * 60);
     };
 
+
+    function ConfigSetting() {      
+        if (tag == "Prod0") document.getElementById("configSetting").selectedIndex = 0;
+        if (tag == "Int0") document.getElementById("configSetting").selectedIndex = 1;
+    };
+
     function RefreshDBEvent() {
         $.ajax({
             url: '@Url.Action("RefreshDatabaseEvent", "TroubleShooting")',
@@ -68,6 +78,7 @@
         RefreshDBRequest();
     }
 
+
     function Toggle(divName) {
         debugger
         var onehour = document.getElementById('1hourdiv' + divName);
@@ -79,7 +90,7 @@
             sixhour.style.display = "none";
             twentyfourhour.style.display = "none";
         }
-        else if ($("#NoofHours" + divName +" option:selected").val() == "6") {
+        else if ($("#NoofHours" + divName + " option:selected").val() == "6") {
             onehour.style.display = "none";
             sixhour.style.display = "block";
             twentyfourhour.style.display = "none";
@@ -94,18 +105,43 @@
     $(function () {
         setInterval(function () { $('#DRRequestsDiv').load('/ResourceMonitoring/DBRequests'); }, 15 * 60 * 1000);
         setInterval(function () { $('#DBConnectionsDiv').load('/ResourceMonitoring/DBConnections'); }, 15 * 60 * 1000);
-        setInterval(function () { $('#WorkJobStatusDiv').load('/WorkJob/Index'); }, 10 * 60 * 1000);       
+        setInterval(function () { $('#WorkJobStatusDiv').load('/WorkJob/Index'); }, 10 * 60 * 1000);
         setInterval(function () { $('#RequestsPerHourDiv').load('/SLA/Throughput'); }, 15 * 60 * 1000);
         setInterval(function () { $('#ErrorsPerHourDiv').load('/SLA/ErrorRate'); }, 15 * 60 * 1000);
         setInterval(function () { $('#PackageRestoreResponseTimeDiv').load('/UpTime/GetPackageRestoreUpTime'); }, 15 * 60 * 1000);
     });
 
+    function GetPingdomStatusUpdate() {
+        $.ajax({
+            url: '@Url.Action("GetStatus", "UpTime")',
+            type: "GET",
+            dataType: 'json',
+            success: function (result) {
+                for (var a = 0; a <= 6 ; a++) {
+                    var element = document.getElementById(result[a].Id);
+                    if (element != null) {
+                        element.innerHTML = "<h2>" + result[a].Name + " </h2> <br/><h1> " + result[a].Status + "</h1> ";
+                        if (result[a].Status != 'up') {
+                            $(element).removeClass('tile-content bg-color-green');
+                            $(element).addClass('tile double bg-color-red');
+                        }
+                        else
+                            $(element).addClass('tile double bg-color-green');
+                    }
+                }
+                window.setTimeout(GetPingdomStatusUpdate, 1000 * 60 * 3);
+            }
+        });
+    };
+
     $(document).ready(function () {
         GetPingdomStatusUpdate();
         UpdateStatus();
         UpdateTime();
+        ConfigSetting();
         UpdateTMStatus()
         UpdateCloudServiceStatus();
+
     });
 
 </script>
@@ -120,14 +156,10 @@
     <div class="page-region">
         <div style="position:absolute; top: 1em; right: 1em;">
             <button id="timeButton" class="default"></button>
-            @if (Model.Equals("Prod")) 
-            {
-                <button class="default" onclick="location.href='@Url.Action("UpdateEnvironment", "Home",new {envName = "QA"})'">Switch to 'int'</button>
-            }
-            else
-            {
-                <button class="default" onclick="location.href='@Url.Action("UpdateEnvironment", "Home",new {envName = "Prod"})'">Switch to 'prod'</button>
-            }
+            <select id="configSetting" onchange="location = configSetting.options[configSetting.selectedIndex].value">
+                <option value="@Url.Action("UpdateEnvironment", "Home",new {envName = "Prod0"})" id="prod0option">prod0</option>
+                <option value="@Url.Action("UpdateEnvironment", "Home",new {envName = "Int0"})" id="int0option" >int0</option>
+            </select>
         </div>
     </div>
     <div id="maincontent">@Html.Action("Tiles", "Home");</div>

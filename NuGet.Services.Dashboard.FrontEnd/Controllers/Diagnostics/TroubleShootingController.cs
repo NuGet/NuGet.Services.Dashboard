@@ -74,7 +74,7 @@ namespace NuGetDashboard.Controllers.Diagnostics
         public ActionResult RefreshDatabaseEvent()
         {
             List<DatabaseEvent> listOfEvents = new List<DatabaseEvent>();
-            RefreshDB Refresh = new RefreshDB(ConfigurationManager.AppSettings["DBConnectionString"], 1);
+            RefreshDB Refresh = new RefreshDB(MvcApplication.DBConnectionString, 1);
             listOfEvents = Refresh.RefreshDatabaseEvent();
             return PartialView("~/Views/TroubleShooting/TroubleShooting_DBEventsSummary.cshtml", listOfEvents);
         }
@@ -82,7 +82,7 @@ namespace NuGetDashboard.Controllers.Diagnostics
         public ActionResult RefreshDatabaseRequest()
         {
             List<DatabaseRequest> listOfRequests = new List<DatabaseRequest>();
-            RefreshDB Refresh = new RefreshDB(ConfigurationManager.AppSettings["DBConnectionString"], 1);
+            RefreshDB Refresh = new RefreshDB(MvcApplication.DBConnectionString, 1);
             listOfRequests = Refresh.RefreshDatebaseRequest();
 
             return PartialView("~/Views/TroubleShooting/TroubleShooting_DBRequestsSummary.cshtml", listOfRequests);
@@ -91,9 +91,9 @@ namespace NuGetDashboard.Controllers.Diagnostics
         {
             List<ElmahError> listOfEvents = new List<ElmahError>();
             RefreshElmahError RefreshExecute = new RefreshElmahError(ConfigurationManager.AppSettings["StorageConnection"],
-                                                                     ConfigurationManager.AppSettings["Int0StorageContainer"], 
+                                                                     MvcApplication.StorageContainer, 
                                                                      1, 
-                                                                     ConfigurationManager.AppSettings["Prod0ElmahAccountCredentials"]);
+                                                                     MvcApplication.ElmahAccountCredentials);
             
 
             listOfEvents = RefreshExecute.ExecuteRefresh();
