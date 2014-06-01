@@ -205,6 +205,7 @@
     <Compile Include="Controllers\Diagnostics\ResourceMonitoringController.cs" />
     <Compile Include="Controllers\Diagnostics\TroubleShootingController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\LiveSiteMonitoring\SearchServiceController.cs" />
     <Compile Include="Controllers\LiveSiteMonitoring\SLAController.cs" />
     <Compile Include="Controllers\LiveSiteMonitoring\TrafficManagerController.cs" />
     <Compile Include="Controllers\LiveSiteMonitoring\UpTimeController.cs" />
@@ -404,6 +405,7 @@
     <Content Include="Views\Trending\DonwloadOperationTrend.cshtml" />
     <Content Include="Views\UpTime\TrafficManager_Index.cshtml" />
     <Content Include="Views\ResourceMonitoring\ResourceMonitoring_CloudServiceInstances.cshtml" />
+    <Content Include="Views\ResourceMonitoring\ResourceMonitoring_SearchServiceCpuMem.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
