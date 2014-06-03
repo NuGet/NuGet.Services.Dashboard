@@ -38,7 +38,7 @@ namespace NuGetGallery.Operations
         public override void ExecuteCommand()
         {            
            //Get the logs for the previous Hour as the current one is being used by Azure.
-           string DeploymentID = new JavaScriptSerializer().Deserialize<string>(ReportHelpers.Load(StorageAccount, "DeploymentId.json", ContainerName)); 
+           string DeploymentID = new JavaScriptSerializer().Deserialize<string>(ReportHelpers.Load(StorageAccount, "DeploymentId_" + ServiceName + ".json", ContainerName)); 
            string latestLogName = "u_ex" + string.Format("{0:yyMMddHH}", DateTime.UtcNow.AddHours(-1)) + ".log";
            DirectoryInfo info = new System.IO.DirectoryInfo(Path.Combine(Environment.CurrentDirectory, latestLogName));
            //Downlog the logs for the last hour.
