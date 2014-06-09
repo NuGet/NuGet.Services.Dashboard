@@ -28,8 +28,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             int lastNhour = 24;
             string env;
             List<WorkInstanceDetail> jobDetail = new List<WorkInstanceDetail>();
-            //List<Tuple<string, string, string, string>> jobResults = GetJobDetail();
-            var content = ReportHelpers.Load(StorageAccount,"Configuration.WorkJobInstances_test.json",ContainerName);
+            var content = ReportHelpers.Load(StorageAccount,"Configuration.WorkJobInstances.json",ContainerName);
             List<WorkJobInstanceDetails> instanceDetails = new JavaScriptSerializer().Deserialize<List<WorkJobInstanceDetails>>(content);
             if (ConnectUrl.Contains("int")) env = "Int0";
             else env = "Prod0";
@@ -40,7 +39,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 int faultCount = 0;
                 int faultRate = 0;
                 Dictionary<string, List<string>> ErrorList = new Dictionary<string, List<string>>();
-                //WorkJobInstanceDetails tmp = instanceDetails.Find(x => x.JobInstanceName.Equals(job.Item1));
                 NetworkCredential nc = new NetworkCredential(WorkServiceUserName, WorkServiceAdminKey);
                 WebRequest request = WebRequest.Create(string.Format("{0}/instances/{1}?limit={2}",ConnectUrl,job.JobInstanceName, (lastNhour * 60) / job.FrequencyInMinutes));
                 request.Credentials = nc;

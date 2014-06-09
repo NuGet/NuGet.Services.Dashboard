@@ -15,11 +15,11 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
 {
     public class WorkJobController : Controller
     {
-        
-        //public ActionResult Index()
-        //{
-        //    return PartialView("~/Views/WorkJobs/WorkJobs_Index.cshtml", GetJobDetail());
-        //}
+
+        public ActionResult Index()
+        {
+            return View();
+        }
 
         public ActionResult WorkJobDetail()
         {
