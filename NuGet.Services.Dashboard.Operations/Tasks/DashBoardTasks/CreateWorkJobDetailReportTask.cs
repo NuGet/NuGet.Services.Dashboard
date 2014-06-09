@@ -107,16 +107,16 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     }
                     faultRate = (faultCount * 100 / invocationCount);
                     jobDetail.Add(new WorkInstanceDetail(job.JobInstanceName, job.FrequencyInMinutes+ "mins", jobStatus.ToString(),lastCompleted , ((int)(totalRunTime / invocationCount)).ToString() + "s", invocationCount.ToString(), faultCount.ToString(), faultRate, ErrorList));
-                    //if (faultRate >= 30)
-                    //{
-                    //    new SendAlertMailTask
-                    //    {
-                    //        AlertSubject = "Alert for work job failure",
-                    //        Details = string.Format("Rate of failure exceeded threshold for {0}. Threshold count : {1}, failure in last 24 hour : {2}", job.JobInstanceName, "30%", faultCount),
-                    //        AlertName = "Work job service",
-                    //        Component = "work job service"
-                    //    }.ExecuteCommand();
-                    //}
+                    if (faultRate >= 30)
+                    {
+                        new SendAlertMailTask
+                        {
+                            AlertSubject = string.Format("Alert for {0} work job service failure",env),
+                            Details = string.Format("Rate of failure exceeded threshold for {0}. Threshold count : {1}, failure in last 24 hour : {2}", job.JobInstanceName, "30%", faultCount),
+                            AlertName = "Work job service",
+                            Component = "work job service"
+                        }.ExecuteCommand();
+                    }
 
                 }
             }
