@@ -406,6 +406,7 @@
     <Content Include="Views\UpTime\TrafficManager_Index.cshtml" />
     <Content Include="Views\ResourceMonitoring\ResourceMonitoring_CloudServiceInstances.cshtml" />
     <Content Include="Views\ResourceMonitoring\ResourceMonitoring_SearchServiceCpuMem.cshtml" />
+    <Content Include="Views\WorkJobs\WorkJobs_detail.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
