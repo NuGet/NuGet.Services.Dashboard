@@ -28,8 +28,7 @@ namespace NuGet.Services.Dashboard.Common
     public class WorkInstanceDetail
     {
         public string jobName;
-        public string Frequency;
-        public string Status;
+        public string Frequency;   
         public string LastTime;
         public string RunTime;
         public string InvocationNo;
@@ -37,11 +36,10 @@ namespace NuGet.Services.Dashboard.Common
         public int FaultRate;
         public Dictionary<string,List<string>> ErrorMessage;
 
-        public WorkInstanceDetail(string jobName, string Frequency, string Status, string LastTime, string RunTime, string InvocationNo, string FaultedNo, int FaultRate,Dictionary<string, List<string>> ErrorMessage)
+        public WorkInstanceDetail(string jobName, string Frequency, string LastTime, string RunTime, string InvocationNo, string FaultedNo, int FaultRate,Dictionary<string, List<string>> ErrorMessage)
         {
             this.jobName = jobName;
             this.Frequency = Frequency;
-            this.Status = Status;
             this.LastTime = LastTime;
             this.RunTime = RunTime;
             this.InvocationNo = InvocationNo;

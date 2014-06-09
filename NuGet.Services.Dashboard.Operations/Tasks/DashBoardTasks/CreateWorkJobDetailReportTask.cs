@@ -51,24 +51,14 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     JavaScriptSerializer js = new JavaScriptSerializer();
                     var objects = js.Deserialize<List<WorkJobInvocation>>(reader.ReadToEnd());
                     WorkJobInvocation lastJob;
-                    bool jobStatus;
                     string lastCompleted = string.Empty;
                     if (objects.Any((item => item.status.Equals("Executed") && item.result.Equals("Completed"))))
                     {
                         lastJob = objects.Where(item => item.status.Equals("Executed") && item.result.Equals("Completed")).ToList().FirstOrDefault();
-                        if (DateTime.Now.Subtract(lastJob.completedAt) > new TimeSpan(0, 2 * job.FrequencyInMinutes, 0)) //the time interval from the latest successful job instance cannot be more than twice the frequency.
-                        {
-                            jobStatus = false;
-                        }
-                        else
-                        {
-                            jobStatus = true;
-                        }
                     }
                     else
                     {
                         lastJob = objects.FirstOrDefault();
-                        jobStatus = false;
                     }
 
                    if (lastJob != null)
@@ -109,7 +99,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         faultRate = (faultCount * 100 / invocationCount);
                         runtime = ((int)(totalRunTime / invocationCount));
                     }
-                    jobDetail.Add(new WorkInstanceDetail(job.JobInstanceName, job.FrequencyInMinutes+ "mins", jobStatus.ToString(),lastCompleted , runtime.ToString() + "s", invocationCount.ToString(), faultCount.ToString(), faultRate, ErrorList));
+                    jobDetail.Add(new WorkInstanceDetail(job.JobInstanceName, job.FrequencyInMinutes+ "mins",lastCompleted , runtime.ToString() + "s", invocationCount.ToString(), faultCount.ToString(), faultRate, ErrorList));
                     if (faultRate >= 30)
                     {
                         new SendAlertMailTask
@@ -137,7 +127,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 while (message[last] != '\r') last++;
                 return message.Substring(start, last - start);
             }
-            else return message;
+            else
+            {
+                int last = message.IndexOf("End of stack trace from previous location where exception was thrown");
+                return message.Substring(0, last);
+            }
         }
     }
 }

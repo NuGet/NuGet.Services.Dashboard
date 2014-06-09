@@ -98,7 +98,7 @@ namespace NuGetDashboard.Controllers.Trending
         }
         
         [HttpGet]
-        public ActionResult OtherOperationTrend()
+        public ActionResult OperationTrend()
         {
             int hour = 30;
             string[] Operation = new JavaScriptSerializer().Deserialize<string[]>(BlobStorageService.Load("OperationType.json"));
@@ -108,7 +108,7 @@ namespace NuGetDashboard.Controllers.Trending
             {
                 blobNames.Add(opt + hour + "Day");
             }
-           return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames.ToArray(), "Other_Operations_Trend_For_Last_"+ hour +"_Day",24,700));
+           return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames.ToArray(), "Operations_Trend_For_Last_"+ hour +"_Day",24,700));
         }
 
         [HttpGet]
