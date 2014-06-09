@@ -19,13 +19,20 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
        
         [Option("WorkServiceAdminKey", AltName = "key")]
         public string WorkServiceAdminKey { get; set; }
+
+        [Option("ConnectUrl", AltName = "url")]
+        public string ConnectUrl { get; set; }
+        
         public override void ExecuteCommand()
         {
             int lastNhour = 24;
+            string env;
             List<WorkInstanceDetail> jobDetail = new List<WorkInstanceDetail>();
             //List<Tuple<string, string, string, string>> jobResults = GetJobDetail();
             var content = ReportHelpers.Load(StorageAccount,"Configuration.WorkJobInstances_test.json",ContainerName);
             List<WorkJobInstanceDetails> instanceDetails = new JavaScriptSerializer().Deserialize<List<WorkJobInstanceDetails>>(content);
+            if (ConnectUrl.Contains("int")) env = "Int0";
+            else env = "Prod0";
             foreach (WorkJobInstanceDetails job in instanceDetails)
             {
                 int invocationCount = 0;
@@ -35,7 +42,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 Dictionary<string, List<string>> ErrorList = new Dictionary<string, List<string>>();
                 //WorkJobInstanceDetails tmp = instanceDetails.Find(x => x.JobInstanceName.Equals(job.Item1));
                 NetworkCredential nc = new NetworkCredential(WorkServiceUserName, WorkServiceAdminKey);
-                WebRequest request = WebRequest.Create(string.Format("https://api-work-0.nuget.org/work/invocations/instances/{0}?limit={1}", job.JobInstanceName, (lastNhour * 60) / job.FrequencyInMinutes));
+                WebRequest request = WebRequest.Create(string.Format("{0}/instances/{1}?limit={2}",ConnectUrl,job.JobInstanceName, (lastNhour * 60) / job.FrequencyInMinutes));
                 request.Credentials = nc;
                 request.PreAuthenticate = true;
                 request.Method = "GET";
@@ -106,7 +113,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     //    {
                     //        AlertSubject = "Alert for work job failure",
                     //        Details = string.Format("Rate of failure exceeded threshold for {0}. Threshold count : {1}, failure in last 24 hour : {2}", job.JobInstanceName, "30%", faultCount),
-                    //        AlertName = "Work job",
+                    //        AlertName = "Work job service",
                     //        Component = "work job service"
                     //    }.ExecuteCommand();
                     //}
@@ -115,7 +122,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             }
 
              var json = new JavaScriptSerializer().Serialize(jobDetail);
-             ReportHelpers.CreateBlob(StorageAccount, "WorkJobDetail.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
+             ReportHelpers.CreateBlob(StorageAccount, env+"WorkJobDetail.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
         }
 
         private string getResultMessage(string message)
