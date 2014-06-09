@@ -59,37 +59,39 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             List<string> value = new List<string>();
             Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IISRequestDetails" + String.Format("{0:MMdd}", DateTime.Now.AddDays(-1)) + ".json");
             List<IISRequestDetails> requestDetails = new List<IISRequestDetails>();
-            Dictionary<string, List<object>> request = new Dictionary<string, List<object>>(); 
-            foreach (KeyValuePair<string, string> keyValuePair in dict)
+            Dictionary<string, List<object>> request = new Dictionary<string, List<object>>();
+            if (dict != null)
             {
-                value.Add(keyValuePair.Key.Substring(0,2));
-                requestDetails = new JavaScriptSerializer().Deserialize<List<IISRequestDetails>>(keyValuePair.Value);
-
-                foreach (IISRequestDetails scenarios in requestDetails)
+                foreach (KeyValuePair<string, string> keyValuePair in dict)
                 {
-                    if (scenarios.ScenarioName.Equals("Over all requests")) continue;
-                    if (request.ContainsKey(scenarios.ScenarioName))
+                    value.Add(keyValuePair.Key.Substring(0, 2));
+                    requestDetails = new JavaScriptSerializer().Deserialize<List<IISRequestDetails>>(keyValuePair.Value);
+
+                    foreach (IISRequestDetails scenarios in requestDetails)
                     {
-                        request[scenarios.ScenarioName].Add(scenarios.RequestsPerHour);
-                    }
-                    else
-                    {
-                        List<object> Yvalue = new List<object>();
-                        Yvalue.Add(scenarios.RequestsPerHour);
-                        request.Add(scenarios.ScenarioName, Yvalue);
+                        if (scenarios.ScenarioName.Equals("Over all requests")) continue;
+                        if (request.ContainsKey(scenarios.ScenarioName))
+                        {
+                            request[scenarios.ScenarioName].Add(scenarios.RequestsPerHour);
+                        }
+                        else
+                        {
+                            List<object> Yvalue = new List<object>();
+                            Yvalue.Add(scenarios.RequestsPerHour);
+                            request.Add(scenarios.ScenarioName, Yvalue);
+                        }
                     }
                 }
-            }
 
-            foreach (KeyValuePair<string, List<object>> each in request)
-            {
-                seriesSet.Add(new DotNet.Highcharts.Options.Series
+                foreach (KeyValuePair<string, List<object>> each in request)
                 {
-                    Data = new Data(each.Value.ToArray()),
-                    Name = each.Key.Replace(" ", "_")
-                });
+                    seriesSet.Add(new DotNet.Highcharts.Options.Series
+                    {
+                        Data = new Data(each.Value.ToArray()),
+                        Name = each.Key.Replace(" ", "_")
+                    });
+                }
             }
-
             DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, value, "TodayRequestPerHourTrend", 500);
             return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
         }
@@ -100,38 +102,40 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
             List<string> value = new List<string>();
             Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IISRequestDetails" + String.Format("{0:MMdd}", DateTime.Now.AddDays(-1)) + ".json");
-            List<IISRequestDetails> requestDetails = new List<IISRequestDetails>();
-            Dictionary<string, List<object>> request = new Dictionary<string, List<object>>();
-            foreach (KeyValuePair<string, string> keyValuePair in dict)
+            if (dict != null)
             {
-                value.Add(keyValuePair.Key.Substring(0, 2));
-                requestDetails = new JavaScriptSerializer().Deserialize<List<IISRequestDetails>>(keyValuePair.Value);
-
-                foreach (IISRequestDetails scenarios in requestDetails)
+                List<IISRequestDetails> requestDetails = new List<IISRequestDetails>();
+                Dictionary<string, List<object>> request = new Dictionary<string, List<object>>();
+                foreach (KeyValuePair<string, string> keyValuePair in dict)
                 {
-                    if (scenarios.ScenarioName.Equals("Over all requests")) continue;
-                    if (request.ContainsKey(scenarios.ScenarioName))
+                    value.Add(keyValuePair.Key.Substring(0, 2));
+                    requestDetails = new JavaScriptSerializer().Deserialize<List<IISRequestDetails>>(keyValuePair.Value);
+
+                    foreach (IISRequestDetails scenarios in requestDetails)
                     {
-                        request[scenarios.ScenarioName].Add(scenarios.AvgTimeTakenInMilliSeconds);
-                    }
-                    else
-                    {
-                        List<object> Yvalue = new List<object>();
-                        Yvalue.Add(scenarios.AvgTimeTakenInMilliSeconds);
-                        request.Add(scenarios.ScenarioName, Yvalue);
+                        if (scenarios.ScenarioName.Equals("Over all requests")) continue;
+                        if (request.ContainsKey(scenarios.ScenarioName))
+                        {
+                            request[scenarios.ScenarioName].Add(scenarios.AvgTimeTakenInMilliSeconds);
+                        }
+                        else
+                        {
+                            List<object> Yvalue = new List<object>();
+                            Yvalue.Add(scenarios.AvgTimeTakenInMilliSeconds);
+                            request.Add(scenarios.ScenarioName, Yvalue);
+                        }
                     }
                 }
-            }
 
-            foreach (KeyValuePair<string, List<object>> each in request)
-            {
-                seriesSet.Add(new DotNet.Highcharts.Options.Series
+                foreach (KeyValuePair<string, List<object>> each in request)
                 {
-                    Data = new Data(each.Value.ToArray()),
-                    Name = each.Key.Replace(" ", "_")
-                });
+                    seriesSet.Add(new DotNet.Highcharts.Options.Series
+                    {
+                        Data = new Data(each.Value.ToArray()),
+                        Name = each.Key.Replace(" ", "_")
+                    });
+                }
             }
-
             DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, value, "TodayAvgTimeInMsTrend", 500);
             return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
         }
@@ -219,16 +223,20 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         {
             Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IISRequestDetails" + date + ".json");
             List<IISRequestDetails> requestDetails = new List<IISRequestDetails>();
-            foreach (KeyValuePair<string, string> keyValuePair in dict)
-            {
-                requestDetails.AddRange(new JavaScriptSerializer().Deserialize<List<IISRequestDetails>>(keyValuePair.Value));
-            }
-
-            var requestGroups = requestDetails.GroupBy(item => item.ScenarioName);
             List<Tuple<string, string, double>> scenarios = new List<Tuple<string, string, double>>();
-            foreach (IGrouping<string, IISRequestDetails> group in requestGroups)
+            if (dict != null)
             {
-                scenarios.Add(new Tuple<string, string, double>(group.Key, Convert.ToInt32(group.Average(item => item.RequestsPerHour)).ToString(), Convert.ToInt32(group.Average(item => item.AvgTimeTakenInMilliSeconds))));
+                foreach (KeyValuePair<string, string> keyValuePair in dict)
+                {
+                    requestDetails.AddRange(new JavaScriptSerializer().Deserialize<List<IISRequestDetails>>(keyValuePair.Value));
+                }
+
+                var requestGroups = requestDetails.GroupBy(item => item.ScenarioName);
+
+                foreach (IGrouping<string, IISRequestDetails> group in requestGroups)
+                {
+                    scenarios.Add(new Tuple<string, string, double>(group.Key, Convert.ToInt32(group.Average(item => item.RequestsPerHour)).ToString(), Convert.ToInt32(group.Average(item => item.AvgTimeTakenInMilliSeconds))));
+                }
             }
 
             return scenarios;

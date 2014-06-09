@@ -38,6 +38,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 double totalRunTime = 0;
                 int faultCount = 0;
                 int faultRate = 0;
+                int runtime = 0;
                 Dictionary<string, List<string>> ErrorList = new Dictionary<string, List<string>>();
                 NetworkCredential nc = new NetworkCredential(WorkServiceUserName, WorkServiceAdminKey);
                 WebRequest request = WebRequest.Create(string.Format("{0}/instances/{1}?limit={2}",ConnectUrl,job.JobInstanceName, (lastNhour * 60) / job.FrequencyInMinutes));
@@ -103,13 +104,17 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                             }
                         }
                     }
-                    faultRate = (faultCount * 100 / invocationCount);
-                    jobDetail.Add(new WorkInstanceDetail(job.JobInstanceName, job.FrequencyInMinutes+ "mins", jobStatus.ToString(),lastCompleted , ((int)(totalRunTime / invocationCount)).ToString() + "s", invocationCount.ToString(), faultCount.ToString(), faultRate, ErrorList));
+                    if (invocationCount != 0)
+                    {
+                        faultRate = (faultCount * 100 / invocationCount);
+                        runtime = ((int)(totalRunTime / invocationCount));
+                    }
+                    jobDetail.Add(new WorkInstanceDetail(job.JobInstanceName, job.FrequencyInMinutes+ "mins", jobStatus.ToString(),lastCompleted , runtime.ToString() + "s", invocationCount.ToString(), faultCount.ToString(), faultRate, ErrorList));
                     if (faultRate >= 30)
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Alert for {0} work job service failure",env),
+                            AlertSubject = string.Format("Alert for {0} work job service failure", env),
                             Details = string.Format("Rate of failure exceeded threshold for {0}. Threshold count : {1}, failure in last 24 hour : {2}", job.JobInstanceName, "30%", faultCount),
                             AlertName = "Work job service",
                             Component = "work job service"

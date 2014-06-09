@@ -87,7 +87,7 @@ namespace NuGetDashboard.Controllers.Trending
         [HttpGet]
         public ActionResult VsDownloadTrend()
         {
-            Dictionary<string, string> content = BlobStorageService.GetDictFromBlob("VsTrend" + "120Day.json");
+            Dictionary<string, string> content = BlobStorageService.GetDictFromBlob("VsTrend" + "30Day.json");
             return PartialView("~/Views/Trending/VsDownloadTrend.cshtml", content);
         }
 
@@ -100,7 +100,7 @@ namespace NuGetDashboard.Controllers.Trending
         [HttpGet]
         public ActionResult OtherOperationTrend()
         {
-            int hour = 120;
+            int hour = 30;
             string[] Operation = new JavaScriptSerializer().Deserialize<string[]>(BlobStorageService.Load("OperationType.json"));
 
             List<string> blobNames = new List<string>();
@@ -114,7 +114,7 @@ namespace NuGetDashboard.Controllers.Trending
         [HttpGet]
         public ActionResult RestoreTrend()
         {
-            int hour = 120;
+            int hour = 30;
             string blobName = "Restore" + hour + "Day";
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobName, "Restore_Trend_For_Last_"+hour+"_Day", 24, 700));
         }
