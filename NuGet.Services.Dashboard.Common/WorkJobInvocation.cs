@@ -14,6 +14,7 @@ namespace NuGet.Services.Dashboard.Common
         public string source;    
         public string status;
         public string result;
+        public string resultMessage;
         public string lastUpdatedBy;
         public string  logUrl;
         public int dequeueCount;
@@ -23,5 +24,35 @@ namespace NuGet.Services.Dashboard.Common
         public DateTime queuedAt; 
         public DateTime nextVisibleAt;
         public DateTime updatedAt;
+    }
+    public class WorkInstanceDetail
+    {
+        public string jobName;
+        public string Frequency;
+        public string Status;
+        public string LastTime;
+        public string RunTime;
+        public string InvocationNo;
+        public string FaultedNo;
+        public int FaultRate;
+        public Dictionary<string,List<string>> ErrorMessage;
+
+        public WorkInstanceDetail(string jobName, string Frequency, string Status, string LastTime, string RunTime, string InvocationNo, string FaultedNo, int FaultRate,Dictionary<string, List<string>> ErrorMessage)
+        {
+            this.jobName = jobName;
+            this.Frequency = Frequency;
+            this.Status = Status;
+            this.LastTime = LastTime;
+            this.RunTime = RunTime;
+            this.InvocationNo = InvocationNo;
+            this.FaultedNo = FaultedNo;
+            this.FaultRate = FaultRate;
+            this.ErrorMessage = ErrorMessage;
+        }
+
+        public WorkInstanceDetail()
+        {
+
+        }
     }
 }
