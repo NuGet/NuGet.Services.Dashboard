@@ -53,6 +53,90 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         }
 
         [HttpGet]
+        public ActionResult RequestPerHourTrendToday()
+        {
+            List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
+            List<string> value = new List<string>();
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IISRequestDetails" + String.Format("{0:MMdd}", DateTime.Now.AddDays(-1)) + ".json");
+            List<IISRequestDetails> requestDetails = new List<IISRequestDetails>();
+            Dictionary<string, List<object>> request = new Dictionary<string, List<object>>(); 
+            foreach (KeyValuePair<string, string> keyValuePair in dict)
+            {
+                value.Add(keyValuePair.Key.Substring(0,2));
+                requestDetails = new JavaScriptSerializer().Deserialize<List<IISRequestDetails>>(keyValuePair.Value);
+
+                foreach (IISRequestDetails scenarios in requestDetails)
+                {
+                    if (scenarios.ScenarioName.Equals("Over all requests")) continue;
+                    if (request.ContainsKey(scenarios.ScenarioName))
+                    {
+                        request[scenarios.ScenarioName].Add(scenarios.RequestsPerHour);
+                    }
+                    else
+                    {
+                        List<object> Yvalue = new List<object>();
+                        Yvalue.Add(scenarios.RequestsPerHour);
+                        request.Add(scenarios.ScenarioName, Yvalue);
+                    }
+                }
+            }
+
+            foreach (KeyValuePair<string, List<object>> each in request)
+            {
+                seriesSet.Add(new DotNet.Highcharts.Options.Series
+                {
+                    Data = new Data(each.Value.ToArray()),
+                    Name = each.Key.Replace(" ", "_")
+                });
+            }
+
+            DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, value, "TodayRequestPerHourTrend", 500);
+            return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
+        }
+
+        [HttpGet]
+        public ActionResult AverageTimeTakenInMsTrendToday()
+        {
+            List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
+            List<string> value = new List<string>();
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IISRequestDetails" + String.Format("{0:MMdd}", DateTime.Now.AddDays(-1)) + ".json");
+            List<IISRequestDetails> requestDetails = new List<IISRequestDetails>();
+            Dictionary<string, List<object>> request = new Dictionary<string, List<object>>();
+            foreach (KeyValuePair<string, string> keyValuePair in dict)
+            {
+                value.Add(keyValuePair.Key.Substring(0, 2));
+                requestDetails = new JavaScriptSerializer().Deserialize<List<IISRequestDetails>>(keyValuePair.Value);
+
+                foreach (IISRequestDetails scenarios in requestDetails)
+                {
+                    if (scenarios.ScenarioName.Equals("Over all requests")) continue;
+                    if (request.ContainsKey(scenarios.ScenarioName))
+                    {
+                        request[scenarios.ScenarioName].Add(scenarios.AvgTimeTakenInMilliSeconds);
+                    }
+                    else
+                    {
+                        List<object> Yvalue = new List<object>();
+                        Yvalue.Add(scenarios.AvgTimeTakenInMilliSeconds);
+                        request.Add(scenarios.ScenarioName, Yvalue);
+                    }
+                }
+            }
+
+            foreach (KeyValuePair<string, List<object>> each in request)
+            {
+                seriesSet.Add(new DotNet.Highcharts.Options.Series
+                {
+                    Data = new Data(each.Value.ToArray()),
+                    Name = each.Key.Replace(" ", "_")
+                });
+            }
+
+            DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, value, "TodayAvgTimeInMsTrend", 500);
+            return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
+        }
+
+        [HttpGet]
         public ActionResult AverageRequestPerHourTrendThisWeek()
         {
             List<string> value = new List<string>();
