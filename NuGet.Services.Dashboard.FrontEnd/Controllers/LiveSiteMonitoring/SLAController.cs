@@ -48,7 +48,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         [HttpGet]
         public ActionResult RequestsToday()
         {
-            List<Tuple<string, string, double>> scenarios = GetRequestsData(String.Format("{0:MMdd}", DateTime.Now));
+            List<Tuple<string, string, double>> scenarios = GetRequestsData(String.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()));
             return PartialView("~/Views/SLA/SLA_RequestDetails.cshtml", scenarios);
         }
 
