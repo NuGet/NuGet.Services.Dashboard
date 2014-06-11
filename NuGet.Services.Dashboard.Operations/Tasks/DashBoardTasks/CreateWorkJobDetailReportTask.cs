@@ -100,14 +100,27 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         runtime = ((int)(totalRunTime / invocationCount));
                     }
                     jobDetail.Add(new WorkInstanceDetail(job.JobInstanceName, job.FrequencyInMinutes+ "mins",lastCompleted , runtime.ToString() + "s", invocationCount.ToString(), faultCount.ToString(), faultRate, ErrorList));
-                    if (faultRate >= 30)
+                    AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
+                    if (faultRate > thresholdValues.WorkJobThreshold)
                     {
                         new SendAlertMailTask
                         {
                             AlertSubject = string.Format("Alert for {0} work job service failure", env),
-                            Details = string.Format("Rate of failure exceeded threshold for {0}. Threshold count : {1}, failure in last 24 hour : {2}", job.JobInstanceName, "30%", faultCount),
+                            Details = string.Format("Rate of failure exceeded threshold for {0}. Threshold count : {1}%, failure in last 24 hour : {2}", job.JobInstanceName,thresholdValues.WorkJobThreshold , faultCount),
                             AlertName = "Work job service",
-                            Component = "work job service"
+                            Component = "work job service",
+                            Level = "Error"
+                        }.ExecuteCommand();
+                    }
+                    else if (faultRate > thresholdValues.WarningWorkJobThreshold)
+                    {
+                        new SendAlertMailTask
+                        {
+                            AlertSubject = string.Format("Alert for {0} work job service failure", env),
+                            Details = string.Format("Rate of failure exceeded threshold for {0}. Threshold count : {1}%, failure in last 24 hour : {2}", job.JobInstanceName, thresholdValues.WarningWorkJobThreshold, faultCount),
+                            AlertName = "Work job service",
+                            Component = "work job service",
+                            Level = "Warning"
                         }.ExecuteCommand();
                     }
 

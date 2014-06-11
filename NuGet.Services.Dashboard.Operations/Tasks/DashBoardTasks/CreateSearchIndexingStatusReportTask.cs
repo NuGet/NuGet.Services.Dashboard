@@ -42,7 +42,19 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     AlertSubject = "Search Service Alert activated for Lucene index lag",
                     Details = string.Format("Delta between the packages between in database and lucene index is {0}. Threshold lag : {1} packages", diff.ToString(), thresholdValues.LuceneIndexLagAlertThreshold.ToString()),
                     AlertName = "Alert for LuceneIndexLag",
-                    Component = "SearchService"
+                    Component = "SearchService",
+                    Level = "Error"
+                }.ExecuteCommand();
+            }
+            else if (diff > thresholdValues.WarningLuceneIndexLagAlertThreshold)
+            {
+                new SendAlertMailTask
+                {
+                    AlertSubject = "Search Service Alert activated for Lucene index lag",
+                    Details = string.Format("Delta between the packages between in database and lucene index is {0}. Threshold lag : {1} packages", diff.ToString(), thresholdValues.WarningLuceneIndexLagAlertThreshold.ToString()),
+                    AlertName = "Alert for LuceneIndexLag",
+                    Component = "SearchService",
+                    Level = "Warning"
                 }.ExecuteCommand();
             }
 

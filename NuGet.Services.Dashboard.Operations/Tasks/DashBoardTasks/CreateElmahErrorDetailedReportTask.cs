@@ -44,15 +44,26 @@ namespace NuGetGallery.Operations
             {
                 if (error.Severity == 0)
                 {
-                    string countThreshold = string.Empty;
                     if (error.Occurecnes > thresholds.ElmahCriticalErrorPerHourAlertThreshold && LastNHours == 1)
                     {
                         new SendAlertMailTask
                         {
                             AlertSubject = string.Format("Elmah Error Alert activated for {0}", error.Error),
-                            Details = String.Format("Number of {0} exceeded threshold limit during the last hour.Threshold error count per hour : {1}, Events recorded in the last hour: {2}", error.Error, countThreshold.ToString(), error.Occurecnes.ToString()),
+                            Details = String.Format("Number of {0} exceeded threshold limit during the last hour.Threshold error count per hour : {1}, Events recorded in the last hour: {2}", error.Error, thresholds.ElmahCriticalErrorPerHourAlertThreshold.ToString(), error.Occurecnes.ToString()),
                             AlertName = string.Format("Elmah Error Alert for {0}", error.Error),
-                            Component = "Web Server"
+                            Component = "Web Server",
+                            Level = "Error"
+                        }.ExecuteCommand();
+                    }
+                    else if (error.Occurecnes > thresholds.WarningElmahCriticalErrorPerHourAlertThreshold && LastNHours == 1)
+                    {
+                        new SendAlertMailTask
+                        {
+                            AlertSubject = string.Format("Elmah Error Alert activated for {0}", error.Error),
+                            Details = String.Format("Number of {0} exceeded threshold limit during the last hour.Threshold error count per hour : {1}, Events recorded in the last hour: {2}", error.Error, thresholds.WarningElmahCriticalErrorPerHourAlertThreshold.ToString(), error.Occurecnes.ToString()),
+                            AlertName = string.Format("Elmah Error Alert for {0}", error.Error),
+                            Component = "Web Server",
+                            Level = "Warning"
                         }.ExecuteCommand();
                     }
                 }

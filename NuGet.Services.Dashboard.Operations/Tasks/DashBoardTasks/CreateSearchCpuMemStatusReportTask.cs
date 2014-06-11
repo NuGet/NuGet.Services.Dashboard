@@ -49,7 +49,19 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         AlertSubject = "Search Service Alert activated for cpu usage",
                         Details = string.Format("Search service process cpu usage is above {0}% , it's {1}% ", thresholdValues.SearchCpuThreshold.ToString(), cpuUsage.ToString()),
                         AlertName = "Alert for Serach CPU Usage",
-                        Component = "SearchService"
+                        Component = "SearchService",
+                        Level = "Error"
+                    }.ExecuteCommand();
+                }
+                else if (cpuUsage > thresholdValues.WarningSearchCpuThreshold)
+                {
+                    new SendAlertMailTask
+                    {
+                        AlertSubject = "Search Service Alert activated for cpu usage",
+                        Details = string.Format("Search service process cpu usage is above {0}% , it's {1}% ", thresholdValues.WarningSearchCpuThreshold.ToString(), cpuUsage.ToString()),
+                        AlertName = "Alert for Serach CPU Usage",
+                        Component = "SearchService",
+                        Level = "Warning"
                     }.ExecuteCommand();
                 }
 
@@ -60,7 +72,19 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         AlertSubject = "Search Service Alert activated for memory usage",
                         Details = string.Format("Search service process memory usage is above {0}% GB, it's {1}% Byte ", thresholdValues.SearchMemThreshold.ToString(), memUsage.ToString()),
                         AlertName = "Alert for Serach Memory Usage",
-                        Component = "SearchService"
+                        Component = "SearchService",
+                        Level = "Error"
+                    }.ExecuteCommand();
+                }
+                else if (memUsage > thresholdValues.WarningSearchMemThreshold * (1 << 30))
+                {
+                    new SendAlertMailTask
+                    {
+                        AlertSubject = "Search Service Alert activated for memory usage",
+                        Details = string.Format("Search service process memory usage is above {0}% GB, it's {1}% Byte ", thresholdValues.WarningSearchMemThreshold.ToString(), memUsage.ToString()),
+                        AlertName = "Alert for Serach Memory Usage",
+                        Component = "SearchService",
+                        Level = "Warning"
                     }.ExecuteCommand();
                 }
                 ReportHelpers.AppendDatatoBlob(StorageAccount, "SearchCpuUsage" + string.Format("{0:MMdd}", DateTime.Now) + "HourlyReport.json", new Tuple<string, string>(string.Format("{0:HH-mm}", DateTime.Now), cpusecond.ToString()), 24, ContainerName);

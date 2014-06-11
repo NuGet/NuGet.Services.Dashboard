@@ -64,7 +64,8 @@ namespace NuGetGallery.Operations
                             AlertSubject = string.Format("Traffic manager endpoint alert activated for {0}",endpointName),
                             Details = string.Format("The status of the endpoint {0} monitoring by traffic manager {1} is {2}", endpointName, ProfileName, endpointStatus),
                             AlertName = "Alert for TrafficManagerEndpoint",
-                            Component = "TrafficManager"
+                            Component = "TrafficManager",
+                            Level = "Error"
                         }.ExecuteCommand();
                     }
                    
