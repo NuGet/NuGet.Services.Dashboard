@@ -20,8 +20,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         [Option("WorkServiceAdminKey", AltName = "key")]
         public string WorkServiceAdminKey { get; set; }
 
-        [Option("ConnectUrl", AltName = "url")]
-        public string ConnectUrl { get; set; }
+        [Option("WorkServiceEndpoint", AltName = "url")]
+        public string WorkServiceEndpoint { get; set; }
         
         public override void ExecuteCommand()
         {
@@ -30,7 +30,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             List<WorkInstanceDetail> jobDetail = new List<WorkInstanceDetail>();
             var content = ReportHelpers.Load(StorageAccount,"Configuration.WorkJobInstances.json",ContainerName);
             List<WorkJobInstanceDetails> instanceDetails = new JavaScriptSerializer().Deserialize<List<WorkJobInstanceDetails>>(content);
-            if (ConnectUrl.Contains("int")) env = "Int0";
+            if (WorkServiceEndpoint.Contains("int")) env = "Int0";
             else env = "Prod0";
             foreach (WorkJobInstanceDetails job in instanceDetails)
             {
@@ -41,7 +41,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 int runtime = 0;
                 Dictionary<string, List<string>> ErrorList = new Dictionary<string, List<string>>();
                 NetworkCredential nc = new NetworkCredential(WorkServiceUserName, WorkServiceAdminKey);
-                WebRequest request = WebRequest.Create(string.Format("{0}/instances/{1}?limit={2}",ConnectUrl,job.JobInstanceName, (lastNhour * 60) / job.FrequencyInMinutes));
+                WebRequest request = WebRequest.Create(string.Format("{0}/instances/{1}?limit={2}", WorkServiceEndpoint, job.JobInstanceName, (lastNhour * 60) / job.FrequencyInMinutes));
                 request.Credentials = nc;
                 request.PreAuthenticate = true;
                 request.Method = "GET";
@@ -105,7 +105,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Alert for {0} work job service failure", env),
+                            AlertSubject = string.Format("Alert for {0} work job service : {1} failure", env,job.JobInstanceName),
                             Details = string.Format("Rate of failure exceeded threshold for {0}. Threshold count : {1}%, failure in last 24 hour : {2}", job.JobInstanceName,thresholdValues.WorkJobThreshold , faultCount),
                             AlertName = "Work job service",
                             Component = "work job service",
@@ -116,7 +116,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Alert for {0} work job service failure", env),
+                            AlertSubject = string.Format("Alert for {0} work job service: {1} failure", env,job.JobInstanceName),
                             Details = string.Format("Rate of failure exceeded threshold for {0}. Threshold count : {1}%, failure in last 24 hour : {2}", job.JobInstanceName, thresholdValues.WarningWorkJobThreshold, faultCount),
                             AlertName = "Work job service",
                             Component = "work job service",

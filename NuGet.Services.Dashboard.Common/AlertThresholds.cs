@@ -48,7 +48,7 @@ namespace NuGet.Services.Dashboard.Common
         public int WarningFailoverDBAndBlobLag = int.MaxValue; //Specifies the allowed lag between failover DB and blob in terms of number of packages.
         public int WarningSearchCpuThreshold = int.MaxValue; //specifies the limit on search service cpu usage (% used in maxsize)
         public int WarningSearchMemThreshold = int.MaxValue; // specifies the limit on search service memory usage (GB)
-        public int WarningWorkJobThreshold = 10;
+        public int WarningWorkJobThreshold = 20;
         public int WarningDatabaseImportThreshold = 0;
     }
 }
