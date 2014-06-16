@@ -52,24 +52,24 @@ namespace NuGetGallery.Operations
 
                         var throttlingEventCount = dbExecutor.Query<Int32>(string.Format("select count(*) from sys.event_log where start_time>='{0}' and start_time<='{1}' and database_name = '{2}' and (event_type Like 'throttling%' or event_type Like 'deadlock')", DateTime.UtcNow.AddHours(-1).ToString("yyyy-MM-dd hh:mm:ss"),DateTime.UtcNow.ToString("yyyy-MM-dd hh:mm:ss"),currentDbName)).SingleOrDefault();
                         AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
-                        if(throttlingEventCount > thresholdValues.DatabaseThrottlingEventThreshold && LastNHours == 1)
+                        if(throttlingEventCount > thresholdValues.DatabaseThrottlingEventErrorThreshold && LastNHours == 1)
                         {
                             new SendAlertMailTask
                             {
-                                AlertSubject = "SQL Azure DB alert activated for throttling/deadlock event",
-                                Details = string.Format("Number of events exceeded threshold for DB throttling/deadlock events. Threshold count : {0}, events noticed in last hour : {1}", thresholdValues.DatabaseThrottlingEventThreshold, throttlingEventCount),                               
-                                AlertName = "SQL Azure DB throttling/deadlock event",
+                                AlertSubject = "Error: SQL Azure DB alert activated for throttling/deadlock event",
+                                Details = string.Format("Number of events exceeded threshold for DB throttling/deadlock events. Error Threshold count : {0}, events noticed in last hour : {1}", thresholdValues.DatabaseThrottlingEventErrorThreshold, throttlingEventCount),                               
+                                AlertName = "Error: SQL Azure DB throttling/deadlock event",
                                 Component = "SQL Azure Database",
                                 Level = "Error"
                             }.ExecuteCommand();
                         }
-                        else if (throttlingEventCount > thresholdValues.WarningDatabaseThrottlingEventThreshold && LastNHours == 1)
+                        else if (throttlingEventCount > thresholdValues.DatabaseThrottlingEventWarningThreshold && LastNHours == 1)
                         {
                             new SendAlertMailTask
                             {
-                                AlertSubject = "SQL Azure DB alert activated for throttling/deadlock event",
-                                Details = string.Format("Number of events exceeded threshold for DB throttling/deadlock events. Threshold count : {0}, events noticed in last hour : {1}", thresholdValues.WarningDatabaseThrottlingEventThreshold, throttlingEventCount),
-                                AlertName = "SQL Azure DB throttling/deadlock event",
+                                AlertSubject = "Warning: SQL Azure DB alert activated for throttling/deadlock event",
+                                Details = string.Format("Number of events exceeded threshold for DB throttling/deadlock events. Warning Threshold count : {0}, events noticed in last hour : {1}", thresholdValues.DatabaseThrottlingEventWarningThreshold, throttlingEventCount),
+                                AlertName = "Warning: SQL Azure DB throttling/deadlock event",
                                 Component = "SQL Azure Database",
                                 Level = "Warning"
                             }.ExecuteCommand();
@@ -87,7 +87,7 @@ namespace NuGetGallery.Operations
                 {
                     sqlConnection.Open();
                     AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
-                    var fragmentationDetails = dbExecutor.Query<DatabaseIndex>(string.Format(sqlQueryForIndexFragmentation,thresholdValues.DatabaseIndexFragmentationPercentThreshold));
+                    var fragmentationDetails = dbExecutor.Query<DatabaseIndex>(string.Format(sqlQueryForIndexFragmentation,thresholdValues.DatabaseIndexFragmentationPercentErrorThreshold));
                     var json = new JavaScriptSerializer().Serialize(fragmentationDetails);
                     ReportHelpers.CreateBlob(StorageAccount, "DBIndexFragmentation.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
                 }

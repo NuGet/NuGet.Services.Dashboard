@@ -35,24 +35,24 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         {
             AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
             int diff = GetTotalPackageCountFromDatabase() - GetTotalPackageCountFromLucene();
-            if(diff > thresholdValues.LuceneIndexLagAlertThreshold || diff < -50)
+            if(diff > thresholdValues.LuceneIndexLagAlertErrorThreshold || diff < -50)
             {
                 new SendAlertMailTask
                 {
-                    AlertSubject = "Search Service Alert activated for Lucene index lag",
-                    Details = string.Format("Delta between the packages between in database and lucene index is {0}. Threshold lag : {1} packages", diff.ToString(), thresholdValues.LuceneIndexLagAlertThreshold.ToString()),
-                    AlertName = "Alert for LuceneIndexLag",
+                    AlertSubject = "Error: Search Service Alert activated for Lucene index lag",
+                    Details = string.Format("Delta between the packages between in database and lucene index is {0}. Error Threshold lag : {1} packages", diff.ToString(), thresholdValues.LuceneIndexLagAlertErrorThreshold),
+                    AlertName = "Error: Alert for LuceneIndexLag",
                     Component = "SearchService",
                     Level = "Error"
                 }.ExecuteCommand();
             }
-            else if (diff > thresholdValues.WarningLuceneIndexLagAlertThreshold)
+            else if (diff > thresholdValues.LuceneIndexLagAlertWarningThreshold)
             {
                 new SendAlertMailTask
                 {
-                    AlertSubject = "Search Service Alert activated for Lucene index lag",
-                    Details = string.Format("Delta between the packages between in database and lucene index is {0}. Threshold lag : {1} packages", diff.ToString(), thresholdValues.WarningLuceneIndexLagAlertThreshold.ToString()),
-                    AlertName = "Alert for LuceneIndexLag",
+                    AlertSubject = "Warning: Search Service Alert activated for Lucene index lag",
+                    Details = string.Format("Delta between the packages between in database and lucene index is {0}. Warning Threshold lag : {1} packages", diff.ToString(), thresholdValues.LuceneIndexLagAlertWarningThreshold),
+                    AlertName = "Warning: Alert for LuceneIndexLag",
                     Component = "SearchService",
                     Level = "Warning"
                 }.ExecuteCommand();

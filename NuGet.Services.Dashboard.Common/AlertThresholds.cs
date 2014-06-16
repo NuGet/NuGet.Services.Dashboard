@@ -8,47 +8,45 @@ namespace NuGet.Services.Dashboard.Common
 {
     public class AlertThresholds
     {
-        public int DatabaseConnectionsThreshold = 150; // Specifies the limit on maximum number of DB connections on Gallery DB.
-        public int DatabaseRequestsThreshold = 80; // Specifies the limit on the maximum number of DB requests on Gallery DB. 
-        public int DatabaseBlockedRequestsThreshold = 20; // Specifies the limit on the number of suspended/Blocked requests in DB.
-        public int DatabaseThrottlingEventThreshold = 10;
-        public int DatabaseIndexFragmentationPercentThreshold = 20;
-        public int DatabaseSizeWarningPercentThreshold = 75; //specifies the warning limit on DB size (% used in maxsize)
-        public int DatabaseSizeErrorPercentThreshold = 90;  //specifies the error limit on DB size (% used in maxsize)
-        public int ElmahCriticalErrorPerHourAlertThreshold = 200;// specifies the limit on the number of critical errors in a specific category per hour in Elmah.
-        public int LuceneIndexLagAlertThreshold = 100; // Specifies the limit on the delta between number of packages in DB and Lucene Index.
-        public int BackupDBAgeThresholdInMinutes = 120; //A back up no older than 1 hour should be present. But make it 2 hours just to provide extra buffer if in case the worker job is taking time.
-        public int OnlineDBBackupsThreshold = 7;// Only 4 backup can be present online at any point of time. But make the threshold 7 to provide some space for slow running jobs.
-        public int PurgeStatisticsThresholdInDays = 8; //Purge stats job purges records older than 7 days. Settings the threshold to 8 to provide some buffer.
-        public int PendingThresholdInHours = 3; //Specifies the limit on the no. of hours a package can remain in Pending state.
-        public int BackupPackagesThresholdInHours = 2; //Specifies the limit lag between "packages" container and "backup" container.
-        public int FailoverDBAgeThresholdInMinutes = 180; //Specifies the lag between the primary DC's database and failover database in minutes.
-        public int FailoverDBAndBlobLag = 20; //Specifies the allowed lag between failover DB and blob in terms of number of packages.
-        public int SearchCpuThreshold = 80; //specifies the limit on search service cpu usage (% used in maxsize)
-        public int SearchMemThreshold = 1; // specifies the limit on search service memory usage (GB)
-        public int WorkJobThreshold = 30;
-        public int DatabaseImportThreshold = 39000;
+        public int DatabaseConnectionsErrorThreshold = 150; // Specifies the limit on maximum number of DB connections on Gallery DB.
+        public int DatabaseRequestsErrorThreshold = 80; // Specifies the limit on the maximum number of DB requests on Gallery DB. 
+        public int DatabaseBlockedRequestsErrorThreshold = 20; // Specifies the limit on the number of suspended/Blocked requests in DB.
+        public int DatabaseThrottlingEventErrorThreshold = 10;
+        public int DatabaseIndexFragmentationPercentErrorThreshold = 20;
+        public int DatabaseSizePercentErrorThreshold = 90;  //specifies the error limit on DB size (% used in maxsize)
+        public int ElmahCriticalErrorPerHourAlertErrorThreshold = 200;// specifies the limit on the number of critical errors in a specific category per hour in Elmah.
+        public int LuceneIndexLagAlertErrorThreshold = 100; // Specifies the limit on the delta between number of packages in DB and Lucene Index.
+        public int BackupDBAgeErrorThresholdInMinutes = 120; //A back up no older than 1 hour should be present. But make it 2 hours just to provide extra buffer if in case the worker job is taking time.
+        public int OnlineDBBackupsErrorThreshold = 7;// Only 4 backup can be present online at any point of time. But make the threshold 7 to provide some space for slow running jobs.
+        public int PurgeStatisticsErrorThresholdInDays = 8; //Purge stats job purges records older than 7 days. Settings the threshold to 8 to provide some buffer.
+        public int PendingErrorThresholdInHours = 3; //Specifies the limit on the no. of hours a package can remain in Pending state.
+        public int BackupPackagesErrorThresholdInHours = 2; //Specifies the limit lag between "packages" container and "backup" container.
+        public int FailoverDBAgeErrorThresholdInMinutes = 180; //Specifies the lag between the primary DC's database and failover database in minutes.
+        public int FailoverDBAndBlobLagErrorThreshold = 20; //Specifies the allowed lag between failover DB and blob in terms of number of packages.
+        public int SearchCpuErrorThreshold = 80; //specifies the limit on search service cpu usage (% used in maxsize)
+        public int SearchMemErrorThreshold = 1; // specifies the limit on search service memory usage (GB)
+        public int WorkJobErrorThreshold = 30;
+        public int DatabaseImportErrorThreshold = 39000;
     
         // warning threhold
-        public int WarningDatabaseConnectionsThreshold = int.MaxValue; // Specifies the limit on maximum number of DB connections on Gallery DB.
-        public int WarningDatabaseRequestsThreshold = int.MaxValue; // Specifies the limit on the maximum number of DB requests on Gallery DB. 
-        public int WarningDatabaseBlockedRequestsThreshold = int.MaxValue; // Specifies the limit on the number of suspended/Blocked requests in DB.
-        public int WarningDatabaseThrottlingEventThreshold = int.MaxValue;
-        public int WarningDatabaseIndexFragmentationPercentThreshold = int.MaxValue;
-        public int WarningDatabaseSizeWarningPercentThreshold = int.MaxValue; //specifies the warning limit on DB size (% used in maxsize)
-        public int WarningDatabaseSizeErrorPercentThreshold = int.MaxValue;  //specifies the error limit on DB size (% used in maxsize)
-        public int WarningElmahCriticalErrorPerHourAlertThreshold = int.MaxValue;// specifies the limit on the number of critical errors in a specific category per hour in Elmah.
-        public int WarningLuceneIndexLagAlertThreshold = int.MaxValue; // Specifies the limit on the delta between number of packages in DB and Lucene Index.
-        public int WarningBackupDBAgeThresholdInMinutes = int.MaxValue; //A back up no older than 1 hour should be present. But make it 2 hours just to provide extra buffer if in case the worker job is taking time.
-        public int WarningOnlineDBBackupsThreshold = int.MaxValue;// Only 4 backup can be present online at any point of time. But make the threshold 7 to provide some space for slow running jobs.
-        public int WarningPurgeStatisticsThresholdInDays = int.MaxValue; //Purge stats job purges records older than 7 days. Settings the threshold to 8 to provide some buffer.
-        public int WarningPendingThresholdInHours = int.MaxValue; //Specifies the limit on the no. of hours a package can remain in Pending state.
-        public int WarningBackupPackagesThresholdInHours = int.MaxValue; //Specifies the limit lag between "packages" container and "backup" container.
-        public int WarningFailoverDBAgeThresholdInMinutes = int.MaxValue; //Specifies the lag between the primary DC's database and failover database in minutes.
-        public int WarningFailoverDBAndBlobLag = int.MaxValue; //Specifies the allowed lag between failover DB and blob in terms of number of packages.
-        public int WarningSearchCpuThreshold = int.MaxValue; //specifies the limit on search service cpu usage (% used in maxsize)
-        public int WarningSearchMemThreshold = int.MaxValue; // specifies the limit on search service memory usage (GB)
-        public int WarningWorkJobThreshold = 20;
-        public int WarningDatabaseImportThreshold = 0;
+        public int DatabaseConnectionsWarningThreshold = int.MaxValue; // Specifies the limit on maximum number of DB connections on Gallery DB.
+        public int DatabaseRequestsWarningThreshold = int.MaxValue; // Specifies the limit on the maximum number of DB requests on Gallery DB. 
+        public int DatabaseBlockedRequestsWarningThreshold = int.MaxValue; // Specifies the limit on the number of suspended/Blocked requests in DB.
+        public int DatabaseThrottlingEventWarningThreshold = int.MaxValue;
+        public int DatabaseIndexFragmentationPercentWarningThreshold = int.MaxValue;
+        public int DatabaseSizePercentWarningThreshold = int.MaxValue; //specifies the warning limit on DB size (% used in maxsize)
+        public int ElmahCriticalErrorPerHourAlertWarningThreshold = int.MaxValue;// specifies the limit on the number of critical errors in a specific category per hour in Elmah.
+        public int LuceneIndexLagAlertWarningThreshold = int.MaxValue; // Specifies the limit on the delta between number of packages in DB and Lucene Index.
+        public int BackupDBAgeWarningThresholdInMinutes = int.MaxValue; //A back up no older than 1 hour should be present. But make it 2 hours just to provide extra buffer if in case the worker job is taking time.
+        public int OnlineDBBackupsWarningThreshold = int.MaxValue;// Only 4 backup can be present online at any point of time. But make the threshold 7 to provide some space for slow running jobs.
+        public int PurgeStatisticsWarningThresholdInDays = int.MaxValue; //Purge stats job purges records older than 7 days. Settings the threshold to 8 to provide some buffer.
+        public int PendingWarningWarningThresholdInHours = int.MaxValue; //Specifies the limit on the no. of hours a package can remain in Pending state.
+        public int BackupPackagesWarningThresholdInHours = int.MaxValue; //Specifies the limit lag between "packages" container and "backup" container.
+        public int FailoverDBAgeWarningThresholdInMinutes = int.MaxValue; //Specifies the lag between the primary DC's database and failover database in minutes.
+        public int FailoverDBAndBlobLagWarningThreshold = int.MaxValue; //Specifies the allowed lag between failover DB and blob in terms of number of packages.
+        public int SearchCpuWarningThreshold = int.MaxValue; //specifies the limit on search service cpu usage (% used in maxsize)
+        public int SearchMemWarningThreshold = int.MaxValue; // specifies the limit on search service memory usage (GB)
+        public int WorkJobWarningThreshold = 20;
+        public int DatabaseImportWarningThreshold = 0;
     }
 }

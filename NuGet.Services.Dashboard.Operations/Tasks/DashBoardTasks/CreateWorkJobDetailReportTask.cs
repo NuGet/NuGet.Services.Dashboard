@@ -26,12 +26,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         public override void ExecuteCommand()
         {
             int lastNhour = 24;
-            string env;
             List<WorkInstanceDetail> jobDetail = new List<WorkInstanceDetail>();
             var content = ReportHelpers.Load(StorageAccount,"Configuration.WorkJobInstances.json",ContainerName);
             List<WorkJobInstanceDetails> instanceDetails = new JavaScriptSerializer().Deserialize<List<WorkJobInstanceDetails>>(content);
-            if (WorkServiceEndpoint.Contains("int")) env = "Int0";
-            else env = "Prod0";
             foreach (WorkJobInstanceDetails job in instanceDetails)
             {
                 int invocationCount = 0;
@@ -101,24 +98,24 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     }
                     jobDetail.Add(new WorkInstanceDetail(job.JobInstanceName, job.FrequencyInMinutes+ "mins",lastCompleted , runtime.ToString() + "s", invocationCount.ToString(), faultCount.ToString(), faultRate, ErrorList));
                     AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
-                    if (faultRate > thresholdValues.WorkJobThreshold)
+                    if (faultRate > thresholdValues.WorkJobErrorThreshold)
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Alert for {0} work job service : {1} failure", env,job.JobInstanceName),
-                            Details = string.Format("Rate of failure exceeded threshold for {0}. Threshold count : {1}%, failure in last 24 hour : {2}", job.JobInstanceName,thresholdValues.WorkJobThreshold , faultCount),
-                            AlertName = "Work job service",
+                            AlertSubject = string.Format("Error: Alert for work job service : {1} failure", job.JobInstanceName),
+                            Details = string.Format("Rate of failure exceeded Error threshold for {0}. Threshold count : {1}%, failure in last 24 hour : {2}", job.JobInstanceName,thresholdValues.WorkJobErrorThreshold , faultCount),
+                            AlertName = "Error: Work job service",
                             Component = "work job service",
                             Level = "Error"
                         }.ExecuteCommand();
                     }
-                    else if (faultRate > thresholdValues.WarningWorkJobThreshold)
+                    else if (faultRate > thresholdValues.WorkJobWarningThreshold)
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Alert for {0} work job service: {1} failure", env,job.JobInstanceName),
-                            Details = string.Format("Rate of failure exceeded threshold for {0}. Threshold count : {1}%, failure in last 24 hour : {2}", job.JobInstanceName, thresholdValues.WarningWorkJobThreshold, faultCount),
-                            AlertName = "Work job service",
+                            AlertSubject = string.Format("Warning: Alert for work job service: {1} failure", job.JobInstanceName),
+                            Details = string.Format("Rate of failure exceeded Warning threshold for {0}. Threshold count : {1}%, failure in last 24 hour : {2}", job.JobInstanceName, thresholdValues.WorkJobWarningThreshold, faultCount),
+                            AlertName = "Warning: Work job service",
                             Component = "work job service",
                             Level = "Warning"
                         }.ExecuteCommand();
@@ -128,7 +125,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             }
 
              var json = new JavaScriptSerializer().Serialize(jobDetail);
-             ReportHelpers.CreateBlob(StorageAccount, env+"WorkJobDetail.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
+             ReportHelpers.CreateBlob(StorageAccount, "WorkJobDetail.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
         }
 
         private string getResultMessage(string message)

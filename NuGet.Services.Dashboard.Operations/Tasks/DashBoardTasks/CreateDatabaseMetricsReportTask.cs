@@ -30,9 +30,9 @@ namespace NuGetGallery.Operations
         public override void ExecuteCommand()
         {
             AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount,"Configuration.AlertThresholds.json",ContainerName));
-            GetCurrentValueAndAlert(SqlQueryForConnectionCount, "DBConnections", thresholdValues.DatabaseConnectionsThreshold,thresholdValues.WarningDatabaseConnectionsThreshold);
-            GetCurrentValueAndAlert(SqlQueryForRequestCount, "DBRequests", thresholdValues.DatabaseRequestsThreshold,thresholdValues.WarningDatabaseRequestsThreshold);
-            GetCurrentValueAndAlert(SqlQueryForBlockedRequestCount, "DBSuspendedRequests", thresholdValues.DatabaseBlockedRequestsThreshold,thresholdValues.DatabaseBlockedRequestsThreshold);
+            GetCurrentValueAndAlert(SqlQueryForConnectionCount, "DBConnections", thresholdValues.DatabaseConnectionsErrorThreshold,thresholdValues.DatabaseConnectionsWarningThreshold);
+            GetCurrentValueAndAlert(SqlQueryForRequestCount, "DBRequests", thresholdValues.DatabaseRequestsErrorThreshold,thresholdValues.DatabaseRequestsWarningThreshold);
+            GetCurrentValueAndAlert(SqlQueryForBlockedRequestCount, "DBSuspendedRequests", thresholdValues.DatabaseBlockedRequestsErrorThreshold,thresholdValues.DatabaseBlockedRequestsWarningThreshold);
             CreateReportForDBCPUUsage();
             CreateReportForRequestDetails();
         }
@@ -50,9 +50,9 @@ namespace NuGetGallery.Operations
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("SQL Azure database alert activated for {0}", blobName),
-                            Details = string.Format("Number of {0} exceeded the threshold value. Threshold value  {1}, Current value : {2}",blobName,error,connectionCount),                          
-                            AlertName = "SQL Azure DB alert for connections/requests count",
+                            AlertSubject = string.Format("Error: SQL Azure database alert activated for {0}", blobName),
+                            Details = string.Format("Number of {0} exceeded the Error threshold value. Threshold value  {1}, Current value : {2}",blobName,error,connectionCount),
+                            AlertName = "Error: SQL Azure DB alert for connections/requests count",
                             Component = "SQL Azure database",
                             Level = "Error"
                         }.ExecuteCommand();
@@ -61,9 +61,9 @@ namespace NuGetGallery.Operations
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("SQL Azure database alert activated for {0}", blobName),
-                            Details = string.Format("Number of {0} exceeded the threshold value. Threshold value  {1}, Current value : {2}", blobName, warning, connectionCount),
-                            AlertName = "SQL Azure DB alert for connections/requests count",
+                            AlertSubject = string.Format("Warning: SQL Azure database alert activated for {0}", blobName),
+                            Details = string.Format("Number of {0} exceeded the Warning threshold value. Threshold value  {1}, Current value : {2}", blobName, warning, connectionCount),
+                            AlertName = "Warning: SQL Azure DB alert for connections/requests count",
                             Component = "SQL Azure database",
                             Level = "Warning"
                         }.ExecuteCommand();

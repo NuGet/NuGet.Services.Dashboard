@@ -45,8 +45,8 @@ namespace NuGetGallery.Operations
         {
             JavaScriptSerializer js = new JavaScriptSerializer();
             AlertThresholds thresholdValues = js.Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
-            int error = thresholdValues.DatabaseSizeWarningPercentThreshold;
-            int warning = thresholdValues.WarningDatabaseSizeWarningPercentThreshold;
+            int error = thresholdValues.DatabaseSizePercentErrorThreshold;
+            int warning = thresholdValues.DatabaseSizePercentWarningThreshold;
 
             List<DatabaseSize> dbSizeDetails = new List<DatabaseSize>();
            // dbSizeDetails.Add(GetDataSize(PrimaryConnectionString.ConnectionString,threshold));
@@ -75,9 +75,9 @@ namespace NuGetGallery.Operations
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("SQL Azure database size alert activated for {0}",dbName),
-                            Details = string.Format("DB Size excced the threshold percent.Current Used % {0}, Threshold % : {1}", percentUsed, error ),
-                            AlertName = "SQL Azure DB alert for database size limit",
+                            AlertSubject = string.Format("Error: SQL Azure database size alert activated for {0}",dbName),
+                            Details = string.Format("DB Size excced the Error threshold percent.Current Used % {0}, Threshold % : {1}", percentUsed, error ),
+                            AlertName = "Error: SQL Azure DB alert for database size limit",
                             Component = string.Format("SQL Azure database-{0}",dbName),
                             Level = "Error"
                         }.ExecuteCommand();
@@ -86,9 +86,9 @@ namespace NuGetGallery.Operations
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("SQL Azure database size alert activated for {0}", dbName),
-                            Details = string.Format("DB Size excced the threshold percent.Current Used % {0}, Threshold % : {1}", percentUsed, warning),
-                            AlertName = "SQL Azure DB alert for database size limit",
+                            AlertSubject = string.Format("Warning: SQL Azure database size alert activated for {0}", dbName),
+                            Details = string.Format("DB Size excced the Warning threshold percent.Current Used % {0}, Threshold % : {1}", percentUsed, warning),
+                            AlertName = "Warning: SQL Azure DB alert for database size limit",
                             Component = string.Format("SQL Azure database-{0}", dbName),
                             Level = "Warning"
                         }.ExecuteCommand();

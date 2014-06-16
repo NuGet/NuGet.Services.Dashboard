@@ -44,24 +44,24 @@ namespace NuGetGallery.Operations
             {
                 if (error.Severity == 0)
                 {
-                    if (error.Occurecnes > thresholds.ElmahCriticalErrorPerHourAlertThreshold && LastNHours == 1)
+                    if (error.Occurecnes > thresholds.ElmahCriticalErrorPerHourAlertErrorThreshold && LastNHours == 1)
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Elmah Error Alert activated for {0}", error.Error),
-                            Details = String.Format("Number of {0} exceeded threshold limit during the last hour.Threshold error count per hour : {1}, Events recorded in the last hour: {2}", error.Error, thresholds.ElmahCriticalErrorPerHourAlertThreshold.ToString(), error.Occurecnes.ToString()),
-                            AlertName = string.Format("Elmah Error Alert for {0}", error.Error),
+                            AlertSubject = string.Format("Error: Elmah Error Alert activated for {0}", error.Error),
+                            Details = String.Format("Number of {0} exceeded Error threshold limit during the last hour.Threshold error count per hour : {1}, Events recorded in the last hour: {2}", error.Error, thresholds.ElmahCriticalErrorPerHourAlertErrorThreshold, error.Occurecnes.ToString()),
+                            AlertName = string.Format("Error: Elmah Error Alert for {0}", error.Error),
                             Component = "Web Server",
                             Level = "Error"
                         }.ExecuteCommand();
                     }
-                    else if (error.Occurecnes > thresholds.WarningElmahCriticalErrorPerHourAlertThreshold && LastNHours == 1)
+                    else if (error.Occurecnes > thresholds.ElmahCriticalErrorPerHourAlertWarningThreshold && LastNHours == 1)
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Elmah Error Alert activated for {0}", error.Error),
-                            Details = String.Format("Number of {0} exceeded threshold limit during the last hour.Threshold error count per hour : {1}, Events recorded in the last hour: {2}", error.Error, thresholds.WarningElmahCriticalErrorPerHourAlertThreshold.ToString(), error.Occurecnes.ToString()),
-                            AlertName = string.Format("Elmah Error Alert for {0}", error.Error),
+                            AlertSubject = string.Format("Warning: Elmah Error Alert activated for {0}", error.Error),
+                            Details = String.Format("Number of {0} exceeded Warning threshold limit during the last hour.Threshold error count per hour : {1}, Events recorded in the last hour: {2}", error.Error, thresholds.ElmahCriticalErrorPerHourAlertWarningThreshold, error.Occurecnes.ToString()),
+                            AlertName = string.Format("Warning: Elmah Error Alert for {0}", error.Error),
                             Component = "Web Server",
                             Level = "Warning"
                         }.ExecuteCommand();

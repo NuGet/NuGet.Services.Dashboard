@@ -93,9 +93,9 @@ namespace NuGetGallery.Operations
                 {
                     new SendAlertMailTask
                     {
-                        AlertSubject = string.Format("Role Instance alert activated for {0} cloud service", ServiceName),
+                        AlertSubject = string.Format("Error: Role Instance alert activated for {0} cloud service", ServiceName),
                         Details = string.Format("The status of the instance {0} in cloud service {1} is {2}", instanceName, ServiceName, instanceStatus),
-                        AlertName = string.Format("Alert for Role Instance status for {0}",ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
+                        AlertName = string.Format("Error: Alert for Role Instance status for {0}", ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
                         Component = "CloudService",
                         Level = "Error"
                     }.ExecuteCommand();
@@ -106,9 +106,9 @@ namespace NuGetGallery.Operations
                 string unReadyReport = string.Join(",", unReadyInstanceStatus.ToArray());
                 new SendAlertMailTask
                     {
-                        AlertSubject = string.Format("Alert for Multiple role instances statuses for {0}", ServiceName),
+                        AlertSubject = string.Format("Error: Alert for Multiple role instances statuses for {0}", ServiceName),
                         Details = string.Format("More than half instances of {0} cloud service: {1} is not in ReadyRole status",  ServiceName, unReadyReport),
-                        AlertName = string.Format("Alert for Multiple Role Instances for {0}",ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
+                        AlertName = string.Format("Error: Alert for Multiple Role Instances for {0}", ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
                         Component = "CloudService" + ServiceName,
                         Level = "Error"
                     }.ExecuteCommand();

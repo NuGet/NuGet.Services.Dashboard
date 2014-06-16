@@ -54,17 +54,29 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             {
                 connection.Open();
                 var lastBackupTime = Util.GetLastBackupTime(db, BackupPrefix);
-                outputMessage = string.Format("Last backup time in utc as of {0} is {1}. Acceptable Threshold lag in minutes : {2}", DateTime.UtcNow, lastBackupTime, thresholdValues.BackupDBAgeThresholdInMinutes.ToString());
-                if (lastBackupTime <= DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(thresholdValues.BackupDBAgeThresholdInMinutes)))
+                outputMessage = string.Format("Last backup time in utc as of {0} is {1}. Acceptable Error Threshold lag in minutes : {2}", DateTime.UtcNow, lastBackupTime, thresholdValues.BackupDBAgeErrorThresholdInMinutes);
+                if (lastBackupTime <= DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(thresholdValues.BackupDBAgeErrorThresholdInMinutes)))
                 {
                     new SendAlertMailTask
                     {
-                        AlertSubject = "Work service job background check alert activated for BackupDataBase job",
+                        AlertSubject = "Error: Work service job background check alert activated for BackupDataBase job",
                         Details = outputMessage,
-                        AlertName = "Alert for BackupDatabase",
-                        Component = "BackupDatabase Job"
+                        AlertName = "Error: Alert for BackupDatabase",
+                        Component = "BackupDatabase Job",
+                        Level = "Error"
                     }.ExecuteCommand();
-                }               
+                }
+                else if (lastBackupTime <= DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(thresholdValues.BackupDBAgeWarningThresholdInMinutes)))
+                {
+                    new SendAlertMailTask
+                    {
+                        AlertSubject = "Warning: Work service job background check alert activated for BackupDataBase job",
+                        Details = string.Format("Last backup time in utc as of {0} is {1}. Acceptable Warning Threshold lag in minutes : {2}", DateTime.UtcNow, lastBackupTime, thresholdValues.BackupDBAgeWarningThresholdInMinutes),
+                        AlertName = "Warning: Alert for BackupDatabase",
+                        Component = "BackupDatabase Job",
+                        Level = "Warning"
+                    }.ExecuteCommand();
+                }
             }
             return outputMessage;            
         }
@@ -90,17 +102,29 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     onlineBackupCount = allBackups.Count();
                 }
 
-                outputMessage = string.Format("No of online databases is {0}. Acceptable threshold count : {1}", onlineBackupCount, thresholdValues.OnlineDBBackupsThreshold.ToString());
-                if (onlineBackupCount >= thresholdValues.OnlineDBBackupsThreshold)
+                outputMessage = string.Format("No of online databases is {0}. Acceptable Error threshold count : {1}", onlineBackupCount, thresholdValues.OnlineDBBackupsErrorThreshold);
+                if (onlineBackupCount >= thresholdValues.OnlineDBBackupsErrorThreshold)
                 {
                     new SendAlertMailTask
                     {
-                        AlertSubject = "Work service job background check alert activated for CleanOnlineDatabase job",
+                        AlertSubject = "Error: Work service job background check alert activated for CleanOnlineDatabase job",
                         Details = outputMessage,
-                        AlertName = "Alert for CleanOnlineDatabase",
-                        Component = "CleanOnlineDatabase Job"
+                        AlertName = "Error: Alert for CleanOnlineDatabase",
+                        Component = "CleanOnlineDatabase Job",
+                        Level = "Error"
                     }.ExecuteCommand();
-                }               
+                }
+                else if (onlineBackupCount >= thresholdValues.OnlineDBBackupsWarningThreshold)
+                {
+                    new SendAlertMailTask
+                    {
+                        AlertSubject = "Warning: Work service job background check alert activated for CleanOnlineDatabase job",
+                        Details = string.Format("No of online databases is {0}. Acceptable Warning threshold count : {1}", onlineBackupCount, thresholdValues.OnlineDBBackupsWarningThreshold),
+                        AlertName = "Warning: Alert for CleanOnlineDatabase",
+                        Component = "CleanOnlineDatabase Job",
+                        Level = "Warning"
+                    }.ExecuteCommand();
+                }
             }
             return outputMessage;
         }
@@ -114,18 +138,31 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     {
                         sqlConnection.Open();
                         //Get the count of records which are older than 7 days.
-                        var oldRecordCount = dbExecutor.Query<Int32>(string.Format("select count(*) from dbo.PackageStatistics where TimeStamp <= '{0}'", DateTime.UtcNow.AddDays(thresholdValues.PurgeStatisticsThresholdInDays * -1).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
-                        outputMessage = string.Format("No of Old stats record found online is {0}. Acceptable threshold lag in no. of days: {1}", oldRecordCount, thresholdValues.PurgeStatisticsThresholdInDays.ToString());
-                        if(oldRecordCount > 0)
+                        var ErrorOldRecordCount = dbExecutor.Query<Int32>(string.Format("select count(*) from dbo.PackageStatistics where TimeStamp <= '{0}'", DateTime.UtcNow.AddDays(thresholdValues.PurgeStatisticsErrorThresholdInDays * -1).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
+                        var WarningOldRecordCount = dbExecutor.Query<Int32>(string.Format("select count(*) from dbo.PackageStatistics where TimeStamp <= '{0}'", DateTime.UtcNow.AddDays(thresholdValues.PurgeStatisticsWarningThresholdInDays * -1).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
+                        outputMessage = string.Format("No of Old stats record found online is {0}. Acceptable Error threshold lag in no. of days: {1}", ErrorOldRecordCount, thresholdValues.PurgeStatisticsErrorThresholdInDays);
+                        if(ErrorOldRecordCount > 0)
                         {
                             new SendAlertMailTask
                             {
-                                AlertSubject = "Work service job background check alert activated for PurgePackageStatistics job",
+                                AlertSubject = "Error: Work service job background check alert activated for PurgePackageStatistics job",
                                 Details = outputMessage,
-                                AlertName = "Alert for PurgePackageStatistics",
-                                Component = "PurgePackageStatistics Job"
+                                AlertName = "Error: Alert for PurgePackageStatistics",
+                                Component = "PurgePackageStatistics Job",
+                                Level = "Error"
                             }.ExecuteCommand();
-                        }                      
+                        }
+                        else if (WarningOldRecordCount > 0)
+                        {
+                            new SendAlertMailTask
+                            {
+                                AlertSubject = "Warning: Work service job background check alert activated for PurgePackageStatistics job",
+                                Details = string.Format("No of Old stats record found online is {0}. Acceptable Warning threshold lag in no. of days: {1}", ErrorOldRecordCount, thresholdValues.PurgeStatisticsWarningThresholdInDays),
+                                AlertName = "Warning: Alert for PurgePackageStatistics",
+                                Component = "PurgePackageStatistics Job",
+                                Level = "Warning"
+                            }.ExecuteCommand();
+                        }
                     }
                 }
                 return outputMessage;
@@ -140,18 +177,31 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     {
                         sqlConnection.Open();
                         //get the edits that are pending for more than 3 hours. Get only the edits that are submitted today ( else there are some stale pneding edits which are 4/5 months old and they will keep showing up.
-                        var pendingEditCount = dbExecutor.Query<Int32>(string.Format("select count(*) from dbo.PackageEdits where TimeStamp <= '{0}' and TimeStamp >= '{1}'", DateTime.UtcNow.AddHours(thresholdValues.PendingThresholdInHours * -1).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.UtcNow.AddHours( -24).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
-                        outputMessage = string.Format("No of pending edits is {0}. Acceptable lag in no. of hours: {1}", pendingEditCount,thresholdValues.PendingThresholdInHours.ToString());
-                        if (pendingEditCount > 0)
+                        var ErrorPendingEditCount = dbExecutor.Query<Int32>(string.Format("select count(*) from dbo.PackageEdits where TimeStamp <= '{0}' and TimeStamp >= '{1}'", DateTime.UtcNow.AddHours(thresholdValues.PendingErrorThresholdInHours * -1).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.UtcNow.AddHours( -24).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
+                        var WarningPendingEditCount = dbExecutor.Query<Int32>(string.Format("select count(*) from dbo.PackageEdits where TimeStamp <= '{0}' and TimeStamp >= '{1}'", DateTime.UtcNow.AddHours(thresholdValues.PendingWarningWarningThresholdInHours * -1).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.UtcNow.AddHours(-24).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
+                        outputMessage = string.Format("No of pending edits is {0}. Acceptable Error lag in no. of hours: {1}", ErrorPendingEditCount,thresholdValues.PendingErrorThresholdInHours);
+                        if (ErrorPendingEditCount > 0)
                         {
                             new SendAlertMailTask
                             {
-                                AlertSubject = "Work service job background check alert activated for HandleQueuedPackageEdits job",
+                                AlertSubject = "Error: Work service job background check alert activated for HandleQueuedPackageEdits job",
                                 Details = outputMessage,
-                                AlertName = "Alert for HandleQueuedPackageEdits",
-                                Component = "HandleQueuedPackageEdits Job"
+                                AlertName = "Error: Alert for HandleQueuedPackageEdits",
+                                Component = "HandleQueuedPackageEdits Job",
+                                Level = "Error"
                             }.ExecuteCommand();
-                        }                       
+                        }
+                        else if (WarningPendingEditCount > 0)
+                        {
+                            new SendAlertMailTask
+                            {
+                                AlertSubject = "Warning: Work service job background check alert activated for HandleQueuedPackageEdits job",
+                                Details = string.Format("No of pending edits is {0}. Acceptable Warning lag in no. of hours: {1}", WarningPendingEditCount, thresholdValues.PendingWarningWarningThresholdInHours),
+                                AlertName = "Warning: Alert for HandleQueuedPackageEdits",
+                                Component = "HandleQueuedPackageEdits Job",
+                                Level = "Warning"
+                            }.ExecuteCommand();
+                        }
                     }
                 }
                 return outputMessage;
@@ -161,13 +211,15 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
            {
                string outputMessage;
                //no of new packages uploaded in the last 2 hours.
-               int newPackageCount = 0;
+               int ErrorNewPackageCount = 0;
+               int WarningNewPackageCount = 0;
                using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
                {
                    using (var dbExecutor = new SqlExecutor(sqlConnection))
                    {
                        sqlConnection.Open();
-                       newPackageCount = dbExecutor.Query<Int32>(string.Format("SELECT Count (*) FROM [dbo].[Packages] where [Created] >= '{0}'", DateTime.UtcNow.AddHours(thresholdValues.BackupPackagesThresholdInHours * -1).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();                            
+                       ErrorNewPackageCount = dbExecutor.Query<Int32>(string.Format("SELECT Count (*) FROM [dbo].[Packages] where [Created] >= '{0}'", DateTime.UtcNow.AddHours(thresholdValues.BackupPackagesErrorThresholdInHours * -1).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
+                       WarningNewPackageCount = dbExecutor.Query<Int32>(string.Format("SELECT Count (*) FROM [dbo].[Packages] where [Created] >= '{0}'", DateTime.UtcNow.AddHours(thresholdValues.BackupPackagesWarningThresholdInHours * -1).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
                    }
                }
                 CloudBlobClient blobClient = StorageAccount.CreateCloudBlobClient();
@@ -178,14 +230,26 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 int diff = sourceCount - destCount;
                 outputMessage = string.Format("No of packages yet to be backed up is {0}.",diff);
                //BackupPackages job runs every 10 minutes. But a 2 hour buffer is given just in case if there is a delay in the backup process.
-               if(diff > newPackageCount)
+               if(diff > ErrorNewPackageCount)
                {
                    new SendAlertMailTask
                    {
-                       AlertSubject = "Work service job background check alert activated for BackupPackages job",
+                       AlertSubject = "Error: Work service job background check alert activated for BackupPackages job",
                        Details = outputMessage,
-                       AlertName = "Alert for BackupPackages",
-                       Component = "BackupPackages Job"
+                       AlertName = "Error: Alert for BackupPackages",
+                       Component = "BackupPackages Job",
+                       Level = "Error"
+                   }.ExecuteCommand();
+               }
+               else if (diff > WarningNewPackageCount)
+               {
+                   new SendAlertMailTask
+                   {
+                       AlertSubject = "Warning: Work service job background check alert activated for BackupPackages job",
+                       Details = outputMessage,
+                       AlertName = "Warning: Alert for BackupPackages",
+                       Component = "BackupPackages Job",
+                       Level = "Warning"
                    }.ExecuteCommand();
                }
                return outputMessage;
