@@ -16,7 +16,6 @@ using System.Web.Script.Serialization;
 using NuGetGallery;
 using NuGetGallery.Infrastructure;
 using Elmah;
-using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml;
 
@@ -91,10 +90,11 @@ namespace NuGetGallery.Operations
                 }
                 if (invalidStatus.Contains(instanceStatus))
                 {
+                    string extendedStatus = node.ChildNodes[3].InnerText;
                     new SendAlertMailTask
                     {
                         AlertSubject = string.Format("Error: Role Instance alert activated for {0} cloud service", ServiceName),
-                        Details = string.Format("The status of the instance {0} in cloud service {1} is {2}", instanceName, ServiceName, instanceStatus),
+                        Details = string.Format("The status of the instance {0} in cloud service {1} is {2}, addional information for node status is {3}", instanceName, ServiceName, instanceStatus,extendedStatus),
                         AlertName = string.Format("Error: Alert for Role Instance status for {0}", ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
                         Component = "CloudService",
                         Level = "Error"

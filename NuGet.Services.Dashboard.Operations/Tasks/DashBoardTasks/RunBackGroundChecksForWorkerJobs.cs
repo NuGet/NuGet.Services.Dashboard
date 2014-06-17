@@ -17,6 +17,7 @@ using NuGetGallery;
 using NuGetGallery.Infrastructure;
 using Elmah;
 using NuGet.Services.Dashboard.Common;
+using System.Text;
 
 namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 {
@@ -31,6 +32,15 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
         [Option("PackagesStorageAccount", AltName = "iis")]
         public CloudStorageAccount PackagesStorage { get; set; }
+        
+        [Option("WorkServiceUserName", AltName = "name")]
+        public string WorkServiceUserName { get; set; }
+
+        [Option("WorkServiceAdminKey", AltName = "key")]
+        public string WorkServiceAdminKey { get; set; }
+
+        [Option("WorkServiceEndpoint", AltName = "url")]
+        public string WorkServiceEndpoint { get; set; }
         public override void ExecuteCommand()
         {
             thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
@@ -57,10 +67,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 outputMessage = string.Format("Last backup time in utc as of {0} is {1}. Acceptable Error Threshold lag in minutes : {2}", DateTime.UtcNow, lastBackupTime, thresholdValues.BackupDBAgeErrorThresholdInMinutes);
                 if (lastBackupTime <= DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(thresholdValues.BackupDBAgeErrorThresholdInMinutes)))
                 {
+                    string urlLog = getLastInvocation("BackupLegacyDatabase", 2);
                     new SendAlertMailTask
                     {
                         AlertSubject = "Error: Work service job background check alert activated for BackupDataBase job",
-                        Details = outputMessage,
+                        Details = outputMessage + string.Format("last two log url is {0}",urlLog),
                         AlertName = "Error: Alert for BackupDatabase",
                         Component = "BackupDatabase Job",
                         Level = "Error"
@@ -68,10 +79,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 }
                 else if (lastBackupTime <= DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(thresholdValues.BackupDBAgeWarningThresholdInMinutes)))
                 {
+                    string urlLog = getLastInvocation("BackupLegacyDatabase", 2);
                     new SendAlertMailTask
                     {
                         AlertSubject = "Warning: Work service job background check alert activated for BackupDataBase job",
-                        Details = string.Format("Last backup time in utc as of {0} is {1}. Acceptable Warning Threshold lag in minutes : {2}", DateTime.UtcNow, lastBackupTime, thresholdValues.BackupDBAgeWarningThresholdInMinutes),
+                        Details = string.Format("Last backup time in utc as of {0} is {1}. Acceptable Warning Threshold lag in minutes : {2}, last two log url is {3}", DateTime.UtcNow, lastBackupTime, thresholdValues.BackupDBAgeWarningThresholdInMinutes,urlLog),
                         AlertName = "Warning: Alert for BackupDatabase",
                         Component = "BackupDatabase Job",
                         Level = "Warning"
@@ -105,10 +117,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 outputMessage = string.Format("No of online databases is {0}. Acceptable Error threshold count : {1}", onlineBackupCount, thresholdValues.OnlineDBBackupsErrorThreshold);
                 if (onlineBackupCount >= thresholdValues.OnlineDBBackupsErrorThreshold)
                 {
+                    string urlLog = getLastInvocation("CleanLegacyDatabaseBackups", 2);
                     new SendAlertMailTask
                     {
                         AlertSubject = "Error: Work service job background check alert activated for CleanOnlineDatabase job",
-                        Details = outputMessage,
+                        Details = outputMessage + string.Format("last two log url is {0}",urlLog),
                         AlertName = "Error: Alert for CleanOnlineDatabase",
                         Component = "CleanOnlineDatabase Job",
                         Level = "Error"
@@ -116,10 +129,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 }
                 else if (onlineBackupCount >= thresholdValues.OnlineDBBackupsWarningThreshold)
                 {
+                    string urlLog = getLastInvocation("CleanLegacyDatabaseBackups", 2);
                     new SendAlertMailTask
                     {
                         AlertSubject = "Warning: Work service job background check alert activated for CleanOnlineDatabase job",
-                        Details = string.Format("No of online databases is {0}. Acceptable Warning threshold count : {1}", onlineBackupCount, thresholdValues.OnlineDBBackupsWarningThreshold),
+                        Details = string.Format("No of online databases is {0}. Acceptable Warning threshold count : {1}, last two log url is {2}", onlineBackupCount, thresholdValues.OnlineDBBackupsWarningThreshold,urlLog),
                         AlertName = "Warning: Alert for CleanOnlineDatabase",
                         Component = "CleanOnlineDatabase Job",
                         Level = "Warning"
@@ -143,10 +157,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         outputMessage = string.Format("No of Old stats record found online is {0}. Acceptable Error threshold lag in no. of days: {1}", ErrorOldRecordCount, thresholdValues.PurgeStatisticsErrorThresholdInDays);
                         if(ErrorOldRecordCount > 0)
                         {
+                            string urlLog = getLastInvocation("PurgeTransferredStatistics", 2);
                             new SendAlertMailTask
                             {
                                 AlertSubject = "Error: Work service job background check alert activated for PurgePackageStatistics job",
-                                Details = outputMessage,
+                                Details = outputMessage + string.Format("last two log url is {0}", urlLog),
                                 AlertName = "Error: Alert for PurgePackageStatistics",
                                 Component = "PurgePackageStatistics Job",
                                 Level = "Error"
@@ -154,10 +169,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         }
                         else if (WarningOldRecordCount > 0)
                         {
+                            string urlLog = getLastInvocation("PurgeTransferredStatistics", 2);
                             new SendAlertMailTask
                             {
                                 AlertSubject = "Warning: Work service job background check alert activated for PurgePackageStatistics job",
-                                Details = string.Format("No of Old stats record found online is {0}. Acceptable Warning threshold lag in no. of days: {1}", ErrorOldRecordCount, thresholdValues.PurgeStatisticsWarningThresholdInDays),
+                                Details = string.Format("No of Old stats record found online is {0}. Acceptable Warning threshold lag in no. of days: {1}, last two log url is {2}", ErrorOldRecordCount, thresholdValues.PurgeStatisticsWarningThresholdInDays, urlLog),
                                 AlertName = "Warning: Alert for PurgePackageStatistics",
                                 Component = "PurgePackageStatistics Job",
                                 Level = "Warning"
@@ -182,10 +198,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         outputMessage = string.Format("No of pending edits is {0}. Acceptable Error lag in no. of hours: {1}", ErrorPendingEditCount,thresholdValues.PendingErrorThresholdInHours);
                         if (ErrorPendingEditCount > 0)
                         {
+                            string urlLog = getLastInvocation("HandlePackageEdits", 2);
                             new SendAlertMailTask
                             {
                                 AlertSubject = "Error: Work service job background check alert activated for HandleQueuedPackageEdits job",
-                                Details = outputMessage,
+                                Details = outputMessage + string.Format("last two log url is {0}", urlLog),
                                 AlertName = "Error: Alert for HandleQueuedPackageEdits",
                                 Component = "HandleQueuedPackageEdits Job",
                                 Level = "Error"
@@ -193,10 +210,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         }
                         else if (WarningPendingEditCount > 0)
                         {
+                            string urlLog = getLastInvocation("HandlePackageEdits", 2);
                             new SendAlertMailTask
                             {
                                 AlertSubject = "Warning: Work service job background check alert activated for HandleQueuedPackageEdits job",
-                                Details = string.Format("No of pending edits is {0}. Acceptable Warning lag in no. of hours: {1}", WarningPendingEditCount, thresholdValues.PendingWarningWarningThresholdInHours),
+                                Details = string.Format("No of pending edits is {0}. Acceptable Warning lag in no. of hours: {1}, last two log url is {2}", WarningPendingEditCount, thresholdValues.PendingWarningWarningThresholdInHours, urlLog),
                                 AlertName = "Warning: Alert for HandleQueuedPackageEdits",
                                 Component = "HandleQueuedPackageEdits Job",
                                 Level = "Warning"
@@ -232,10 +250,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                //BackupPackages job runs every 10 minutes. But a 2 hour buffer is given just in case if there is a delay in the backup process.
                if(diff > ErrorNewPackageCount)
                {
+                   string urlLog = getLastInvocation("BackupPackages", 2);
                    new SendAlertMailTask
                    {
                        AlertSubject = "Error: Work service job background check alert activated for BackupPackages job",
-                       Details = outputMessage,
+                       Details = outputMessage + string.Format("last two log url is {0}", urlLog),
                        AlertName = "Error: Alert for BackupPackages",
                        Component = "BackupPackages Job",
                        Level = "Error"
@@ -243,16 +262,38 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                }
                else if (diff > WarningNewPackageCount)
                {
+                   string urlLog = getLastInvocation("BackupPackages", 2);
                    new SendAlertMailTask
                    {
                        AlertSubject = "Warning: Work service job background check alert activated for BackupPackages job",
-                       Details = outputMessage,
+                       Details = outputMessage + string.Format("last two log url is {0}", urlLog),
                        AlertName = "Warning: Alert for BackupPackages",
                        Component = "BackupPackages Job",
                        Level = "Warning"
                    }.ExecuteCommand();
                }
                return outputMessage;
+           }
+
+           private string getLastInvocation(string workJobName, int number)
+           {
+               NetworkCredential nc = new NetworkCredential(WorkServiceUserName, WorkServiceAdminKey);
+               WebRequest request = WebRequest.Create(string.Format("{0}/instances/{1}?limit={2}", WorkServiceEndpoint, workJobName, number));
+               request.Credentials = nc;
+               request.PreAuthenticate = true;
+               request.Method = "GET";
+               WebResponse respose = request.GetResponse();
+               StringBuilder sb = new StringBuilder();
+               using (var reader = new StreamReader(respose.GetResponseStream()))
+               {
+                   JavaScriptSerializer js = new JavaScriptSerializer();
+                   var objects = js.Deserialize<List<WorkJobInvocation>>(reader.ReadToEnd());
+                   foreach (WorkJobInvocation job in objects)
+                   {
+                       sb.Append(job.logUrl+"\n");
+                   }
+               }
+               return sb.ToString();
            }
 
         #endregion PrivateMethods

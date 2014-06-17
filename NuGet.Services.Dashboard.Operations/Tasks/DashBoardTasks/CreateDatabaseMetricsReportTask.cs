@@ -40,6 +40,13 @@ namespace NuGetGallery.Operations
         private void GetCurrentValueAndAlert(string sqlQuery,string blobName,int error, int warning)
         {
             List<Tuple<string, string>> connectionCountDataPoints = new List<Tuple<string, string>>();
+            string message = "";
+            if (blobName.Equals("DBSuspendedRequests")) 
+            { 
+                string wait_type = GetDBRequest().Wait_Type;
+                message = " wait_type is " + wait_type;
+            }
+
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
             {
                 using (var dbExecutor = new SqlExecutor(sqlConnection))
@@ -51,7 +58,7 @@ namespace NuGetGallery.Operations
                         new SendAlertMailTask
                         {
                             AlertSubject = string.Format("Error: SQL Azure database alert activated for {0}", blobName),
-                            Details = string.Format("Number of {0} exceeded the Error threshold value. Threshold value  {1}, Current value : {2}",blobName,error,connectionCount),
+                            Details = string.Format("Number of {0} exceeded the Error threshold value. Threshold value  {1}, Current value : {2}.{3}",blobName,error,connectionCount,message),
                             AlertName = "Error: SQL Azure DB alert for connections/requests count",
                             Component = "SQL Azure database",
                             Level = "Error"
@@ -62,7 +69,7 @@ namespace NuGetGallery.Operations
                         new SendAlertMailTask
                         {
                             AlertSubject = string.Format("Warning: SQL Azure database alert activated for {0}", blobName),
-                            Details = string.Format("Number of {0} exceeded the Warning threshold value. Threshold value  {1}, Current value : {2}", blobName, warning, connectionCount),
+                            Details = string.Format("Number of {0} exceeded the Warning threshold value. Threshold value  {1}, Current value : {2}.{3}", blobName, warning, connectionCount,message),
                             AlertName = "Warning: SQL Azure DB alert for connections/requests count",
                             Component = "SQL Azure database",
                             Level = "Warning"
@@ -101,18 +108,21 @@ namespace NuGetGallery.Operations
 
         private void CreateReportForRequestDetails()
         {
-            List<Tuple<string, string>> connectionCountDataPoints = new List<Tuple<string, string>>();
+            var json = new JavaScriptSerializer().Serialize(GetDBRequest());
+            ReportHelpers.AppendDatatoBlob(StorageAccount, "DBRequestDetails" + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), json), 50, ContainerName);
+        }
+
+        private DatabaseRequest GetDBRequest()
+        {
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
             {
                 using (var dbExecutor = new SqlExecutor(sqlConnection))
                 {
                     sqlConnection.Open();
                     var requests = dbExecutor.Query<DatabaseRequest>("SELECT t.text, r.start_time, r.status, r.command, r.wait_type, r.wait_time FROM sys.dm_exec_requests r OUTER APPLY sys.dm_exec_sql_text(sql_handle) t​");
-                    var json = new JavaScriptSerializer().Serialize(requests);
-                    ReportHelpers.AppendDatatoBlob(StorageAccount, "DBRequestDetails" + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), json), 50, ContainerName);
+                    return requests.SingleOrDefault();
                 }
             }   
-          
         }
     }
 }
