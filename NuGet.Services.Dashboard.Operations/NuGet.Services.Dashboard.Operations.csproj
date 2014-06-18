@@ -194,6 +194,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Readme\Elmah.txt" />
+    <Content Include="ScriptsAndReferences\DailyStatusReport.htm" />
     <Content Include="ScriptsAndReferences\DashboardAlertMail.htm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
