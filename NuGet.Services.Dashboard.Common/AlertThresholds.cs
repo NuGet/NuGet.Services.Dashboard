@@ -26,7 +26,7 @@ namespace NuGet.Services.Dashboard.Common
         public int FailoverDBAndBlobLag = 20; //Specifies the allowed lag between failover DB and blob in terms of number of packages.
         public int SearchCpuThreshold = 80; //specifies the limit on search service cpu usage (% used in maxsize)
         public int SearchMemThreshold = 1; // specifies the limit on search service memory usage (GB)
-
+        public int PindomMicroServiceThreshold = 30; // specifies the limit on down time for each pindom micro service (second)
 
 
     }
