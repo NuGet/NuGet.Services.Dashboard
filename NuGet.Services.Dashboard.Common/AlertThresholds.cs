@@ -24,9 +24,9 @@ namespace NuGet.Services.Dashboard.Common
         public int BackupPackagesThresholdInHours = 2; //Specifies the limit lag between "packages" container and "backup" container.
         public int FailoverDBAgeThresholdInMinutes = 180; //Specifies the lag between the primary DC's database and failover database in minutes.
         public int FailoverDBAndBlobLag = 20; //Specifies the allowed lag between failover DB and blob in terms of number of packages.
-        public int SearchCpuThreshold = 80; //specifies the limit on search service cpu usage (% used in maxsize)
-        public int SearchMemThreshold = 1; // specifies the limit on search service memory usage (GB)
-        public int PindomMicroServiceThreshold = 30; // specifies the limit on down time for each pindom micro service (second)
+        public int SearchCpuPercentThreshold = 80; //specifies the limit on search service cpu usage (% used in maxsize)
+        public int SearchMemThresholdInGb = 1; // specifies the limit on search service memory usage (GB)
+        public int PingdomServiceDistruptionThresholdInSeconds = 30; // specifies the limit on down time for each pindom micro service (second)
 
 
     }

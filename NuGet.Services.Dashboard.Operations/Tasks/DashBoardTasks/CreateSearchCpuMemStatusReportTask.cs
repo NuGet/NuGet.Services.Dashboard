@@ -42,23 +42,23 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 int cpuUsage = 0;
                 int memUsage = 0;
 
-                if (cpuUsage > thresholdValues.SearchCpuThreshold)
+                if (cpuUsage > thresholdValues.SearchCpuPercentThreshold)
                 {
                     new SendAlertMailTask
                     {
                         AlertSubject = "Search Service Alert activated for cpu usage",
-                        Details = string.Format("Search service process cpu usage is above {0}% , it's {1}% ", thresholdValues.SearchCpuThreshold.ToString(), cpuUsage.ToString()),
+                        Details = string.Format("Search service process cpu usage is above {0}% , it's {1}% ", thresholdValues.SearchCpuPercentThreshold.ToString(), cpuUsage.ToString()),
                         AlertName = "Alert for Serach CPU Usage",
                         Component = "SearchService"
                     }.ExecuteCommand();
                 }
 
-                if (memUsage > thresholdValues.SearchMemThreshold*(1<<30))
+                if (memUsage > thresholdValues.SearchMemThresholdInGb*(1<<30))
                 {
                     new SendAlertMailTask
                     {
                         AlertSubject = "Search Service Alert activated for memory usage",
-                        Details = string.Format("Search service process memory usage is above {0}% GB, it's {1}% Byte ", thresholdValues.SearchMemThreshold.ToString(), memUsage.ToString()),
+                        Details = string.Format("Search service process memory usage is above {0}% GB, it's {1}% Byte ", thresholdValues.SearchMemThresholdInGb.ToString(), memUsage.ToString()),
                         AlertName = "Alert for Serach Memory Usage",
                         Component = "SearchService"
                     }.ExecuteCommand();

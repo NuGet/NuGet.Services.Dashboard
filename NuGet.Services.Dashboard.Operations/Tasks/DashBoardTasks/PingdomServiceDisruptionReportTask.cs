@@ -12,8 +12,8 @@ using System.Web.Script.Serialization;
 
 namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 {
-    [Command("CreatePindomMicroServiceReportTask", "Creates report for the outage of all micro service every hour", AltName = "cpmsrt")]
-    class CreatePindomMicroServiceReportTask : StorageTask
+    [Command("PingdomServiceDisruptionReportTask", "Creates report for the outage of all micro service every hour", AltName = "psdrt")]
+    class PingdomServiceDisruptionReportTask : StorageTask
     {
         [Option("PingdomUserName", AltName = "user")]
         public string UserName { get; set; }
@@ -65,6 +65,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             request.PreAuthenticate = true;
             request.Method = "GET";
             WebResponse respose = request.GetResponse();
+            int downCount = 0;
+            AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
             using (var reader = new StreamReader(respose.GetResponseStream()))
             {
                 JavaScriptSerializer js = new JavaScriptSerializer();
@@ -78,24 +80,28 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                             DateTime start = UnixTimeStampUtility.DateTimeFromUnixTimestampSeconds(states["timefrom"]).ToLocalTime();
                             DateTime end = UnixTimeStampUtility.DateTimeFromUnixTimestampSeconds(states["timeto"]).ToLocalTime();
 
-                            AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
+                            
                             int downtime = (int)end.Subtract(start).TotalSeconds ;
-                            if (downtime > thresholdValues.PindomMicroServiceThreshold)
+                            if (downtime > thresholdValues.PingdomServiceDistruptionThresholdInSeconds)
                             {
                                 serviceStatus = "down";
-                                new SendAlertMailTask
-                                {
-                                    AlertSubject = string.Format("Alert for {0} pindom service Down", checkAlias),
-                                    Details = string.Format("Pindom service {0} down time exceeded threshold: {1} second, start time is {2}，down time is {3} second", checkAlias, thresholdValues.PindomMicroServiceThreshold, start.ToString(), downtime),
-                                    AlertName = "Pindom Micro Service",
-                                    Component = "Pindom Service"
-                                }.ExecuteCommand();
+                                downCount++;
                             }
                          }
                     } 
                 }
-            }   
-            ReportHelpers.AppendDatatoBlob(StorageAccount, checkAlias + string.Format("{0:MMdd}", DateTime.Now) + "DayReport.json", new Tuple<string, string>(string.Format("{0:HH-mm}", DateTime.Now), serviceStatus), 24, ContainerName);
+            }
+            if (serviceStatus.Equals("down"))
+            {
+                new SendAlertMailTask
+                {
+                    AlertSubject = string.Format("Alert for {0} pingdom service Down", checkAlias),
+                    Details = string.Format("Pingdom service {0} down time exceeded threshold: {1} second, in last {2} hours, there are {3} down happened", checkAlias, thresholdValues.PingdomServiceDistruptionThresholdInSeconds, LastNhour , downCount),
+                    AlertName = string.Format("Pingdom Micro Service: {0}",checkAlias),
+                    Component = "Pingdom Service"
+                }.ExecuteCommand();
+            }
+            ReportHelpers.AppendDatatoBlob(StorageAccount, checkAlias + string.Format("{0:MMdd}", DateTime.Now) + "outageReport.json", new Tuple<string, string>(string.Format("{0:HH-mm}", DateTime.Now), serviceStatus), 24, ContainerName);
 
         }
     }
