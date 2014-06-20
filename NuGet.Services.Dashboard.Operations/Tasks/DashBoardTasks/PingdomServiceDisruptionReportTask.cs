@@ -82,7 +82,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
                             
                             int downtime = (int)end.Subtract(start).TotalSeconds ;
-                            if (downtime > thresholdValues.PingdomServiceDistruptionThresholdInSeconds)
+                            if (downtime > thresholdValues.PingdomServiceDistruptionErrorThresholdInSeconds)
                             {
                                 serviceStatus = "down";
                                 downCount++;
@@ -95,10 +95,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             {
                 new SendAlertMailTask
                 {
-                    AlertSubject = string.Format("Alert for {0} pingdom service Down", checkAlias),
-                    Details = string.Format("Pingdom service {0} down time exceeded threshold: {1} second, in last {2} hours, there are {3} down happened", checkAlias, thresholdValues.PingdomServiceDistruptionThresholdInSeconds, LastNhour , downCount),
-                    AlertName = string.Format("Pingdom Micro Service: {0}",checkAlias),
-                    Component = "Pingdom Service"
+                    AlertSubject = string.Format("Error: Alert for {0} pingdom service Down", checkAlias),
+                    Details = string.Format("Pingdom service {0} down time exceeded Error threshold: {1} second, in last {2} hours, there are {3} down happened", checkAlias, thresholdValues.PingdomServiceDistruptionErrorThresholdInSeconds, LastNhour , downCount),
+                    AlertName = string.Format("Error: Pingdom Micro Service: {0}",checkAlias),
+                    Component = "Pingdom Service",
+                    Level = "Error"
                 }.ExecuteCommand();
             }
             ReportHelpers.AppendDatatoBlob(StorageAccount, checkAlias + string.Format("{0:MMdd}", DateTime.Now) + "outageReport.json", new Tuple<string, string>(string.Format("{0:HH-mm}", DateTime.Now), serviceStatus), 24, ContainerName);
