@@ -141,6 +141,7 @@
       <DependentUpon>TaskResources.resx</DependentUpon>
     </Compile>
     <Compile Include="Common\ResourceHelper.cs" />
+    <Compile Include="Tasks\DashBoardTasks\PingdomServiceDisruptionReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateSearchCpuMemStatusReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateCloudServiceDetailsReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateDatabaseDetailedReportTask.cs" />

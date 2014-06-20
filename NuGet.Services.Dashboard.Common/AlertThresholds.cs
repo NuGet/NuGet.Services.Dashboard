@@ -23,10 +23,11 @@ namespace NuGet.Services.Dashboard.Common
         public int BackupPackagesErrorThresholdInHours = 2; //Specifies the limit lag between "packages" container and "backup" container.
         public int FailoverDBAgeErrorThresholdInMinutes = 180; //Specifies the lag between the primary DC's database and failover database in minutes.
         public int FailoverDBAndBlobLagErrorThreshold = 20; //Specifies the allowed lag between failover DB and blob in terms of number of packages.
-        public int SearchCpuErrorThreshold = 80; //specifies the limit on search service cpu usage (% used in maxsize)
-        public int SearchMemErrorThreshold = 1; // specifies the limit on search service memory usage (GB)
+        public int SearchCpuPercentErrorThreshold = 80; //specifies the limit on search service cpu usage (% used in maxsize)
+        public int SearchMemErrorThresholdInGb = 1; // specifies the limit on search service memory usage (GB)
         public int WorkJobErrorThreshold = 30;
         public int DatabaseImportErrorThreshold = 39000;
+        public int PingdomServiceDistruptionErrorThresholdInSeconds = 30; // specifies the limit on down time for each pindom micro service (second)
     
         // warning threhold
         public int DatabaseConnectionsWarningThreshold = int.MaxValue; // Specifies the limit on maximum number of DB connections on Gallery DB.
@@ -44,9 +45,10 @@ namespace NuGet.Services.Dashboard.Common
         public int BackupPackagesWarningThresholdInHours = int.MaxValue; //Specifies the limit lag between "packages" container and "backup" container.
         public int FailoverDBAgeWarningThresholdInMinutes = int.MaxValue; //Specifies the lag between the primary DC's database and failover database in minutes.
         public int FailoverDBAndBlobLagWarningThreshold = int.MaxValue; //Specifies the allowed lag between failover DB and blob in terms of number of packages.
-        public int SearchCpuWarningThreshold = int.MaxValue; //specifies the limit on search service cpu usage (% used in maxsize)
-        public int SearchMemWarningThreshold = int.MaxValue; // specifies the limit on search service memory usage (GB)
+        public int SearchCpuPercentWarningThreshold = int.MaxValue; //specifies the limit on search service cpu usage (% used in maxsize)
+        public int SearchMemWarningThresholdInGb = int.MaxValue; // specifies the limit on search service memory usage (GB)
         public int WorkJobWarningThreshold = 20;
         public int DatabaseImportWarningThreshold = 0;
+
     }
 }

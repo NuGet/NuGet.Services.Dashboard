@@ -42,46 +42,46 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 int cpuUsage = 0;
                 int memUsage = 0;
 
-                if (cpuUsage > thresholdValues.SearchCpuErrorThreshold)
+                if (cpuUsage > thresholdValues.SearchCpuPercentErrorThreshold)
                 {
                     new SendAlertMailTask
                     {
                         AlertSubject = "Error: Search Service Alert activated for cpu usage",
-                        Details = string.Format("Search service process cpu usage is above Error threshold： {0}% , it's {1}% ", thresholdValues.SearchCpuErrorThreshold, cpuUsage.ToString()),
+                        Details = string.Format("Search service process cpu usage is above Error threshold： {0}% , it's {1}% ", thresholdValues.SearchCpuPercentErrorThreshold, cpuUsage.ToString()),
                         AlertName = "Error: Alert for Serach CPU Usage",
                         Component = "SearchService",
                         Level = "Error"
                     }.ExecuteCommand();
                 }
-                else if (cpuUsage > thresholdValues.SearchCpuWarningThreshold)
+                else if (cpuUsage > thresholdValues.SearchCpuPercentWarningThreshold)
                 {
                     new SendAlertMailTask
                     {
                         AlertSubject = "Warning: Search Service Alert activated for cpu usage",
-                        Details = string.Format("Search service process cpu usage is above Warning threshold: {0}% , it's {1}% ", thresholdValues.SearchCpuWarningThreshold, cpuUsage.ToString()),
+                        Details = string.Format("Search service process cpu usage is above Warning threshold: {0}% , it's {1}% ", thresholdValues.SearchCpuPercentWarningThreshold, cpuUsage.ToString()),
                         AlertName = "Warning: Alert for Serach CPU Usage",
                         Component = "SearchService",
                         Level = "Warning"
                     }.ExecuteCommand();
                 }
 
-                if (memUsage > thresholdValues.SearchMemErrorThreshold*(1<<30))
+                if (memUsage > thresholdValues.SearchMemErrorThresholdInGb*(1<<30))
                 {
                     new SendAlertMailTask
                     {
                         AlertSubject = "Error: Search Service Alert activated for memory usage",
-                        Details = string.Format("Search service process memory usage is above Error threshold: {0}% GB, it's {1}% Byte ", thresholdValues.SearchMemErrorThreshold, memUsage.ToString()),
+                        Details = string.Format("Search service process memory usage is above Error threshold: {0}% GB, it's {1}% Byte ", thresholdValues.SearchMemErrorThresholdInGb, memUsage.ToString()),
                         AlertName = "Error: Alert for Serach Memory Usage",
                         Component = "SearchService",
                         Level = "Error"
                     }.ExecuteCommand();
                 }
-                else if (memUsage > thresholdValues.SearchMemWarningThreshold * (1 << 30))
+                else if (memUsage > thresholdValues.SearchMemWarningThresholdInGb * (1 << 30))
                 {
                     new SendAlertMailTask
                     {
                         AlertSubject = "Warning: Search Service Alert activated for memory usage",
-                        Details = string.Format("Search service process memory usage is above Warning threshold {0}% GB, it's {1}% Byte ", thresholdValues.SearchMemWarningThreshold, memUsage.ToString()),
+                        Details = string.Format("Search service process memory usage is above Warning threshold {0}% GB, it's {1}% Byte ", thresholdValues.SearchMemWarningThresholdInGb, memUsage.ToString()),
                         AlertName = "Warning: Alert for Serach Memory Usage",
                         Component = "SearchService",
                         Level = "Warning"
