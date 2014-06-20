@@ -61,10 +61,11 @@ namespace NuGetGallery.Operations
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Traffic manager endpoint alert activated for {0}",endpointName),
+                            AlertSubject = string.Format("Error: Traffic manager endpoint alert activated for {0}",endpointName),
                             Details = string.Format("The status of the endpoint {0} monitoring by traffic manager {1} is {2}", endpointName, ProfileName, endpointStatus),
-                            AlertName = "Alert for TrafficManagerEndpoint",
-                            Component = "TrafficManager"
+                            AlertName = "Error: Alert for TrafficManagerEndpoint",
+                            Component = "TrafficManager",
+                            Level = "Error"
                         }.ExecuteCommand();
                     }
                    

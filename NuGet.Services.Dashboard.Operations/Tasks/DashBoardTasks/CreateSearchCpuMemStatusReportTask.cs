@@ -42,25 +42,49 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 int cpuUsage = 0;
                 int memUsage = 0;
 
-                if (cpuUsage > thresholdValues.SearchCpuThreshold)
+                if (cpuUsage > thresholdValues.SearchCpuErrorThreshold)
                 {
                     new SendAlertMailTask
                     {
-                        AlertSubject = "Search Service Alert activated for cpu usage",
-                        Details = string.Format("Search service process cpu usage is above {0}% , it's {1}% ", thresholdValues.SearchCpuThreshold.ToString(), cpuUsage.ToString()),
-                        AlertName = "Alert for Serach CPU Usage",
-                        Component = "SearchService"
+                        AlertSubject = "Error: Search Service Alert activated for cpu usage",
+                        Details = string.Format("Search service process cpu usage is above Error threshold： {0}% , it's {1}% ", thresholdValues.SearchCpuErrorThreshold, cpuUsage.ToString()),
+                        AlertName = "Error: Alert for Serach CPU Usage",
+                        Component = "SearchService",
+                        Level = "Error"
+                    }.ExecuteCommand();
+                }
+                else if (cpuUsage > thresholdValues.SearchCpuWarningThreshold)
+                {
+                    new SendAlertMailTask
+                    {
+                        AlertSubject = "Warning: Search Service Alert activated for cpu usage",
+                        Details = string.Format("Search service process cpu usage is above Warning threshold: {0}% , it's {1}% ", thresholdValues.SearchCpuWarningThreshold, cpuUsage.ToString()),
+                        AlertName = "Warning: Alert for Serach CPU Usage",
+                        Component = "SearchService",
+                        Level = "Warning"
                     }.ExecuteCommand();
                 }
 
-                if (memUsage > thresholdValues.SearchMemThreshold*(1<<30))
+                if (memUsage > thresholdValues.SearchMemErrorThreshold*(1<<30))
                 {
                     new SendAlertMailTask
                     {
-                        AlertSubject = "Search Service Alert activated for memory usage",
-                        Details = string.Format("Search service process memory usage is above {0}% GB, it's {1}% Byte ", thresholdValues.SearchMemThreshold.ToString(), memUsage.ToString()),
-                        AlertName = "Alert for Serach Memory Usage",
-                        Component = "SearchService"
+                        AlertSubject = "Error: Search Service Alert activated for memory usage",
+                        Details = string.Format("Search service process memory usage is above Error threshold: {0}% GB, it's {1}% Byte ", thresholdValues.SearchMemErrorThreshold, memUsage.ToString()),
+                        AlertName = "Error: Alert for Serach Memory Usage",
+                        Component = "SearchService",
+                        Level = "Error"
+                    }.ExecuteCommand();
+                }
+                else if (memUsage > thresholdValues.SearchMemWarningThreshold * (1 << 30))
+                {
+                    new SendAlertMailTask
+                    {
+                        AlertSubject = "Warning: Search Service Alert activated for memory usage",
+                        Details = string.Format("Search service process memory usage is above Warning threshold {0}% GB, it's {1}% Byte ", thresholdValues.SearchMemWarningThreshold, memUsage.ToString()),
+                        AlertName = "Warning: Alert for Serach Memory Usage",
+                        Component = "SearchService",
+                        Level = "Warning"
                     }.ExecuteCommand();
                 }
                 ReportHelpers.AppendDatatoBlob(StorageAccount, "SearchCpuUsage" + string.Format("{0:MMdd}", DateTime.Now) + "HourlyReport.json", new Tuple<string, string>(string.Format("{0:HH-mm}", DateTime.Now), cpusecond.ToString()), 24, ContainerName);

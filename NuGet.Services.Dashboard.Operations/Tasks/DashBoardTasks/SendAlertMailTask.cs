@@ -36,6 +36,9 @@ namespace NuGetGallery.Operations
         [Option("Component", AltName = "c")]
         public string Component { get; set; }
 
+        [Option("Level", AltName = "l")]
+        public string Level { get; set; }
+
 
         public override void ExecuteCommand()
         {
@@ -109,10 +112,12 @@ namespace NuGetGallery.Operations
             string mailBody = sr.ReadToEnd();
             sr.Close();
             mailBody = mailBody.Replace("{AlertSubjectLine}", AlertSubject);
+            mailBody = mailBody.Replace("{Level}", Level);
             mailBody = mailBody.Replace("{ComponentName}", Component);
             mailBody = mailBody.Replace("{Alert}", AlertName);
             mailBody = mailBody.Replace("{AlertDescription}", Details);
             mailBody = mailBody.Replace("{AlertTime}", DateTime.Now.ToString());
+            
             return mailBody;          
         }      
 
