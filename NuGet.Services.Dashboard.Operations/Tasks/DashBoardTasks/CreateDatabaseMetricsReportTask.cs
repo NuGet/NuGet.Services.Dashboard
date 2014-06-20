@@ -17,6 +17,7 @@ using NuGetGallery;
 using NuGetGallery.Infrastructure;
 using Elmah;
 using NuGet.Services.Dashboard.Common;
+using System.Text;
 
 
 namespace NuGetGallery.Operations
@@ -40,11 +41,14 @@ namespace NuGetGallery.Operations
         private void GetCurrentValueAndAlert(string sqlQuery,string blobName,int error, int warning)
         {
             List<Tuple<string, string>> connectionCountDataPoints = new List<Tuple<string, string>>();
-            string message = "";
+            StringBuilder message = new StringBuilder();
             if (blobName.Equals("DBSuspendedRequests")) 
-            { 
-                string wait_type = GetDBRequest().Wait_Type;
-                message = " wait_type is " + wait_type;
+            {
+                message.Append("all requests wait_type are");
+                foreach (DatabaseRequest rq in GetDBRequest())
+                {
+                    message.Append(rq.Wait_Type + "\n");
+                }
             }
 
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
@@ -112,7 +116,7 @@ namespace NuGetGallery.Operations
             ReportHelpers.AppendDatatoBlob(StorageAccount, "DBRequestDetails" + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), json), 50, ContainerName);
         }
 
-        private DatabaseRequest GetDBRequest()
+        private List<DatabaseRequest> GetDBRequest()
         {
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
             {
@@ -120,7 +124,7 @@ namespace NuGetGallery.Operations
                 {
                     sqlConnection.Open();
                     var requests = dbExecutor.Query<DatabaseRequest>("SELECT t.text, r.start_time, r.status, r.command, r.wait_type, r.wait_time FROM sys.dm_exec_requests r OUTER APPLY sys.dm_exec_sql_text(sql_handle) t​");
-                    return requests.SingleOrDefault();
+                    return requests.ToList();
                 }
             }   
         }

@@ -71,7 +71,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     new SendAlertMailTask
                     {
                         AlertSubject = "Error: Work service job background check alert activated for BackupDataBase job",
-                        Details = outputMessage + string.Format("last two log url is {0}",urlLog),
+                        Details = outputMessage +  Environment.NewLine + string.Format("last two log url is {0}",urlLog),
                         AlertName = "Error: Alert for BackupDatabase",
                         Component = "BackupDatabase Job",
                         Level = "Error"
@@ -121,7 +121,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     new SendAlertMailTask
                     {
                         AlertSubject = "Error: Work service job background check alert activated for CleanOnlineDatabase job",
-                        Details = outputMessage + string.Format("last two log url is {0}",urlLog),
+                        Details = outputMessage + Environment.NewLine + string.Format("last two log url is {0}", urlLog),
                         AlertName = "Error: Alert for CleanOnlineDatabase",
                         Component = "CleanOnlineDatabase Job",
                         Level = "Error"
@@ -161,7 +161,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                             new SendAlertMailTask
                             {
                                 AlertSubject = "Error: Work service job background check alert activated for PurgePackageStatistics job",
-                                Details = outputMessage + string.Format("last two log url is {0}", urlLog),
+                                Details = outputMessage + Environment.NewLine + string.Format("last two log url is {0}", urlLog),
                                 AlertName = "Error: Alert for PurgePackageStatistics",
                                 Component = "PurgePackageStatistics Job",
                                 Level = "Error"
@@ -202,7 +202,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                             new SendAlertMailTask
                             {
                                 AlertSubject = "Error: Work service job background check alert activated for HandleQueuedPackageEdits job",
-                                Details = outputMessage + string.Format("last two log url is {0}", urlLog),
+                                Details = outputMessage + Environment.NewLine + string.Format("last two log url is {0}", urlLog),
                                 AlertName = "Error: Alert for HandleQueuedPackageEdits",
                                 Component = "HandleQueuedPackageEdits Job",
                                 Level = "Error"
@@ -254,7 +254,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                    new SendAlertMailTask
                    {
                        AlertSubject = "Error: Work service job background check alert activated for BackupPackages job",
-                       Details = outputMessage + string.Format("last two log url is {0}", urlLog),
+                       Details = outputMessage + Environment.NewLine + string.Format("last two log url is {0}", urlLog),
                        AlertName = "Error: Alert for BackupPackages",
                        Component = "BackupPackages Job",
                        Level = "Error"
@@ -266,7 +266,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                    new SendAlertMailTask
                    {
                        AlertSubject = "Warning: Work service job background check alert activated for BackupPackages job",
-                       Details = outputMessage + string.Format("last two log url is {0}", urlLog),
+                       Details = outputMessage + Environment.NewLine + string.Format("last two log url is {0}", urlLog),
                        AlertName = "Warning: Alert for BackupPackages",
                        Component = "BackupPackages Job",
                        Level = "Warning"
