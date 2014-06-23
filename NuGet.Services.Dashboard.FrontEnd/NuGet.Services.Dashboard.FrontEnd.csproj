@@ -304,6 +304,9 @@
     <None Include="Properties\PublishProfiles\nuget-dashboard - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\nuget-dashboard - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.9.1.intellisense.js" />
+    <Content Include="Images\GoogleAnalytics.PNG" />
+    <Content Include="Images\nuget_32.png" />
+    <Content Include="Images\word2013icon.png" />
     <Content Include="Scripts\accordion.js" />
     <Content Include="Scripts\buttonset.js" />
     <Content Include="Scripts\calendar.js" />

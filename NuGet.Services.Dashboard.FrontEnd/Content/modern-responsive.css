@@ -381,6 +381,7 @@
     float: none;
     width: 100%;
     margin-left: 0;
+    margin-top: -1em;
     padding-left: 5px;
   }
   .metrouicss .nav-bar .nav-bar-inner > ul.menu > li a {

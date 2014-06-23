@@ -17,6 +17,7 @@ using NuGetGallery;
 using NuGetGallery.Infrastructure;
 using Elmah;
 using NuGet.Services.Dashboard.Common;
+using System.Text;
 
 
 namespace NuGetGallery.Operations
@@ -30,30 +31,52 @@ namespace NuGetGallery.Operations
         public override void ExecuteCommand()
         {
             AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount,"Configuration.AlertThresholds.json",ContainerName));
-            GetCurrentValueAndAlert(SqlQueryForConnectionCount, "DBConnections", thresholdValues.DatabaseConnectionsThreshold);
-            GetCurrentValueAndAlert(SqlQueryForRequestCount, "DBRequests", thresholdValues.DatabaseRequestsThreshold);
-            GetCurrentValueAndAlert(SqlQueryForBlockedRequestCount, "DBSuspendedRequests", thresholdValues.DatabaseBlockedRequestsThreshold);
+            GetCurrentValueAndAlert(SqlQueryForConnectionCount, "DBConnections", thresholdValues.DatabaseConnectionsErrorThreshold,thresholdValues.DatabaseConnectionsWarningThreshold);
+            GetCurrentValueAndAlert(SqlQueryForRequestCount, "DBRequests", thresholdValues.DatabaseRequestsErrorThreshold,thresholdValues.DatabaseRequestsWarningThreshold);
+            GetCurrentValueAndAlert(SqlQueryForBlockedRequestCount, "DBSuspendedRequests", thresholdValues.DatabaseBlockedRequestsErrorThreshold,thresholdValues.DatabaseBlockedRequestsWarningThreshold);
             CreateReportForDBCPUUsage();
             CreateReportForRequestDetails();
         }
 
-        private void GetCurrentValueAndAlert(string sqlQuery,string blobName,int threshold)
+        private void GetCurrentValueAndAlert(string sqlQuery,string blobName,int error, int warning)
         {
             List<Tuple<string, string>> connectionCountDataPoints = new List<Tuple<string, string>>();
+            StringBuilder message = new StringBuilder();
+            if (blobName.Equals("DBSuspendedRequests")) 
+            {
+                message.Append("all requests wait_type are");
+                foreach (DatabaseRequest rq in GetDBRequest())
+                {
+                    message.Append(rq.Wait_Type + "\n");
+                }
+            }
+
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
             {
                 using (var dbExecutor = new SqlExecutor(sqlConnection))
                 {
                     sqlConnection.Open();
                     var connectionCount = dbExecutor.Query<Int32>(sqlQuery).SingleOrDefault();
-                    if(connectionCount > threshold)
+                    if(connectionCount > error)
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("SQL Azure database alert activated for {0}", blobName),
-                            Details = string.Format("Number of {0} exceeded the threshold value. Threshold value  {1}, Current value : {2}",blobName,threshold,connectionCount),                          
-                            AlertName = "SQL Azure DB alert for connections/requests count",
-                            Component = "SQL Azure database"
+                            AlertSubject = string.Format("Error: SQL Azure database alert activated for {0}", blobName),
+                            Details = string.Format("Number of {0} exceeded the Error threshold value. Threshold value  {1}, Current value : {2}.{3}",blobName,error,connectionCount,message),
+                            AlertName = "Error: SQL Azure DB alert for connections/requests count",
+                            Component = "SQL Azure database",
+                            Level = "Error"
+                        }.ExecuteCommand();
+                    }
+                    else if (connectionCount > warning)
+                    {
+                        new SendAlertMailTask
+                        {
+                            AlertSubject = string.Format("Warning: SQL Azure database alert activated for {0}", blobName),
+                            Details = string.Format("Number of {0} exceeded the Warning threshold value. Threshold value  {1}, Current value : {2}.{3}", blobName, warning, connectionCount,message),
+                            AlertName = "Warning: SQL Azure DB alert for connections/requests count",
+                            Component = "SQL Azure database",
+                            Level = "Warning"
                         }.ExecuteCommand();
                     }
                    
@@ -89,18 +112,21 @@ namespace NuGetGallery.Operations
 
         private void CreateReportForRequestDetails()
         {
-            List<Tuple<string, string>> connectionCountDataPoints = new List<Tuple<string, string>>();
+            var json = new JavaScriptSerializer().Serialize(GetDBRequest());
+            ReportHelpers.AppendDatatoBlob(StorageAccount, "DBRequestDetails" + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), json), 50, ContainerName);
+        }
+
+        private List<DatabaseRequest> GetDBRequest()
+        {
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
             {
                 using (var dbExecutor = new SqlExecutor(sqlConnection))
                 {
                     sqlConnection.Open();
                     var requests = dbExecutor.Query<DatabaseRequest>("SELECT t.text, r.start_time, r.status, r.command, r.wait_type, r.wait_time FROM sys.dm_exec_requests r OUTER APPLY sys.dm_exec_sql_text(sql_handle) t​");
-                    var json = new JavaScriptSerializer().Serialize(requests);
-                    ReportHelpers.AppendDatatoBlob(StorageAccount, "DBRequestDetails" + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), json), 50, ContainerName);
+                    return requests.ToList();
                 }
             }   
-          
         }
     }
 }

@@ -45,18 +45,19 @@ namespace NuGetGallery.Operations
         {
             JavaScriptSerializer js = new JavaScriptSerializer();
             AlertThresholds thresholdValues = js.Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
-            int threshold = thresholdValues.DatabaseSizeWarningPercentThreshold;
+            int error = thresholdValues.DatabaseSizePercentErrorThreshold;
+            int warning = thresholdValues.DatabaseSizePercentWarningThreshold;
 
             List<DatabaseSize> dbSizeDetails = new List<DatabaseSize>();
            // dbSizeDetails.Add(GetDataSize(PrimaryConnectionString.ConnectionString,threshold));
-            dbSizeDetails.Add(GetDataSize(LegacyConnectionString.ConnectionString, threshold));
-            dbSizeDetails.Add(GetDataSize(WarehouseConnectionString.ConnectionString, threshold));
+            dbSizeDetails.Add(GetDataSize(LegacyConnectionString.ConnectionString, error,warning));
+            dbSizeDetails.Add(GetDataSize(WarehouseConnectionString.ConnectionString, error,warning));
           
             var json = js.Serialize(dbSizeDetails);
             ReportHelpers.CreateBlob(StorageAccount, "DBSize.json", ContainerName, "application/json",ReportHelpers.ToStream(json));
         }
 
-        private DatabaseSize GetDataSize(string connectionString,int threshold)
+        private DatabaseSize GetDataSize(string connectionString,int error, int warning)
         {
             
             using (var sqlConnection = new SqlConnection(connectionString))
@@ -70,14 +71,26 @@ namespace NuGetGallery.Operations
                     string edition = dbExecutor.Query<string>(SqlQueryForEdition).SingleOrDefault();
                     string dbName = Util.GetDbName(connectionString);
 
-                    if (percentUsed > threshold)
+                    if (percentUsed > error)
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("SQL Azure database size alert activated for {0}",dbName),
-                            Details = string.Format("DB Size excced the threshold percent.Current Used % {0}, Threshold % : {1}", percentUsed, threshold ),
-                            AlertName = "SQL Azure DB alert for database size limit",
-                            Component = string.Format("SQL Azure database-{0}",dbName)
+                            AlertSubject = string.Format("Error: SQL Azure database size alert activated for {0}",dbName),
+                            Details = string.Format("DB Size excced the Error threshold percent.Current Used % {0}, Threshold % : {1}", percentUsed, error ),
+                            AlertName = "Error: SQL Azure DB alert for database size limit",
+                            Component = string.Format("SQL Azure database-{0}",dbName),
+                            Level = "Error"
+                        }.ExecuteCommand();
+                    }
+                    else if (percentUsed > warning)
+                    {
+                        new SendAlertMailTask
+                        {
+                            AlertSubject = string.Format("Warning: SQL Azure database size alert activated for {0}", dbName),
+                            Details = string.Format("DB Size excced the Warning threshold percent.Current Used % {0}, Threshold % : {1}", percentUsed, warning),
+                            AlertName = "Warning: SQL Azure DB alert for database size limit",
+                            Component = string.Format("SQL Azure database-{0}", dbName),
+                            Level = "Warning"
                         }.ExecuteCommand();
                     }
 
