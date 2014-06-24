@@ -55,7 +55,12 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         public int IndexMin { get; set; }
         public string IndexLagNotes { get; set; }
 
-        public int InstanceCount{ get; set; }
+        public int InstanceCount{
+            get
+            {
+                return GetMetricValues("nuget-prod-0-v2galleryInstanceCount" + Date + "HourlyReport.json").First();
+            }
+        }
         public int InstanceMax { get; set; }
         public int InstanceMin { get; set; }
         public string InstanceCountNotes
@@ -131,38 +136,37 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             StreamReader sr = new StreamReader(@"ScriptsAndReferences\DailyStatusReport.htm");
             string mailBody = sr.ReadToEnd();
             sr.Close();
-            string duration = (EndTime - StartTime).ToString();
-            duration = duration.Insert(duration.Length - 2, ":");
-            mailBody = mailBody.Replace("{availability}", Availability.ToString());
-            mailBody = mailBody.Replace("{downloads}", Downloads.ToString());
-            mailBody = mailBody.Replace("{restore}", Restore.ToString());
-            mailBody = mailBody.Replace("{searchterms}", SearchTerms.ToString());
-            mailBody = mailBody.Replace("{uploads}", Uploads.ToString());
-            mailBody = mailBody.Replace("{newusers}", NewUsers.ToString());
-            mailBody = mailBody.Replace("{TrafficPerHour}", TrafficPerHour.ToString());
-            mailBody = mailBody.Replace("{trafficmax}", TrafficMax.ToString());
-            mailBody = mailBody.Replace("{trafficmin}", TrafficMin.ToString());
-            mailBody = mailBody.Replace("{TrafficPerHourNotes}", TrafficPerHourNotes.ToString());
-            mailBody = mailBody.Replace("{RequestPerHour}", RequestPerHour.ToString());
-            mailBody = mailBody.Replace("{requestmax}", RequestMax.ToString());
-            mailBody = mailBody.Replace("{requestmin}", RequestMin.ToString());
-            mailBody = mailBody.Replace("{RequestPerHourNotes}", RequestPerHourNotes.ToString());
-            mailBody = mailBody.Replace("{ErrorsPerHour}", ErrorsPerHour.ToString());
-            mailBody = mailBody.Replace("{ErrorsMax}", ErrorsMax.ToString());
-            mailBody = mailBody.Replace("{ErrorsMin}", ErrorsMin.ToString());
-            mailBody = mailBody.Replace("{ErrorsPerHourNotes}", ErrorsPerHourNotes.ToString());
-            mailBody = mailBody.Replace("{IndexLag}", IndexLag.ToString());
-            mailBody = mailBody.Replace("{indexmax}", IndexMax.ToString());
-            mailBody = mailBody.Replace("{indexmin}", IndexMin.ToString());
-            mailBody = mailBody.Replace("{IndexLagNotes}", IndexLagNotes.ToString());
+
+            //mailBody = mailBody.Replace("{availability}", Availability.ToString());
+            //mailBody = mailBody.Replace("{downloads}", Downloads.ToString());
+            //mailBody = mailBody.Replace("{restore}", Restore.ToString());
+            //mailBody = mailBody.Replace("{searchterms}", SearchTerms.ToString());
+            //mailBody = mailBody.Replace("{uploads}", Uploads.ToString());
+            //mailBody = mailBody.Replace("{newusers}", NewUsers.ToString());
+            //mailBody = mailBody.Replace("{TrafficPerHour}", TrafficPerHour.ToString());
+            //mailBody = mailBody.Replace("{trafficmax}", TrafficMax.ToString());
+            //mailBody = mailBody.Replace("{trafficmin}", TrafficMin.ToString());
+            //mailBody = mailBody.Replace("{TrafficPerHourNotes}", TrafficPerHourNotes.ToString());
+            //mailBody = mailBody.Replace("{RequestPerHour}", RequestPerHour.ToString());
+            //mailBody = mailBody.Replace("{requestmax}", RequestMax.ToString());
+            //mailBody = mailBody.Replace("{requestmin}", RequestMin.ToString());
+            //mailBody = mailBody.Replace("{RequestPerHourNotes}", RequestPerHourNotes.ToString());
+            //mailBody = mailBody.Replace("{ErrorsPerHour}", ErrorsPerHour.ToString());
+            //mailBody = mailBody.Replace("{ErrorsMax}", ErrorsMax.ToString());
+            //mailBody = mailBody.Replace("{ErrorsMin}", ErrorsMin.ToString());
+            //mailBody = mailBody.Replace("{ErrorsPerHourNotes}", ErrorsPerHourNotes.ToString());
+            //mailBody = mailBody.Replace("{IndexLag}", IndexLag.ToString());
+            //mailBody = mailBody.Replace("{indexmax}", IndexMax.ToString());
+            //mailBody = mailBody.Replace("{indexmin}", IndexMin.ToString());
+            //mailBody = mailBody.Replace("{IndexLagNotes}", IndexLagNotes.ToString());
             mailBody = mailBody.Replace("{InstanceCount}", InstanceCount.ToString());
-            mailBody = mailBody.Replace("{instancemax}", InstanceMax.ToString());
-            mailBody = mailBody.Replace("{instancemin}", InstanceMin.ToString());
-            mailBody = mailBody.Replace("{InstanceCountNotes}", InstanceCountNotes.ToString());
-            mailBody = mailBody.Replace("{overallworkercount}", OverallWorkerCount.ToString());
-            mailBody = mailBody.Replace("{successcount}", SuccessCount.ToString());
-            mailBody = mailBody.Replace("{failedjobnames}", FailedJobNames.ToString());
-            mailBody = mailBody.Replace("{notableissues}", NotableIssues.ToString());
+            //mailBody = mailBody.Replace("{instancemax}", InstanceMax.ToString());
+            //mailBody = mailBody.Replace("{instancemin}", InstanceMin.ToString());
+            //mailBody = mailBody.Replace("{InstanceCountNotes}", InstanceCountNotes.ToString());
+            //mailBody = mailBody.Replace("{overallworkercount}", OverallWorkerCount.ToString());
+            //mailBody = mailBody.Replace("{successcount}", SuccessCount.ToString());
+            //mailBody = mailBody.Replace("{failedjobnames}", FailedJobNames.ToString());
+            //mailBody = mailBody.Replace("{notableissues}", NotableIssues.ToString());
 
             return mailBody;
         }
