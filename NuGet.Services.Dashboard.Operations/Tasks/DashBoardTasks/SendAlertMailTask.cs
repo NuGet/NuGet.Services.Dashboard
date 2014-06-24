@@ -49,7 +49,10 @@ namespace NuGetGallery.Operations
             }
             else
             {
-                SendEmail();
+                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["SmtpUserName"]) && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["SmtpPassword"]))
+                {
+                    SendEmail();
+                }
             }          
         }
 
