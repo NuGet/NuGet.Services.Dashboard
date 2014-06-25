@@ -21,17 +21,7 @@
 
     };
 
-    function RefreshElmah() {
-        $.ajax({
-            url: '@Url.Action("RefreshElmah", "TroubleShooting")',
-            type: "GET",
-            dataType: 'html',
-            success: function (result) {
-                $("#1hourdivelmah").html(result);
-            }
-        });
-
-    };
+    
 
     function UpdateTime() {
         $.ajax({
@@ -50,36 +40,6 @@
         if (tag == "Prod0") document.getElementById("configSetting").selectedIndex = 0;
         if (tag == "Int0") document.getElementById("configSetting").selectedIndex = 1;
     };
-
-    function RefreshDBEvent() {
-        $.ajax({
-            url: '@Url.Action("RefreshDatabaseEvent", "TroubleShooting")',
-            type: "GET",
-            dataType: 'html',
-            success: function (result) {
-                $("#1hourdivdb").html(result);
-            }
-        });
-    }
-
-    function RefreshDBRequest() {
-        $.ajax({
-            url: '@Url.Action("RefreshDatabaseRequest", "TroubleShooting")',
-            type: "GET",
-            dataType: 'html',
-            success: function (result) {
-                $("#DBrequest").html(result);
-            }
-        });
-    }
-
-    function RefreshDB() {
-        RefreshDBEvent();
-        RefreshDBRequest();
-    }
-
-
-    
 
     $(function () {
         setInterval(function () { $('#DRRequestsDiv').load('/ResourceMonitoring/DBRequests'); }, 15 * 60 * 1000);
