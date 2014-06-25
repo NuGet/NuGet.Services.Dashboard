@@ -27,11 +27,6 @@ namespace NuGetDashboard.Controllers
             return RedirectToAction("Index");
         }
 
-        public ActionResult Tiles()
-        {
-            return PartialView("~/Views/Home/Tiles.cshtml", Session["currentEnvironmentName"]);
-        }
-
         [HttpGet]
         public JsonResult GetCurrentPacificTime()
         {

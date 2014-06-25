@@ -21,7 +21,7 @@ namespace NuGetDashboard.Controllers.Trending
 
         public ActionResult Details()
         {
-            return PartialView("~/Views/Trending/Trending_Details.cshtml");
+            return View("~/Views/Trending/Trending_Details.cshtml");
         }
 
         [HttpGet]

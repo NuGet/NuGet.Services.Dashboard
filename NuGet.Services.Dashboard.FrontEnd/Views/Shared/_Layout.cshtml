@@ -12,23 +12,24 @@
         <script src="//code.highcharts.com/highcharts.js"></script>
     </head>
     <body class="metrouicss">         
-       <div class="page">
+        <div class="page">
             <div class="nav-bar bg-color-darken">
                 <div class="nav-bar-inner padding10">
                     <span class="pull-menu"></span>
-                        <a href="/"><span class="element brand"><img class="place-left" src="images/nuget_32.png" style="height: 20px"/>NuGet <small>Dashboard</small></span></a>
-                        <div class="divider"></div>
-                        <ul class="menu">
-                            <li><a href="/" >Home</a></li>
-                            <li><a href="#" onclick="ShowDetails('Details', 'UpTime');">Uptime</a></li>    
-                            <li><a href="#" onclick="ShowDetails('Details', 'SLA');">App Server</a></li>  
-                            <li><a href="#" onclick="ShowDetails('Details', 'ResourceMonitoring');">DataBase</a></li>  
-                            <li><a href="#" onclick="ShowDetails('Details', 'Trending');">Trends</a></li>                                  
-                            <li><a href="#" onclick="ShowDetails('Details', 'TroubleShooting');" >TroubleShoot</a></li>
-                            <li><a href="#" onclick="ShowDetails('WorkJobDetail', 'WorkJob');">WorkJob</a></li>
-                        </ul>
+                    <a href="/"><span class="element brand"><img class="place-left" src="~/images/nuget_32.png" style="height: 20px" />NuGet <small>Dashboard</small></span></a>
+                    <div class="divider"></div>
+                    <ul class="menu">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="@Url.Action("Details","Uptime")">Uptime</a></li>
+                        <li><a href="@Url.Action("Details","SLA")">App Server</a></li>
+                        <li><a href="@Url.Action("Details", "ResourceMonitoring")">DataBase</a></li>
+                        <li><a href="@Url.Action("Details", "Trending")">Trends</a></li>
+                        <li><a href="@Url.Action("Details", "TroubleShooting")">TroubleShoot</a></li>
+                        <li><a href="@Url.Action("WorkJobDetail", "WorkJob")">WorkJob</a></li>
+                    </ul>
                 </div>
             </div>
+            
         </div>    
         @RenderBody()
         <br />
