@@ -34,7 +34,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
 
         public ActionResult Details()
         {
-            return PartialView("~/Views/UpTime/UpTime_Details.cshtml");
+            return View("~/Views/UpTime/UpTime_Details.cshtml");
         }
       
         [HttpGet]

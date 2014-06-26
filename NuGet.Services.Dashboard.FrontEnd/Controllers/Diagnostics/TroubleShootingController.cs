@@ -22,7 +22,7 @@ namespace NuGetDashboard.Controllers.Diagnostics
         }
         public ActionResult Details()
         {
-            return PartialView("~/Views/TroubleShooting/TroubleShooting_Details.cshtml");
+            return View("~/Views/TroubleShooting/TroubleShooting_Details.cshtml");
         }
         /// <summary>
         /// Returns the data for DB Troubleshooting for the given hour.

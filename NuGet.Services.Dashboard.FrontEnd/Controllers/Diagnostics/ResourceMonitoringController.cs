@@ -30,7 +30,7 @@ namespace NuGetDashboard.Controllers.Diagnostics
 
         public ActionResult Details()
         {
-            return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_Details.cshtml");
+            return View("~/Views/ResourceMonitoring/ResourceMonitoring_Details.cshtml");
         }
        
         [HttpGet]

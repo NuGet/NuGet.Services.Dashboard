@@ -22,6 +22,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
         [Option("WorkServiceEndpoint", AltName = "url")]
         public string WorkServiceEndpoint { get; set; }
+
+        [Option("WorkServiceEndpointForFailoverDC", AltName = "furl")]
+        public string WorkServiceEndpointForFailoverDC { get; set; }
         
         public override void ExecuteCommand()
         {
@@ -36,9 +39,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 int faultCount = 0;
                 int faultRate = 0;
                 int runtime = 0;
+                string Endpoint = WorkServiceEndpoint;
+                if (job.JobInstanceName.Contains("FailoverDC")) Endpoint = WorkServiceEndpointForFailoverDC;
                 Dictionary<string, List<string>> ErrorList = new Dictionary<string, List<string>>();
                 NetworkCredential nc = new NetworkCredential(WorkServiceUserName, WorkServiceAdminKey);
-                WebRequest request = WebRequest.Create(string.Format("{0}/instances/{1}?limit={2}", WorkServiceEndpoint, job.JobInstanceName, (lastNhour * 60) / job.FrequencyInMinutes));
+                WebRequest request = WebRequest.Create(string.Format("{0}/instances/{1}?limit={2}", Endpoint, job.JobInstanceName, (lastNhour * 60) / job.FrequencyInMinutes));
                 request.Credentials = nc;
                 request.PreAuthenticate = true;
                 request.Method = "GET";
@@ -140,6 +145,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             else
             {
                 int last = message.IndexOf("End of stack trace from previous location where exception was thrown");
+                if (last < 0) return message;
                 return message.Substring(0, last);
             }
         }

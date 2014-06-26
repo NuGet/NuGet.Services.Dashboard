@@ -32,7 +32,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             ViewBag.work = jobDetail;
             ViewBag.admin = MvcApplication.WorkServiceUserName;
             ViewBag.key = MvcApplication.WorkServiceAdminKey;
-            return PartialView("~/Views/WorkJobs/WorkJobs_detail.cshtml");
+            return View("~/Views/WorkJobs/WorkJobs_detail.cshtml");
         }
     }
 }

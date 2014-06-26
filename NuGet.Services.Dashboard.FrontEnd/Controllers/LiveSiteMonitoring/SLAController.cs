@@ -24,7 +24,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         [HttpGet]
         public ActionResult Details()
         {
-            return PartialView("~/Views/SLA/SLA_Details.cshtml");
+            return View("~/Views/SLA/SLA_Details.cshtml");
         }
      
         [HttpGet]

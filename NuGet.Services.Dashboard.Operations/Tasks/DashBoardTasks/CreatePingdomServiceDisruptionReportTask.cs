@@ -13,7 +13,7 @@ using System.Web.Script.Serialization;
 namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 {
     [Command("PingdomServiceDisruptionReportTask", "Creates report for the outage of all micro service every hour", AltName = "psdrt")]
-    class PingdomServiceDisruptionReportTask : StorageTask
+    class CreatePingdomServiceDisruptionReportTask : StorageTask
     {
         [Option("PingdomUserName", AltName = "user")]
         public string UserName { get; set; }
@@ -65,7 +65,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             request.PreAuthenticate = true;
             request.Method = "GET";
             WebResponse respose = request.GetResponse();
-            int downCount = 0;
+            List<Tuple<int, DateTime>> downRecord = new List<Tuple<int, DateTime>>();
             AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
             using (var reader = new StreamReader(respose.GetResponseStream()))
             {
@@ -85,7 +85,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                             if (downtime > thresholdValues.PingdomServiceDistruptionErrorThresholdInSeconds)
                             {
                                 serviceStatus = "down";
-                                downCount++;
+                                downRecord.Add(new Tuple<int, DateTime>(downtime, DateTime.Now));
                             }
                          }
                     } 
@@ -93,10 +93,17 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             }
             if (serviceStatus.Equals("down"))
             {
+                StringBuilder sb = new StringBuilder();
+                foreach (Tuple<int, DateTime> each in downRecord)
+                {
+                    sb.Append(string.Format("at {0}, there is {1} second down.",each.Item2.ToString(),each.Item1));
+                    
+                }
+                
                 new SendAlertMailTask
                 {
                     AlertSubject = string.Format("Error: Alert for {0} pingdom service Down", checkAlias),
-                    Details = string.Format("Pingdom service {0} down time exceeded Error threshold: {1} second, in last {2} hours, there are {3} down happened", checkAlias, thresholdValues.PingdomServiceDistruptionErrorThresholdInSeconds, LastNhour , downCount),
+                    Details = string.Format("Pingdom service {0} down time exceeded threshold: {1} second, in last {2} hours, there are {3} down happened, detail is {4}", checkAlias, thresholdValues.PingdomServiceDistruptionErrorThresholdInSeconds, LastNhour ,downRecord.Count,sb.ToString()),
                     AlertName = string.Format("Error: Pingdom Micro Service: {0}",checkAlias),
                     Component = "Pingdom Service",
                     Level = "Error"
