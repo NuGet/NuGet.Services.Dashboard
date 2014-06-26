@@ -18,11 +18,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
     public class SendDailyStatusReportEmailTask : StorageTask
     {
-        [Option("StartTime", AltName = "start")]
-        public int StartTime { get; set; }
-
-        [Option("EndTime", AltName = "end")]
-        public int EndTime { get; set; }
+        [Option("Recepient", AltName = "rec")]
+        public string MailRecepientAddress { get; set; }
 
         [Option("Date", AltName = "date")]
         public string Date { get; set; }
@@ -262,7 +259,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             //ServicePointManager.ServerCertificateValidationCallback = delegate(object s, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) { return true; };
             System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage();
             message.From = new MailAddress(ConfigurationManager.AppSettings["SmtpUserName"], "NuGet Daily Status Report");
-            message.To.Add(new MailAddress(ConfigurationManager.AppSettings["MailRecepientAddress"], ConfigurationManager.AppSettings["MailRecepientAddress"]));
+            message.To.Add(new MailAddress(MailRecepientAddress, MailRecepientAddress));
             message.Subject = string.Format("NuGet Gallery Daily Status Report - " + DateTime.Today.ToShortDateString());
             message.IsBodyHtml = true;
             message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(@"<html><body>" + GetMailContent() + "</body></html>", new ContentType("text/html")));
@@ -394,7 +391,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     notableIssues.Add(detail.ErrorMessage.Keys.First().Substring(0, 100) + ".....");
                 }
             }
-            notableIssues.Add("For more details, please refer to https://dashboard.nuget.org/WorkJob/WorkJobDetail.");
+            notableIssues.Add("<br/>For more details, please refer to https://dashboard.nuget.org/WorkJob/WorkJobDetail.");
             return new Tuple<int, string[], string[]>(count, failedJobNames.ToArray(), notableIssues.ToArray());
         }
         #endregion
