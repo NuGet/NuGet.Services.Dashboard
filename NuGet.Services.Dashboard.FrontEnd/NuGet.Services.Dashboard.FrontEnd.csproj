@@ -388,7 +388,6 @@
     <Content Include="Views\Web.config" />
     <Content Include="Views\UpTime\UpTime_Index.cshtml" />
     <Content Include="Views\UpTime\UpTime_Now.cshtml" />
-    <Content Include="Views\Home\Tiles.cshtml" />
     <Content Include="Views\UpTime\UpTime_Details.cshtml" />
     <Content Include="Views\SLA\SLA_Details.cshtml" />
     <Content Include="Views\Trending\Trending_Details.cshtml" />
