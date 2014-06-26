@@ -102,7 +102,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Error: Alert for work job service : {1} failure", job.JobInstanceName),
+                            AlertSubject = string.Format("Error: Alert for work job service : {0} failure", job.JobInstanceName),
                             Details = string.Format("Rate of failure exceeded Error threshold for {0}. Threshold count : {1}%, failure in last 24 hour : {2}", job.JobInstanceName,thresholdValues.WorkJobErrorThreshold , faultCount),
                             AlertName = "Error: Work job service",
                             Component = "work job service",
@@ -113,7 +113,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Warning: Alert for work job service: {1} failure", job.JobInstanceName),
+                            AlertSubject = string.Format("Warning: Alert for work job service: {0} failure", job.JobInstanceName),
                             Details = string.Format("Rate of failure exceeded Warning threshold for {0}. Threshold count : {1}%, failure in last 24 hour : {2}", job.JobInstanceName, thresholdValues.WorkJobWarningThreshold, faultCount),
                             AlertName = "Warning: Work job service",
                             Component = "work job service",

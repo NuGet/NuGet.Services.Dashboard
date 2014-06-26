@@ -24,7 +24,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public ActionResult WorkJobDetail()
         {
             List<WorkInstanceDetail> jobDetail = new List<WorkInstanceDetail>();
-            var content = BlobStorageService.Load(Session["currentEnvironmentName"]+"WorkJobDetail.json");
+            var content = BlobStorageService.Load("WorkJobDetail.json");
             if (content != null)
             {
                 jobDetail = new JavaScriptSerializer().Deserialize<List<WorkInstanceDetail>>(content);
