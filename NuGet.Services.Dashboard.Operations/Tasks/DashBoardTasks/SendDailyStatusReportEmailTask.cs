@@ -1,4 +1,6 @@
-﻿using NuGetGallery.Operations.Common;
+﻿using Newtonsoft.Json.Linq;
+using NuGet.Services.Dashboard.Common;
+using NuGetGallery.Operations.Common;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -7,6 +9,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Net.Mime;
+using System.Web.Script.Serialization;
+
 
 namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 {
@@ -34,14 +38,14 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         {
             get
             {
-                return GetTupleMetricValues("package.restore.download" + Date + "DetailedReport.json").Item2;
+                return GetDownloadNumbersFromBlob("Install30Day.json") / 30;
             }
         }
         public int Restore
         {
             get
             {
-                return GetTupleMetricValues("package.restore.download" + Date + "DetailedReport.json").Item2;
+                return GetDownloadNumbersFromBlob("Restore30Day.json") / 30;
             }
         }
         public string[] SearchTerms
@@ -70,21 +74,21 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         {
             get
             {
-                return GetTupleMetricValues("DBConnections" + Date + ".json").Item1;
+                return GetTupleMetricValues("IISRequests" + Date + ".json").Item1;
             }
         }
         public int TrafficMax
         {
             get
             {
-                return GetTupleMetricValues("DBConnections" + Date + ".json").Item3;
+                return GetTupleMetricValues("IISRequests" + Date + ".json").Item3;
             }
         }
         public int TrafficMin
         {
             get
             {
-                return GetTupleMetricValues("DBConnections" + Date + ".json").Item4;
+                return GetTupleMetricValues("IISRequests" + Date + ".json").Item4;
             }
         }
         public string TrafficPerHourNotes
@@ -215,28 +219,28 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         {
             get
             {
-                return 12;
+                return GetMetricCountFromBlob("Configuration.WorkJobInstances.json");
             }
         }
         public int SuccessCount
         {
             get
             {
-                return 10;
+                return GetFailedJobDetails().Item1;
             }
         }
         public string[] FailedJobNames
         {
             get
             {
-                return new string[] {"AggregateStatistics"};
+                return GetFailedJobDetails().Item2;
             }
         }
         public string[] NotableIssues
         {
             get
             {
-                return new string[] { "ErrorMessage : System.Data.SqlClient.SqlException (0x80131904): Timeout expired.  The timeout period elapsed prior to completion" };
+                return GetFailedJobDetails().Item3;
             }
         }
 
@@ -309,7 +313,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             mailBody = mailBody.Replace("{overallworkercount}", OverallWorkerCount.ToString());
             mailBody = mailBody.Replace("{successcount}", SuccessCount.ToString());
             mailBody = mailBody.Replace("{failedjobnames}", string.Join(", ", FailedJobNames));
-            mailBody = mailBody.Replace("{notableissues}", string.Join(", ", NotableIssues));
+            mailBody = mailBody.Replace("{notableissues}", string.Join("<br/>", NotableIssues));
 
             return mailBody;
         }
@@ -344,6 +348,54 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 }
             }
             return values;
+        }
+
+        private int GetDownloadNumbersFromBlob(string blobName)
+        {
+            Dictionary<string, string> dict = ReportHelpers.GetDictFromBlob(StorageAccount, blobName, ContainerName);
+            List<int> values = new List<int>();
+            foreach (KeyValuePair<string, string> keyValuePair in dict)
+            {
+                values.Add(Convert.ToInt32(keyValuePair.Value));
+            }
+            return values.Sum();
+        }
+
+        private int GetMetricCountFromBlob (string blobName)
+        {
+            string content = ReportHelpers.Load(StorageAccount, blobName, ContainerName);
+            JArray jArray = JArray.Parse(content);
+            return jArray.Count;
+        }
+
+        private List<WorkInstanceDetail> GetWorkJobDetail()
+        {
+            List<WorkInstanceDetail> jobDetail = new List<WorkInstanceDetail>();
+            var content = ReportHelpers.Load(StorageAccount, "WorkJobDetail.json", ContainerName);
+            if (content != null)
+            {
+                jobDetail = new JavaScriptSerializer().Deserialize<List<WorkInstanceDetail>>(content);
+            }
+            return jobDetail;
+        }
+
+        private Tuple<int, string[], string[]> GetFailedJobDetails()
+        {
+            List<WorkInstanceDetail> jobDetail = GetWorkJobDetail();
+            List<string> failedJobNames = new List<string>();
+            List<string> notableIssues = new List<string>();
+            int count = jobDetail.Count;
+            foreach (WorkInstanceDetail detail in jobDetail)
+            {
+                if (detail.FaultedNo != "0")
+                {
+                    count--;
+                    failedJobNames.Add(detail.jobName);
+                    notableIssues.Add(detail.ErrorMessage.Keys.First().Substring(0, 100) + ".....");
+                }
+            }
+            notableIssues.Add("For more details, please refer to https://dashboard.nuget.org/WorkJob/WorkJobDetail.");
+            return new Tuple<int, string[], string[]>(count, failedJobNames.ToArray(), notableIssues.ToArray());
         }
         #endregion
     }
