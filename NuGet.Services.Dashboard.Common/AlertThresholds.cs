@@ -38,10 +38,10 @@ namespace NuGet.Services.Dashboard.Common
         public int DatabaseSizePercentWarningThreshold = int.MaxValue; //specifies the warning limit on DB size (% used in maxsize)
         public int ElmahCriticalErrorPerHourAlertWarningThreshold = int.MaxValue;// specifies the limit on the number of critical errors in a specific category per hour in Elmah.
         public int LuceneIndexLagAlertWarningThreshold = int.MaxValue; // Specifies the limit on the delta between number of packages in DB and Lucene Index.
-        public int BackupDBAgeWarningThresholdInMinutes = int.MaxValue; //A back up no older than 1 hour should be present. But make it 2 hours just to provide extra buffer if in case the worker job is taking time.
+        public int BackupDBAgeWarningThresholdInMinutes = 90; //A back up no older than 1 hour should be present. But make it 2 hours just to provide extra buffer if in case the worker job is taking time.
         public int OnlineDBBackupsWarningThreshold = int.MaxValue;// Only 4 backup can be present online at any point of time. But make the threshold 7 to provide some space for slow running jobs.
-        public int PurgeStatisticsWarningThresholdInDays = int.MaxValue; //Purge stats job purges records older than 7 days. Settings the threshold to 8 to provide some buffer.
-        public int PendingWarningWarningThresholdInHours = int.MaxValue; //Specifies the limit on the no. of hours a package can remain in Pending state.
+        public int PurgeStatisticsWarningThresholdInDays = 10; //Purge stats job purges records older than 7 days. Settings the threshold to 8 to provide some buffer.
+        public int PendingWarningWarningThresholdInHours = 4; //Specifies the limit on the no. of hours a package can remain in Pending state.
         public int BackupPackagesWarningThresholdInHours = int.MaxValue; //Specifies the limit lag between "packages" container and "backup" container.
         public int FailoverDBAgeWarningThresholdInMinutes = int.MaxValue; //Specifies the lag between the primary DC's database and failover database in minutes.
         public int FailoverDBAndBlobLagWarningThreshold = int.MaxValue; //Specifies the allowed lag between failover DB and blob in terms of number of packages.
