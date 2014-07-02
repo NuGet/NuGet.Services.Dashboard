@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using System.Xml;
 
 namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 {
@@ -17,21 +19,30 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         [Option("WorkServiceUserName", AltName = "name")]
         public string WorkServiceUserName { get; set; }
        
-        [Option("WorkServiceAdminKey", AltName = "key")]
+        [Option("Work-0-ServiceAdminKey", AltName = "key0")]
         public string WorkServiceAdminKey { get; set; }
 
-        [Option("WorkServiceEndpoint", AltName = "url")]
-        public string WorkServiceEndpoint { get; set; }
+        [Option("Work-1-ServiceAdminKey", AltName = "key1")]
+        public string WorkServiceFailoverAdminKey { get; set; }
 
-        [Option("WorkServiceEndpointForFailoverDC", AltName = "furl")]
-        public string WorkServiceEndpointForFailoverDC { get; set; }
-        
+        [Option("SubsciptionId", AltName = "lid")]
+        public string SubscriptionId { get; set; }
+
+        [Option("CloudServiceId", AltName ="cid" )]
+        public string CloudServiceId { get; set; }
+
+        [Option("JobId", AltName = "jid")]
+        public string JobId { get; set; }
+
+        [Option("CertificateName", AltName = "cername")]
+        public string CertificateName { get; set; }
+
         public override void ExecuteCommand()
         {
             int lastNhour = 24;
             List<WorkInstanceDetail> jobDetail = new List<WorkInstanceDetail>();
-            var content = ReportHelpers.Load(StorageAccount,"Configuration.WorkJobInstances.json",ContainerName);
-            List<WorkJobInstanceDetails> instanceDetails = new JavaScriptSerializer().Deserialize<List<WorkJobInstanceDetails>>(content);
+            List<WorkJobInstanceDetails> instanceDetails = getWorkjobInstance();
+           
             foreach (WorkJobInstanceDetails job in instanceDetails)
             {
                 int invocationCount = 0;
@@ -39,11 +50,15 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 int faultCount = 0;
                 int faultRate = 0;
                 int runtime = 0;
-                string Endpoint = WorkServiceEndpoint;
-                if (job.JobInstanceName.Contains("FailoverDC")) Endpoint = WorkServiceEndpointForFailoverDC;
                 Dictionary<string, List<string>> ErrorList = new Dictionary<string, List<string>>();
-                NetworkCredential nc = new NetworkCredential(WorkServiceUserName, WorkServiceAdminKey);
-                WebRequest request = WebRequest.Create(string.Format("{0}/instances/{1}?limit={2}", Endpoint, job.JobInstanceName, (lastNhour * 60) / job.FrequencyInMinutes));
+                string AdminKey = WorkServiceAdminKey;
+
+                if (job.url.Contains("api-work-1"))
+                {
+                    AdminKey = WorkServiceFailoverAdminKey;
+                }
+                NetworkCredential nc = new NetworkCredential(WorkServiceUserName, AdminKey);
+                WebRequest request = WebRequest.Create(string.Format("{0}/instances/{1}?limit={2}", job.url, job.JobInstanceName, (lastNhour * 60) / job.FrequencyInMinutes));
                 request.Credentials = nc;
                 request.PreAuthenticate = true;
                 request.Method = "GET";
@@ -129,8 +144,14 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 }
             }
 
+             List<WorkServiceAdmin> allkey = new List<WorkServiceAdmin>();
+             allkey.Add(new WorkServiceAdmin(WorkServiceUserName, WorkServiceAdminKey));
+             allkey.Add(new WorkServiceAdmin(WorkServiceUserName,WorkServiceFailoverAdminKey));
+             
              var json = new JavaScriptSerializer().Serialize(jobDetail);
+             var key = new JavaScriptSerializer().Serialize(allkey);
              ReportHelpers.CreateBlob(StorageAccount, "WorkJobDetail.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
+             ReportHelpers.CreateBlob(StorageAccount, "WorkServiceAdminKey.json", ContainerName, "application/json", ReportHelpers.ToStream(key));
         }
 
         private string getResultMessage(string message)
@@ -147,6 +168,34 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 int last = message.IndexOf("End of stack trace from previous location where exception was thrown");
                 if (last < 0) return message;
                 return message.Substring(0, last);
+            }
+        }
+
+        private List<WorkJobInstanceDetails> getWorkjobInstance()
+        {
+            X509Certificate cert = X509Certificate.CreateFromCertFile(CertificateName);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format("https://management.core.windows.net/{0}/cloudservices/{1}/resources/scheduler/~/JobCollections/{2}/jobs?api-version=2014-04-01 ",SubscriptionId,CloudServiceId,JobId));
+            request.ClientCertificates.Add(cert);
+            request.Headers.Add("x-ms-version: 2013-03-01");
+            request.PreAuthenticate = true;
+            request.Method = "GET";
+            WebResponse respose = request.GetResponse();
+
+            List<WorkJobInstanceDetails> instanceDetails = new List<WorkJobInstanceDetails>();
+         
+            using (var reader = new StreamReader(respose.GetResponseStream()))
+            {
+                JavaScriptSerializer js = new JavaScriptSerializer();
+                var summaryObject = js.Deserialize<dynamic>(reader.ReadToEnd());
+                foreach (var summary in summaryObject)
+                {
+                    int FrequencyInMinutes = 0;
+                    if (summary["recurrence"]["frequency"].Equals("minute")) FrequencyInMinutes = summary["recurrence"]["interval"];
+                    if (summary["recurrence"]["frequency"].Equals("hour")) FrequencyInMinutes = summary["recurrence"]["interval"]*60;
+                    if (summary["recurrence"]["frequency"].Equals("day")) FrequencyInMinutes = summary["recurrence"]["interval"]*60*24;
+                    instanceDetails.Add(new WorkJobInstanceDetails(summary["id"], FrequencyInMinutes, summary["action"]["request"]["uri"]));
+                }
+                return instanceDetails;
             }
         }
     }

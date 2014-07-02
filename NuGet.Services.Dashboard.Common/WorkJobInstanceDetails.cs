@@ -11,11 +11,13 @@ namespace NuGet.Services.Dashboard.Common
     
         public string JobInstanceName;
         public int FrequencyInMinutes;
+        public string url;
 
-        public WorkJobInstanceDetails(string jobInstanceName,int repeatFrequency)
+        public WorkJobInstanceDetails(string jobInstanceName,int repeatFrequency,string url)
         {           
             this.JobInstanceName = jobInstanceName;
             this.FrequencyInMinutes = repeatFrequency;
+            this.url = url;
         }
         public WorkJobInstanceDetails()
         {           

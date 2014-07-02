@@ -37,8 +37,6 @@ namespace NuGetDashboard.Controllers
         private void update()
         {
             object envName = Session["currentEnvironmentName"];
-            MvcApplication.WorkServiceUserName = ConfigurationManager.AppSettings[MvcApplication.WorkServiceUserNamePrefix + envName];
-            MvcApplication.WorkServiceAdminKey = ConfigurationManager.AppSettings[MvcApplication.WorkServiceAdminKeyPrefix + envName];
             MvcApplication.DBConnectionString = ConfigurationManager.AppSettings[MvcApplication.DBConnectionStringPrefix + envName];
             MvcApplication.ElmahAccountCredentials = ConfigurationManager.AppSettings[MvcApplication.ElmahAccountCredentialsPrefix + envName];
             MvcApplication.StorageContainer = ConfigurationManager.AppSettings[MvcApplication.StorageContainerPrefix + envName];
