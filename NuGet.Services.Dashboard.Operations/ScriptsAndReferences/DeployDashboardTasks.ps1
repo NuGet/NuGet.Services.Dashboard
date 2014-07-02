@@ -5,7 +5,6 @@ param(
   [Parameter(Mandatory=$true)][string]$SubscriptionId,
   [Parameter(Mandatory=$false)][string]$FrontEndCloudServiceName="nuget-prod-0-v2gallery",
   [Parameter(Mandatory=$false)][string]$TrafficManagerProfileName="nuget-prod-v2gallery",
-  [Parameter(Mandatory=$true)][string]$PrimaryDBConnectionString,
   [Parameter(Mandatory=$true)][string]$WareHouseDBConnectionString,
   [Parameter(Mandatory=$true)][string]$FrontEndLegacyDBConnectionStringForFailOverDC,
   [Parameter(Mandatory=$true)][string]$FrontEndStorageConnectionStringForFailOverDC,
@@ -16,6 +15,7 @@ param(
   [Parameter(Mandatory=$false)][string]$SearchServiceEndPoint="https://api-search-0.nuget.org/search/diag",
   [Parameter(Mandatory=$false)][string]$SearchServiceAdminUser="admin",
   [Parameter(Mandatory=$true)][string]$SearchServiceAdminKey,
+  [Parameter(Mandatory=$true)][string]$SearchServiceName,
   [Parameter(Mandatory=$true)][string]$DashboardStorageConnectionString,
   [Parameter(Mandatory=$true)][string]$DashboardStorageContainerName,
   [Parameter(Mandatory=$true)][string]$WorkingDir,
@@ -62,11 +62,12 @@ CreateTask "RunBackgroundCheckForFailoverDC" "rbgfdc -db `"$FrontEndLegacyDBConn
 
 #SearchService Tasks
 CreateTask "CreateSearchIndexingLagReport" "csisrt -db `"$FrontEndLegacyDBConnectionString`" -se $SearchServiceEndPoint -sa $SearchServiceAdminUser -sk $SearchServiceAdminKey -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
+CreateTask "CreateSearchCloudServiceReport" "ccsdrt -id $SubscriptionId -name $SearchServiceName -cername $ProdManagementCertName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 5
 
 #Misc
 CreateTask "CreateRequestsCountOverviewReport" "crphrt -iis `"$FrontEndStorageConnectionString`" -retry 3 -servicename $FrontEndCloudServiceName  -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60 
 CreateTask "CreateTrafficManagerStatusOverviewReport" "ctmort -id $SubscriptionId -name $TrafficManagerProfileName -cername $ProdManagementCertName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 5
-CreateTask "CreateV2GalleryInstanceCountReport" "ccsdrt -id $SubscriptionId -name $FrontEndCloudServiceName -cername $ProdManagementCertName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
+CreateTask "CreateV2GalleryCloudServiceReport" "ccsdrt -id $SubscriptionId -name $FrontEndCloudServiceName -cername $ProdManagementCertName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 
 
 
