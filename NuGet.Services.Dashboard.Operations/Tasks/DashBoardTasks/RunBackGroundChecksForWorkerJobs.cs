@@ -194,7 +194,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         sqlConnection.Open();
                         //get the edits that are pending for more than 3 hours. Get only the edits that are submitted today ( else there are some stale pneding edits which are 4/5 months old and they will keep showing up.
                         var ErrorPendingEditCount = dbExecutor.Query<Int32>(string.Format("select count(*) from dbo.PackageEdits where TimeStamp <= '{0}' and TimeStamp >= '{1}'", DateTime.UtcNow.AddHours(thresholdValues.PendingErrorThresholdInHours * -1).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.UtcNow.AddHours( -24).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
-                        var WarningPendingEditCount = dbExecutor.Query<Int32>(string.Format("select count(*) from dbo.PackageEdits where TimeStamp <= '{0}' and TimeStamp >= '{1}'", DateTime.UtcNow.AddHours(thresholdValues.PendingWarningWarningThresholdInHours * -1).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.UtcNow.AddHours(-24).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
+                        var WarningPendingEditCount = dbExecutor.Query<Int32>(string.Format("select count(*) from dbo.PackageEdits where TimeStamp <= '{0}' and TimeStamp >= '{1}'", DateTime.UtcNow.AddHours(thresholdValues.PendingWarningThresholdInHours * -1).ToString("yyyy-MM-dd HH:mm:ss"), DateTime.UtcNow.AddHours(-24).ToString("yyyy-MM-dd HH:mm:ss"))).SingleOrDefault();
                         outputMessage = string.Format("No of pending edits is {0}. Acceptable Error lag in no. of hours: {1}", ErrorPendingEditCount,thresholdValues.PendingErrorThresholdInHours);
                         if (ErrorPendingEditCount > 0)
                         {
@@ -214,7 +214,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                             new SendAlertMailTask
                             {
                                 AlertSubject = "Warning: Work service job background check alert activated for HandleQueuedPackageEdits job",
-                                Details = string.Format("No of pending edits is {0}. Acceptable Warning lag in no. of hours: {1}, last two log url is {2}", WarningPendingEditCount, thresholdValues.PendingWarningWarningThresholdInHours, urlLog),
+                                Details = string.Format("No of pending edits is {0}. Acceptable Warning lag in no. of hours: {1}, last two log url is {2}", WarningPendingEditCount, thresholdValues.PendingWarningThresholdInHours, urlLog),
                                 AlertName = "Warning: Alert for HandleQueuedPackageEdits",
                                 Component = "HandleQueuedPackageEdits Job",
                                 Level = "Warning"
