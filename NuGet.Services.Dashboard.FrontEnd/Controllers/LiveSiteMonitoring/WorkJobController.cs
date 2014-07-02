@@ -24,14 +24,20 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public ActionResult WorkJobDetail()
         {
             List<WorkInstanceDetail> jobDetail = new List<WorkInstanceDetail>();
+            List<WorkServiceAdmin> key = new List<WorkServiceAdmin>();
             var content = BlobStorageService.Load("WorkJobDetail.json");
-            if (content != null)
+            var admin = BlobStorageService.Load("WorkServiceAdminKey.json");
+            if (content != null && key != null)
             {
                 jobDetail = new JavaScriptSerializer().Deserialize<List<WorkInstanceDetail>>(content);
+                key = new JavaScriptSerializer().Deserialize<List<WorkServiceAdmin>>(admin);
             }
+            
             ViewBag.work = jobDetail;
-            ViewBag.admin = MvcApplication.WorkServiceUserName;
-            ViewBag.key = MvcApplication.WorkServiceAdminKey;
+            ViewBag.admin0 = key[0].username;
+            ViewBag.admin1 = key[1].username;
+            ViewBag.key0 = key[0].key;
+            ViewBag.key1 = key[1].key;
             return View("~/Views/WorkJobs/WorkJobs_detail.cshtml");
         }
     }

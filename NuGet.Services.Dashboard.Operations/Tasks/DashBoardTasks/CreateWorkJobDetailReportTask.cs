@@ -34,6 +34,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         [Option("JobId", AltName = "jid")]
         public string JobId { get; set; }
 
+        [Option("CertificateName", AltName = "cername")]
+        public string CertificateName { get; set; }
+
         public override void ExecuteCommand()
         {
             int lastNhour = 24;
@@ -141,8 +144,14 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 }
             }
 
+             List<WorkServiceAdmin> allkey = new List<WorkServiceAdmin>();
+             allkey.Add(new WorkServiceAdmin(WorkServiceUserName, WorkServiceAdminKey));
+             allkey.Add(new WorkServiceAdmin(WorkServiceUserName,WorkServiceFailoverAdminKey));
+             
              var json = new JavaScriptSerializer().Serialize(jobDetail);
+             var key = new JavaScriptSerializer().Serialize(allkey);
              ReportHelpers.CreateBlob(StorageAccount, "WorkJobDetail.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
+             ReportHelpers.CreateBlob(StorageAccount, "WorkServiceAdminKey.json", ContainerName, "application/json", ReportHelpers.ToStream(key));
         }
 
         private string getResultMessage(string message)
@@ -164,7 +173,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
         private List<WorkJobInstanceDetails> getWorkjobInstance()
         {
-            X509Certificate cert = X509Certificate.CreateFromCertFile("zhi-automation.cer");
+            X509Certificate cert = X509Certificate.CreateFromCertFile(CertificateName);
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(string.Format("https://management.core.windows.net/{0}/cloudservices/{1}/resources/scheduler/~/JobCollections/{2}/jobs?api-version=2014-04-01 ",SubscriptionId,CloudServiceId,JobId));
             request.ClientCertificates.Add(cert);
             request.Headers.Add("x-ms-version: 2013-03-01");

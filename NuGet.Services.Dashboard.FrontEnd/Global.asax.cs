@@ -15,18 +15,12 @@ namespace NuGetDashboard
 
     public class MvcApplication : System.Web.HttpApplication
     {
-        public static string WorkServiceUserName = ConfigurationManager.AppSettings["WorkServiceUserNameProd0"];
-
-        public static string WorkServiceAdminKey = ConfigurationManager.AppSettings["WorkServiceAdminKeyProd0"];
-
         public static string DBConnectionString = ConfigurationManager.AppSettings["V2GalleryDBConnectionStringProd0"];
 
         public static string ElmahAccountCredentials = ConfigurationManager.AppSettings["ElmahAccountProd0"];
 
         public static string StorageContainer = ConfigurationManager.AppSettings["StorageContainerProd0"];
 
-        public const string WorkServiceUserNamePrefix = "WorkServiceUserName";
-        public const string WorkServiceAdminKeyPrefix = "WorkServiceAdminKey";
         public const string DBConnectionStringPrefix = "V2GalleryDBConnectionString";
         public const string ElmahAccountCredentialsPrefix = "ElmahAccount";
         public const string StorageContainerPrefix = "StorageContainer";

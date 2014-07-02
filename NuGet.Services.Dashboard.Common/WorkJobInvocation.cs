@@ -53,4 +53,21 @@ namespace NuGet.Services.Dashboard.Common
 
         }
     }
+
+    public class WorkServiceAdmin
+    {
+        public string username;
+        public string key;
+
+        public WorkServiceAdmin(string username, string key)
+        {
+            this.username = username;
+            this.key = key;
+        }
+
+        public WorkServiceAdmin()
+        {
+
+        }
+    }
 }
