@@ -1,7 +1,7 @@
 ﻿<script type="text/javascript">
      function UpdateCloudServiceStatus() {
         $.ajax({
-            url: '@Url.Action("GetCloudServiceInstanceStatus", "ResourceMonitoring", new { CloudServiceName = "nuget-prod-0-v2gallery" })',
+            url: '@Url.Action("GetCloudServiceInstanceStatus", "SearchService", new { CloudServiceName = "nuget-prod-0-v2gallery" })',
             type: "GET",
             dataType: 'json',
             success: function (result) {
@@ -9,7 +9,7 @@
             }
         });
          $.ajax({
-             url: '@Url.Action("GetCloudServiceInstanceStatus", "ResourceMonitoring", new { CloudServiceName = "nuget-prod-0-search" })',
+             url: '@Url.Action("GetCloudServiceInstanceStatus", "SearchService", new { CloudServiceName = "nuget-prod-0-search" })',
              type: "GET",
              dataType: 'json',
              success: function (result) {

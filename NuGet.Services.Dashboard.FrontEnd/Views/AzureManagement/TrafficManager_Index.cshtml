@@ -1,7 +1,7 @@
 ﻿<script type="text/javascript">
      function UpdateTMStatus() {
         $.ajax({
-            url: '@Url.Action("GetEndpointStatus", "TrafficManager", new { endpoint = 0 })',
+            url: '@Url.Action("TrafficManager_GetEndpointStatus", "AzureManagement", new { endpoint = 0 })',
             type: "GET",
             dataType: 'json',
             success: function (result) {
@@ -9,7 +9,7 @@
             }
         });
          $.ajax({
-             url: '@Url.Action("GetEndpointStatus", "TrafficManager", new { endpoint =1 })',
+             url: '@Url.Action("TrafficManager_GetEndpointStatus", "AzureManagement", new { endpoint = 1 })',
              type: "GET",
              dataType: 'json',
              success: function (result) {

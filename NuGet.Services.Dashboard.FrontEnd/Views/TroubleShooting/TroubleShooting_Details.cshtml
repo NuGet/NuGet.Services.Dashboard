@@ -25,7 +25,7 @@
 
     function RefreshElmah() {
         $.ajax({
-            url: '@Url.Action("RefreshElmah", "TroubleShooting")',
+            url: '@Url.Action("RefreshElmah", "V2GalleryFrontEnd")',
             type: "GET",
             dataType: 'html',
             success: function (result) {
@@ -37,7 +37,7 @@
 
     function RefreshDBEvent() {
         $.ajax({
-            url: '@Url.Action("RefreshDatabaseEvent", "TroubleShooting")',
+            url: '@Url.Action("RefreshDatabaseEvent", "Database")',
             type: "GET",
             dataType: 'html',
             success: function (result) {
@@ -48,7 +48,7 @@
 
     function RefreshDBRequest() {
         $.ajax({
-            url: '@Url.Action("RefreshDatabaseRequest", "TroubleShooting")',
+            url: '@Url.Action("RefreshDatabaseRequest", "Database")',
             type: "GET",
             dataType: 'html',
             success: function (result) {
@@ -85,15 +85,15 @@
             <button type="button" class ="default" onclick="RefreshElmah()">Refresh</button>
             <div style="width:800px;" class="fg-color-darken" id="1hourdivelmah">
                 <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Error for last 1 hour. For more details check out https://www.nuget.org/Admin/Errors.axd </small></p>
-                @Html.Action("ElmahErrorSummary", "TroubleShooting", new { hour = "1" })
+                @Html.Action("ElmahErrorSummary", "V2GalleryFrontEnd", new { hour = "1" })
             </div>
             <div style="width:800px;display: none" class="fg-color-darken" id="6hourdivelmah">
                 <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Error for last 6 hours.For more details check out https://www.nuget.org/Admin/Errors.axd </small></p>
-                @Html.Action("ElmahErrorSummary", "TroubleShooting", new { hour = "6" })
+                @Html.Action("ElmahErrorSummary", "V2GalleryFrontEnd", new { hour = "6" })
             </div>
             <div style="width:800px;display: none" class="fg-color-darken" id="24hourdivelmah">
                 <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Error for last 24 hours. For more details check out https://www.nuget.org/Admin/Errors.axd </small></p>
-                @Html.Action("ElmahErrorSummary", "TroubleShooting", new { hour = "24" })
+                @Html.Action("ElmahErrorSummary", "V2GalleryFrontEnd", new { hour = "24" })
             </div>
         </div>
     </li>
@@ -110,22 +110,22 @@
             <button class=" default" onclick="RefreshDB()">Refresh</button>
             <div style="width:800px;" class="fg-color-darken" id="1hourdivdb">
                 <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Events for last 1 hour. For more details connect to the database.</small></p>
-                @Html.Action("DBEventsSummary", "TroubleShooting", new { hour = "1" })
+                @Html.Action("DBEventsSummary", "Database", new { hour = "1" })
                 
             </div>
             <div style="width:800px;display: none" class="fg-color-darken" id="6hourdivdb">
                 <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Events for last 6 hours.For more details connect to the database.</small></p>
-                @Html.Action("DBEventsSummary", "TroubleShooting", new { hour = "6" })
+                @Html.Action("DBEventsSummary", "Database", new { hour = "6" })
             </div>
             <div style="width:800px;display: none" class="fg-color-darken" id="24hourdivdb">
                 <p style="font-family: arial; color: gray; font-size: 15px; font-style: italic"><small>*Events for last 24 hours.For more details connect to the database.</small></p>
-                @Html.Action("DBEventsSummary", "TroubleShooting", new { hour = "24" })
+                @Html.Action("DBEventsSummary", "Database", new { hour = "24" })
             </div>
         </div>
         <div class="fg-color-darken">
             <h5>Active DB requests (refreshed every 30 minutes)</h5>
             <div id="DBrequest">
-            @Html.Action("DBRequestsSummary", "TroubleShooting")
+            @Html.Action("DBRequestsSummary", "Database")
            
             </div>
         </div>

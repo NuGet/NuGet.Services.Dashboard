@@ -18,23 +18,23 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
     /// <summary>
     /// Provides uptime details for the Gallery ( data retrieved from pingdom).
     /// </summary>
-    public class UpTimeController : Controller
+    public class PingdomController : Controller
     {
-        public ActionResult Index()
+        public ActionResult Pingdom_Index()
         {
-            return PartialView("~/Views/UpTime/UpTime_Index.cshtml");
+            return PartialView("~/Views/Pingdom/Pingdom_Index.cshtml");
         }       
      
         [HttpGet]
-        public ActionResult Now()
+        public ActionResult Pingdom_Now()
         {
             List<PingdomStatusViewModel> checks = GetStatusInternal();
-            return PartialView("~/Views/UpTime/UpTime_Now.cshtml", checks);
+            return PartialView("~/Views/Pingdom/Pingdom_Now.cshtml", checks);
         }
 
-        public ActionResult Details()
+        public ActionResult Pingdom_Details()
         {
-            return View("~/Views/UpTime/UpTime_Details.cshtml");
+            return View("~/Views/Pingdom/Pingdom_Details.cshtml");
         }
       
         [HttpGet]

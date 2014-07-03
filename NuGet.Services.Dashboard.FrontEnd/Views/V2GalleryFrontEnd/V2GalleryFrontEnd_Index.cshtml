@@ -2,7 +2,7 @@
     //Refreshes the data in tiles every 5 minutes.
     function UpdateStatus() {
         $.ajax({
-            url: '@Url.Action("GetCurrentThroughputStatus", "SLA")',
+            url: '@Url.Action("GetCurrentThroughputStatus", "V2GalleryFrontEnd")',
             type: "GET",
             dataType: 'json',
             success: function (result) {
@@ -11,7 +11,7 @@
         });
 
         $.ajax({
-            url: '@Url.Action("GetCurrentErrorRateStatus", "SLA")',
+            url: '@Url.Action("GetCurrentErrorRateStatus", "V2GalleryFrontEnd")',
             type: "GET",
             dataType: 'json',
             success: function (result) {
@@ -35,7 +35,7 @@
             }
         });
         $.ajax({
-            url: '@Url.Action("GetHourlyInstanceCount", "ResourceMonitoring")',
+            url: '@Url.Action("GetHourlyInstanceCount", "AzureManagement")',
             type: "GET",
             dataType: 'json',
             success: function (result) {
@@ -43,7 +43,7 @@
             }
         });
         $.ajax({
-            url: '@Url.Action("GetCurrentIndexingStatus", "ResourceMonitoring")',
+            url: '@Url.Action("GetCurrentIndexingStatus", "SearchService")',
             type: "GET",
             dataType: 'json',
             success: function (result) {
@@ -54,7 +54,7 @@
     };
 </script>
 
-<div class="tile" data-role="tile-slider" data-param-period="20000" id="SLAdiv" onclick="ShowDetails('Details','SLA');" title="Appserver throughout and responsetime">
+<div class="tile" data-role="tile-slider" data-param-period="20000" id="SLAdiv" onclick="location = '@Url.Action("V2GalleryFrontEnd_Details", "V2GalleryFrontEnd")'" title="Appserver throughout and responsetime">
     <div class="tile-content bg-color-red">
         <h1>Requests per hour</h1>
         <br />
