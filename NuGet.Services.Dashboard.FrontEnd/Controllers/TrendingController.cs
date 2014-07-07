@@ -19,7 +19,7 @@ namespace NuGetDashboard.Controllers.Trending
             return View();
         }
 
-        public ActionResult Details()
+        public ActionResult Trending_Details()
         {
             return View("~/Views/Trending/Trending_Details.cshtml");
         }

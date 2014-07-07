@@ -141,29 +141,29 @@
       <DependentUpon>TaskResources.resx</DependentUpon>
     </Compile>
     <Compile Include="Common\ResourceHelper.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreatePingdomServiceDisruptionReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateSearchCpuMemStatusReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateCloudServiceDetailsReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateDatabaseDetailedReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateDatabaseMetricsReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateDatabaseSizeReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateElmahErrorDetailedReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateElmahErrorOverviewReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreatePingdomDetailedReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreatePingdomWeeklyAndHourlyReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateRequestsPerHourReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateSearchIndexingStatusReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateStatsHourlyReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateStatsMonthlyReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateVsTrendingReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateTrafficManagerStatusOverviewReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\PingdomTasks\CreatePingdomServiceDisruptionReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\SearchServiceTasks\CreateSearchCpuMemStatusReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\AzureManagementTasks\CreateCloudServiceDetailsReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\DatabaseTasks\CreateDatabaseDetailedReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\DatabaseTasks\CreateDatabaseMetricsReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\DatabaseTasks\CreateDatabaseSizeReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\V2GalleryFrontendTasks\CreateElmahErrorDetailedReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\V2GalleryFrontendTasks\CreateElmahErrorOverviewReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\PingdomTasks\CreatePingdomDetailedReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\PingdomTasks\CreatePingdomWeeklyAndHourlyReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\V2GalleryFrontendTasks\CreateRequestsPerHourReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\SearchServiceTasks\CreateSearchIndexingStatusReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\TrendingTasks\CreateStatsHourlyReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\TrendingTasks\CreateStatsMonthlyReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\TrendingTasks\CreateVsTrendingReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\AzureManagementTasks\CreateTrafficManagerStatusOverviewReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateWADPerformanceDiagnosticsReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\CreateWorkJobDetailReportTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\RunBackgroundCheckForFailoverDC.cs" />
-    <Compile Include="Tasks\DashBoardTasks\RunBackGroundChecksForWorkerJobs.cs" />
-    <Compile Include="Tasks\DashBoardTasks\SendAlertMailTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\SendDailyStatusReportEmailTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\SendLoadTestReportEmailTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\WorkServiceTasks\CreateWorkJobDetailReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\WorkServiceTasks\RunBackgroundCheckForFailoverDC.cs" />
+    <Compile Include="Tasks\DashBoardTasks\WorkServiceTasks\RunBackGroundChecksForWorkerJobs.cs" />
+    <Compile Include="Tasks\DashBoardTasks\ReportMailTasks\SendAlertMailTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\ReportMailTasks\SendDailyStatusReportEmailTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\ReportMailTasks\SendLoadTestReportEmailTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\UnixTimeStampUtility.cs" />
     <Compile Include="Infrastructure\ICommand.cs" />
     <Compile Include="Infrastructure\ICommandManager.cs" />
@@ -221,6 +221,7 @@
       <Name>NuGet.Services.Dashboard.Common</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
 </Project>

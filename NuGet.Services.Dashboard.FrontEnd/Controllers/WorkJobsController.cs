@@ -13,15 +13,9 @@ using System.Text;
 
 namespace NuGetDashboard.Controllers.LiveSiteMonitoring
 {
-    public class WorkJobController : Controller
+    public class WorkJobsController : Controller
     {
-
-        public ActionResult Index()
-        {
-            return View();
-        }
-
-        public ActionResult WorkJobDetail()
+        public ActionResult WorkJobs_Detail()
         {
             List<WorkInstanceDetail> jobDetail = new List<WorkInstanceDetail>();
             List<WorkServiceAdmin> key = new List<WorkServiceAdmin>();

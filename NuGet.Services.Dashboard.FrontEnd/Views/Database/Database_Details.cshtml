@@ -2,7 +2,7 @@
 <div class="page secondary with-sidebar">
     <div class="page-header">
         <div class="page-header-content" id="headercontent">
-            <h1 id="title">ResourceMonitoring<small>Detail</small></h1>
+            <h1 id="title">Database<small>Detail</small></h1>
             <a href="/" id="backbutton" class=" back-button big page-back"></a>
         </div>
     </div>
@@ -18,14 +18,14 @@
     <div class="frames">
         <div class="frame active" id="WeeklyTrend">
             <div>
-                @Html.Action("DBRequestsThisWeek", "ResourceMonitoring")
+                @Html.Action("DBRequestsThisWeek", "Database")
             </div>
             <div>
-                @Html.Action("DBConnectionsThisWeek", "ResourceMonitoring")
+                @Html.Action("DBConnectionsThisWeek", "Database")
             </div>
         </div>
-        <div class="frame" id="IndexFragmentation">@Html.Action("DBIndexFragmentation", "ResourceMonitoring")</div>
-        <div class="frame" id="DBSize">@Html.Action("DBSize", "ResourceMonitoring")</div>
+        <div class="frame" id="IndexFragmentation">@Html.Action("DBIndexFragmentation", "Database")</div>
+        <div class="frame" id="DBSize">@Html.Action("DBSizeDetails", "Database")</div>
     </div>
 
 </div>

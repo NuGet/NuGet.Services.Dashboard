@@ -9,22 +9,23 @@ using NuGetDashboard.Utilities;
 using DotNet.Highcharts.Helpers;
 using NuGet.Services.Dashboard.Common;
 using System.Web.Script.Serialization;
+using System.Configuration;
 
 namespace NuGetDashboard.Controllers.LiveSiteMonitoring
 {
     /// <summary>
     /// Provides details about the server side SLA : Error rate ans requests per hour.
-    public class SLAController : Controller
+    public class V2GalleryFrontEndController : Controller
     {
-        public ActionResult Index()
-        {            
-            return PartialView("~/Views/SLA/SLA_Index.cshtml" );
+        public ActionResult V2GalleryFrontEnd_Index()
+        {
+            return PartialView("~/Views/V2GalleryFrontEnd/V2GalleryFrontEnd_Index.cshtml");
         }
 
         [HttpGet]
-        public ActionResult Details()
+        public ActionResult V2GalleryFrontEnd_Details()
         {
-            return View("~/Views/SLA/SLA_Details.cshtml");
+            return View("~/Views/V2GalleryFrontEnd/V2GalleryFrontEnd_Details.cshtml");
         }
      
         [HttpGet]
@@ -49,7 +50,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public ActionResult RequestsToday()
         {
             List<Tuple<string, string, double>> scenarios = GetRequestsData(String.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()));
-            return PartialView("~/Views/SLA/SLA_RequestDetails.cshtml", scenarios);
+            return PartialView("~/Views/V2GalleryFrontEnd/V2GalleryFrontEnd_RequestDetails.cshtml", scenarios);
         }
 
         [HttpGet]
@@ -272,6 +273,37 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                 return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
             else
                 return Json("N/A");
+        }
+
+        /// <summary>
+        /// Returns the detailed report on Elmah for the past N hours.
+        /// </summary>
+        /// <param name="hour"></param>
+        /// <returns></returns>
+        public ActionResult ElmahErrorSummary(string hour)
+        {
+            var content = BlobStorageService.Load("ElmahErrorsDetailed" + hour + "hours.json");
+            List<ElmahError> listOfEvents = new List<ElmahError>();
+            if (content != null)
+            {
+                listOfEvents = new JavaScriptSerializer().Deserialize<List<ElmahError>>(content);
+            }
+            return PartialView("~/Views/V2GalleryFrontEnd/ElmahErrorSummary.cshtml", listOfEvents);
+        }
+
+
+        public ActionResult RefreshElmah()
+        {
+            List<ElmahError> listOfEvents = new List<ElmahError>();
+            RefreshElmahError RefreshExecute = new RefreshElmahError(ConfigurationManager.AppSettings["StorageConnection"],
+                                                                     MvcApplication.StorageContainer,
+                                                                     1,
+                                                                     MvcApplication.ElmahAccountCredentials);
+
+
+            listOfEvents = RefreshExecute.ExecuteRefresh();
+
+            return PartialView("~/Views/V2GalleryFrontEnd/ElmahErrorSummary.cshtml", listOfEvents);
         }
     }
 }

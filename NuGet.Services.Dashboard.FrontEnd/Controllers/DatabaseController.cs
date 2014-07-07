@@ -16,21 +16,11 @@ namespace NuGetDashboard.Controllers.Diagnostics
     /// <summary>
     /// Provides details about the resource utilization on the server : CPU, memory and DB.
     /// </summary>
-    public class ResourceMonitoringController : Controller
+    public class DatabaseController : Controller
     {
-        public ActionResult Index()
+        public ActionResult Database_Details()
         {
-            return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_Index.cshtml");
-        }
-
-        public ActionResult CloudService_Index()
-        {
-            return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_CloudServiceInstances.cshtml");
-        }
-
-        public ActionResult Details()
-        {
-            return View("~/Views/ResourceMonitoring/ResourceMonitoring_Details.cshtml");
+            return View("~/Views/Database/Database_Details.cshtml");
         }
        
         [HttpGet]
@@ -54,11 +44,11 @@ namespace NuGetDashboard.Controllers.Diagnostics
             {
                 indexDetails = new JavaScriptSerializer().Deserialize<List<DatabaseIndex>>(content);
             }
-            return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_DBIndexDetails.cshtml", indexDetails);
+            return PartialView("~/Views/Database/DBIndexFragmentation.cshtml", indexDetails);
         }
 
         [HttpGet]
-        public ActionResult DBSize()
+        public ActionResult DBSizeDetails()
         {
             List<DatabaseSize> sizeDetails = new List<DatabaseSize>();
             var content = BlobStorageService.Load("DBSize.json");
@@ -66,7 +56,7 @@ namespace NuGetDashboard.Controllers.Diagnostics
             {
                 sizeDetails = new JavaScriptSerializer().Deserialize<List<DatabaseSize>>(content);
             }
-            return PartialView("~/Views/ResourceMonitoring/ResourceMonitoring_DBSizeDetails.cshtml", sizeDetails);
+            return PartialView("~/Views/Database/DBSizeDetails.cshtml", sizeDetails);
         }
      
         [HttpGet]
@@ -86,47 +76,53 @@ namespace NuGetDashboard.Controllers.Diagnostics
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "DBConnections", 50, 600));
         }
 
-        [HttpGet]
-        public JsonResult GetHourlyInstanceCount()
+        /// <summary>
+        /// Returns the data for DB Troubleshooting for the given hour.
+        /// </summary>
+        /// <param name="hour"></param>
+        /// <returns></returns>
+        public ActionResult DBEventsSummary(string hour)
         {
-            //TBD: Need to take the service name from the config.
-            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("nuget-prod-0-v2galleryInstanceCount" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + "HourlyReport.json");
-            if (dict != null && dict.Count > 0)
-                return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
-            else
-                return Json("N/A");
+            var content = BlobStorageService.Load("DBDetailed" + hour + "Hour.json");
+            List<DatabaseEvent> listOfEvents = new List<DatabaseEvent>();
+            if (content != null)
+            {
+                listOfEvents = new JavaScriptSerializer().Deserialize<List<DatabaseEvent>>(content);
+            }
+            return PartialView("~/Views/Database/DBEventsSummary.cshtml", listOfEvents);
         }
 
-        [HttpGet]
-        public JsonResult GetCurrentIndexingStatus()
+        /// <summary>
+        /// Returns the active requests taken during the last snapshot
+        /// </summary>
+        /// <param name="hour"></param>
+        /// <returns></returns>
+        public ActionResult DBRequestsSummary()
         {
-            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IndexingDiffCount" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + "HourlyReport.json");
-            if (dict != null && dict.Count > 0)
-                return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
-            else
-                return Json("N/A");
-        }
-
-        [HttpGet]        
-        public JsonResult GetCloudServiceInstanceStatus(string CloudServiceName)
-        {
-            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob(CloudServiceName + "InstanceStatus.json");
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("DBRequestDetails" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + ".json");
+            List<DatabaseRequest> listOfRequests = new List<DatabaseRequest>();
             if (dict != null && dict.Count > 0)
             {
-                StringBuilder sb = new StringBuilder();
-                sb.Append("<h1>" + CloudServiceName + "</h1> </br>");
-                foreach(KeyValuePair<string,string> kvp in dict)
-                {
-                    sb.Append(kvp.Key + "-" + kvp.Value + "</br>");
-                }
-                return Json(sb.ToString(), JsonRequestBehavior.AllowGet);
+                listOfRequests = new JavaScriptSerializer().Deserialize<List<DatabaseRequest>>(dict.Values.ElementAt(dict.Count - 1));
             }
-            else
-                return Json("N/A", JsonRequestBehavior.AllowGet);
+            return PartialView("~/Views/Database/DBRequestsSummary.cshtml", listOfRequests);
         }
-        private ActionResult GetChart(string blobName)
-        {   
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobName,blobName));
+
+        public ActionResult RefreshDatabaseEvent()
+        {
+            List<DatabaseEvent> listOfEvents = new List<DatabaseEvent>();
+            RefreshDB Refresh = new RefreshDB(MvcApplication.DBConnectionString, 1);
+            listOfEvents = Refresh.RefreshDatabaseEvent();
+            return PartialView("~/Views/Database/DBEventsSummary.cshtml", listOfEvents);
+        }
+
+        public ActionResult RefreshDatabaseRequest()
+        {
+            List<DatabaseRequest> listOfRequests = new List<DatabaseRequest>();
+            RefreshDB Refresh = new RefreshDB(MvcApplication.DBConnectionString, 1);
+            listOfRequests = Refresh.RefreshDatebaseRequest();
+
+            return PartialView("~/Views/Database/DBRequestsSummary.cshtml", listOfRequests);
         }
 
     }
