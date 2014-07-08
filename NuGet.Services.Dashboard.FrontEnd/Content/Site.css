@@ -114,6 +114,10 @@ h5, h6 {
         background: url("../Images/heroAccent.png") no-repeat;
     }
 
+#logolink {
+    padding: 0;
+}
+
 header .content-wrapper {
     padding-top: 20px; 
 }
@@ -158,7 +162,6 @@ footer {
         display: inline;
         list-style: none;
     }
-
 
 /* page elements
 ----------------------------------------------------------*/
