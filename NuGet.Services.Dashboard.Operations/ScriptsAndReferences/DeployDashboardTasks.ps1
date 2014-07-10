@@ -77,6 +77,7 @@ CreateTask "CreateSearchCloudServiceReport" "ccsdrt -id $SubscriptionId -name $S
 CreateTask "CreateRequestsCountOverviewReport" "crphrt -iis `"$FrontEndStorageConnectionString`" -retry 3 -servicename $FrontEndCloudServiceName  -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60 
 CreateTask "CreateTrafficManagerStatusOverviewReport" "ctmort -id $SubscriptionId -name $TrafficManagerProfileName -cername $ProdManagementCertName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 5
 CreateTask "CreateV2GalleryInstanceCountReport" "ccsdrt -id $SubscriptionId -name $FrontEndCloudServiceName -cername $ProdManagementCertName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
-CreateTask "CreateVsTrendingReport" "cvtrt -db `"$WareHouseDBConnectionString`" -n 30 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 180
+CreateTask "CreateVsTrendingReportFor30Day" "cvtrt -db `"$WareHouseDBConnectionString`" -n 30 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 180
+CreateTask "CreateVsTrendingReportFor1Day" "cvtrt -db `"$WareHouseDBConnectionString`" -n 1 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 180
 
 
