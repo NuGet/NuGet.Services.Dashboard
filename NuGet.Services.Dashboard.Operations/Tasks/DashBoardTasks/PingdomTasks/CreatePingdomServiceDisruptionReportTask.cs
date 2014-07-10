@@ -46,7 +46,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     checkAlias = checkAlias.Replace(" ", ".");
                     checkAlias = checkAlias.Replace("(", "").Replace(")", "");
                     GetMicroServiceReportForCheck(checkAlias, o["id"]);
-                    
+
                 }
             }
         }
@@ -56,6 +56,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             DateTime startingTime = DateTime.Now.AddHours(-LastNhour);
             List<Tuple<string, string>> summaryValues = new List<Tuple<string, string>>();
             string serviceStatus = "up";
+            int overallTime = 60 * 60 * LastNhour; // in sec
+            int downtimeSum = 0; // in secs
             long fromTime = UnixTimeStampUtility.GetUnixTimestampSeconds(startingTime.ToUniversalTime());
             long toTime = UnixTimeStampUtility.GetUnixTimestampSeconds(DateTime.Now.ToUniversalTime());
             NetworkCredential nc = new NetworkCredential(UserName, Password);
@@ -80,15 +82,15 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                             DateTime start = UnixTimeStampUtility.DateTimeFromUnixTimestampSeconds(states["timefrom"]).ToLocalTime();
                             DateTime end = UnixTimeStampUtility.DateTimeFromUnixTimestampSeconds(states["timeto"]).ToLocalTime();
 
-                            
-                            int downtime = (int)end.Subtract(start).TotalSeconds ;
+
+                            int downtime = (int)end.Subtract(start).TotalSeconds;
                             if (downtime > thresholdValues.PingdomServiceDistruptionErrorThresholdInSeconds)
                             {
                                 serviceStatus = "down";
                                 downRecord.Add(new Tuple<int, DateTime>(downtime, DateTime.Now));
                             }
-                         }
-                    } 
+                        }
+                    }
                 }
             }
             if (serviceStatus.Equals("down"))
@@ -96,20 +98,22 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 StringBuilder sb = new StringBuilder();
                 foreach (Tuple<int, DateTime> each in downRecord)
                 {
-                    sb.Append(string.Format("at {0}, there is {1} second down.",each.Item2.ToString(),each.Item1));
-                    
+                    sb.Append(string.Format("at {0}, there is {1} second down.", each.Item2.ToString(), each.Item1));
+                    downtimeSum = downtimeSum + each.Item1; // in secs
                 }
-                
+
                 new SendAlertMailTask
                 {
                     AlertSubject = string.Format("Error: Alert for {0} pingdom service Down", checkAlias),
-                    Details = string.Format("Pingdom service {0} down time exceeded threshold: {1} second, in last {2} hours, there are {3} down happened, detail is {4}", checkAlias, thresholdValues.PingdomServiceDistruptionErrorThresholdInSeconds, LastNhour ,downRecord.Count,sb.ToString()),
-                    AlertName = string.Format("Error: Pingdom Micro Service: {0}",checkAlias),
+                    Details = string.Format("Pingdom service {0} down time exceeded threshold: {1} second, in last {2} hours, there are {3} down happened, detail is {4}", checkAlias, thresholdValues.PingdomServiceDistruptionErrorThresholdInSeconds, LastNhour, downRecord.Count, sb.ToString()),
+                    AlertName = string.Format("Error: Pingdom Micro Service: {0}", checkAlias),
                     Component = "Pingdom Service",
                     Level = "Error"
                 }.ExecuteCommand();
             }
-            ReportHelpers.AppendDatatoBlob(StorageAccount, checkAlias + string.Format("{0:MMdd}", DateTime.Now) + "outageReport.json", new Tuple<string, string>(string.Format("{0:HH-mm}", DateTime.Now), serviceStatus), 24, ContainerName);
+
+            int serviceUpTime = overallTime - downtimeSum; // in secs
+            ReportHelpers.AppendDatatoBlob(StorageAccount, checkAlias + string.Format("{0:MMdd}", DateTime.Now) + "outageReport.json", new Tuple<string, string>(string.Format("{0:HH-mm}", DateTime.Now), serviceUpTime.ToString()), 24, ContainerName);
 
         }
     }
