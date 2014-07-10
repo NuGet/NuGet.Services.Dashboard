@@ -182,6 +182,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             WebResponse respose = request.GetResponse();
 
             List<WorkJobInstanceDetails> instanceDetails = new List<WorkJobInstanceDetails>();
+            string[] Igonored = new JavaScriptSerializer().Deserialize<string[]>(ReportHelpers.Load(StorageAccount, "Configuration.WorkerJobToBeIgnored.json", ContainerName));
          
             using (var reader = new StreamReader(respose.GetResponseStream()))
             {
@@ -189,6 +190,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 var summaryObject = js.Deserialize<dynamic>(reader.ReadToEnd());
                 foreach (var summary in summaryObject)
                 {
+                    if(Igonored.Contains((string)summary["id"],StringComparer.OrdinalIgnoreCase)) continue;
                     int FrequencyInMinutes = 0;
                     if (summary["recurrence"]["frequency"].Equals("minute")) FrequencyInMinutes = summary["recurrence"]["interval"];
                     if (summary["recurrence"]["frequency"].Equals("hour")) FrequencyInMinutes = summary["recurrence"]["interval"]*60;
