@@ -24,27 +24,40 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         [Option("Date", AltName = "date")]
         public string Date { get; set; }
 
-        public int Availability
+        public const int SecondsInAnHour = 3600;
+
+        public double Availability
         {
             get
             {
-                return GetTupleMetricValues("availability" + Date + ".json").Item1;
+                return CalculateGalleryDailyUpTime();
             }
         }
+
         public int Downloads
         {
             get
             {
-                return GetDownloadNumbersFromBlob("Install30Day.json") / 30;
+                return GetDownloadNumbersFromBlob("Install1Day.json");
             }
         }
+
         public int Restore
         {
             get
             {
-                return GetDownloadNumbersFromBlob("Restore30Day.json") / 30;
+                return GetDownloadNumbersFromBlob("Restore1Day.json");
             }
         }
+
+        public int SearchQueries
+        {
+            get
+            {
+                return GetSearchQueryNumbersFromBlob();
+            }
+        }
+
         public string[] SearchTerms
         {
             get
@@ -52,6 +65,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return new string[] { "jQuery", "Json.net" };
             }
         }
+
         public int Uploads
         {
             get
@@ -59,6 +73,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("Uploads" + Date + "HourlyReport.json").Item2;
             }
         }
+
         public int NewUsers
         {
             get
@@ -74,6 +89,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("IISRequests" + Date + ".json").Item1;
             }
         }
+
         public int TrafficMax
         {
             get
@@ -81,6 +97,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("IISRequests" + Date + ".json").Item3;
             }
         }
+
         public int TrafficMin
         {
             get
@@ -88,6 +105,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("IISRequests" + Date + ".json").Item4;
             }
         }
+
         public string TrafficPerHourNotes
         {
             get
@@ -103,6 +121,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("DBRequests" + Date + ".json").Item1;
             }
         }
+
         public int RequestMax
         {
             get
@@ -110,6 +129,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("DBRequests" + Date + ".json").Item3;
             }
         }
+
         public int RequestMin
         {
             get
@@ -117,6 +137,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("DBRequests" + Date + ".json").Item4;
             }
         }
+
         public string RequestPerHourNotes
         {
             get
@@ -146,6 +167,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("ErrorRate" + Date + ".json").Item4;
             }
         }
+
         public string ErrorsPerHourNotes
         {
             get
@@ -161,6 +183,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("IndexingDiffCount" + Date + "HourlyReport.json").Item1;
             }
         }
+
         public int IndexMax
         {
             get
@@ -168,6 +191,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("IndexingDiffCount" + Date + "HourlyReport.json").Item3;
             }
         }
+
         public int IndexMin
         {
             get
@@ -175,6 +199,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("IndexingDiffCount" + Date + "HourlyReport.json").Item4;
             }
         }
+
         public string IndexLagNotes
         {
             get
@@ -190,6 +215,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("nuget-prod-0-v2galleryInstanceCount" + Date + "HourlyReport.json").Item1;
             }
         }
+
         public int InstanceMax
         {
             get
@@ -197,6 +223,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("nuget-prod-0-v2galleryInstanceCount" + Date + "HourlyReport.json").Item3;
             }
         }
+
         public int InstanceMin
         {
             get
@@ -204,6 +231,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetTupleMetricValues("nuget-prod-0-v2galleryInstanceCount" + Date + "HourlyReport.json").Item4;
             }
         }
+
         public string InstanceCountNotes
         {
             get
@@ -219,6 +247,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetMetricCountFromBlob("Configuration.WorkJobInstances.json");
             }
         }
+
         public int SuccessCount
         {
             get
@@ -226,6 +255,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetFailedJobDetails().Item1;
             }
         }
+
         public string[] FailedJobNames
         {
             get
@@ -233,6 +263,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 return GetFailedJobDetails().Item2;
             }
         }
+
         public string[] NotableIssues
         {
             get
@@ -284,7 +315,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             mailBody = mailBody.Replace("{availability}", Availability.ToString() + "%");
             mailBody = mailBody.Replace("{downloads}", Downloads.ToString());
             mailBody = mailBody.Replace("{restore}", Restore.ToString());
-            mailBody = mailBody.Replace("{searchterms}", string.Join(", ", SearchTerms));
+            mailBody = mailBody.Replace("{searchqueries}", string.Join(", ", SearchQueries));
             mailBody = mailBody.Replace("{uploads}", Uploads.ToString());
             mailBody = mailBody.Replace("{newusers}", NewUsers.ToString());
             mailBody = mailBody.Replace("{TrafficPerHour}", TrafficPerHour.ToString());
@@ -347,6 +378,29 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             return values;
         }
 
+        private int GetMetricCountFromBlob(string blobName)
+        {
+            string content = ReportHelpers.Load(StorageAccount, blobName, ContainerName);
+            JArray jArray = JArray.Parse(content);
+            return jArray.Count;
+        }
+
+        private double CalculateGalleryDailyUpTime()
+        {
+            // Up time for DC0.feed.raw.packages.list
+            double DC0FeedUpTime = GetTupleMetricValues("DC0.-.feed.raw.packages.list" + Date + "outageReport.json").Item1;
+            // Up time for Feed.top.30.by.downloads
+            double feedTop30DownloadsUpTime = GetTupleMetricValues("feed.top.30.by.downloads" + Date + "outageReport.json").Item1;
+            // Up time for Package.restore.download
+            double packageRestoreDownloadUpTime = GetTupleMetricValues("package.restore.download" + Date + "outageReport.json").Item1;
+            // Up time for Package.restore.lookup
+            double packageRestoreLookupUpTime = GetTupleMetricValues("package.restore.lookup" + Date + "outageReport.json").Item1;
+
+            List<double> uptimes = new List<double>() { DC0FeedUpTime, feedTop30DownloadsUpTime, packageRestoreDownloadUpTime, packageRestoreLookupUpTime };
+            double overallUpTime = (uptimes.Min() / SecondsInAnHour) * 100.00;
+            return overallUpTime;
+        }
+
         private int GetDownloadNumbersFromBlob(string blobName)
         {
             Dictionary<string, string> dict = ReportHelpers.GetDictFromBlob(StorageAccount, blobName, ContainerName);
@@ -358,11 +412,27 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             return values.Sum();
         }
 
-        private int GetMetricCountFromBlob (string blobName)
+        private int GetSearchQueryNumbersFromBlob()
         {
-            string content = ReportHelpers.Load(StorageAccount, blobName, ContainerName);
-            JArray jArray = JArray.Parse(content);
-            return jArray.Count;
+            Dictionary<string, string> dict = ReportHelpers.GetDictFromBlob(StorageAccount, "IISRequestDetails" + Date + ".json", ContainerName);
+            List<IISRequestDetails> requestDetails = new List<IISRequestDetails>();
+            int totalSearchRequestNumber = 0;
+            
+            if (dict != null)
+            {
+                foreach (KeyValuePair<string, string> keyValuePair in dict)
+                {
+                    requestDetails = new JavaScriptSerializer().Deserialize<List<IISRequestDetails>>(keyValuePair.Value);
+                    foreach (IISRequestDetails detail in requestDetails)
+                    {
+                        if (detail.ScenarioName == "Search")
+                        {
+                            totalSearchRequestNumber += detail.RequestsPerHour;
+                        }
+                    }
+                }
+            }
+            return totalSearchRequestNumber;
         }
 
         private List<WorkInstanceDetail> GetWorkJobDetail()
@@ -388,7 +458,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 {
                     count--;
                     failedJobNames.Add(detail.jobName);
-                    notableIssues.Add(detail.ErrorMessage.Keys.First().Substring(0, 100) + ".....");
+                    notableIssues.Add(detail.ErrorMessage.Keys.First().Substring(0, 100) + ".....<br/>");
                 }
             }
             notableIssues.Add("<br/>For more details, please refer to https://dashboard.nuget.org/WorkJob/WorkJobDetail.");
