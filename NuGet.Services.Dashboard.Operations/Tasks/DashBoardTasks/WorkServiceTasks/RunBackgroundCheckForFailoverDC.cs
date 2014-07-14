@@ -28,7 +28,10 @@ namespace NuGetGallery.Operations
         [Option("PackagesStorageAccount", AltName = "pst")]
         public CloudStorageAccount PackagesStorage { get; set; }
 
-        public string sqlQueryForDbAge = "select create_date from sys.databases where name = 'NuGetGallery'";
+        [Option("DbName", AltName = "dbn")]
+        public string DbName { get; set; }
+
+        public string sqlQueryForDbAge;
         public string sqlQueryForPackagesCount = "select count(*) from [dbo].[Packages]";
         public string sqlQueryForUsersCount = "select count(*) from [dbo].[Users]";
         private const string PackagesContainerName = "packages";
@@ -36,6 +39,7 @@ namespace NuGetGallery.Operations
         
         public override void ExecuteCommand()
         {
+            sqlQueryForDbAge = string.Format("select create_date from sys.databases where name = '{0}'", DbName);
             thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
             List<Tuple<string, string>> jobOutputs = new List<Tuple<string, string>>();
              jobOutputs.Add(new Tuple<string,string>("ImportDBToFailoverDC", CheckAgeOfLiveDatabase()));
@@ -93,7 +97,7 @@ namespace NuGetGallery.Operations
             {
                 connection.Open();
                 var usersCount = db.Query<Int32>(sqlQueryForUsersCount).SingleOrDefault();            
-                outputMessage = string.Format("The Failover DB doesn't seem to have imported properly. This means that the DB pointed by live site has incomplete data.Count of records in Users table : {0}. Error Expected : Atleast 39 K", usersCount);
+                outputMessage = string.Format("The Failover DB doesn't seem to have imported properly. This means that the DB pointed by live site has incomplete data.Count of records in Users table : {0}. Error Expected : Atleast {1}", usersCount,thresholdValues.DatabaseImportErrorThreshold);
                 if (usersCount < thresholdValues.DatabaseImportErrorThreshold)
                 {
                     new SendAlertMailTask
