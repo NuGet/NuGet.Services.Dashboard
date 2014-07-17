@@ -49,7 +49,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         [HttpGet]
         public ActionResult RequestsToday()
         {
-            List<Tuple<string, string, double>> scenarios = GetRequestsData(String.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()));
+            List<Tuple<string, string,string, double>> scenarios = GetRequestsData(String.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()));
             return PartialView("~/Views/V2GalleryFrontEnd/V2GalleryFrontEnd_RequestDetails.cshtml", scenarios);
         }
 
@@ -151,7 +151,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             for (int i = 0; i < 8; i++)
             {
                 string date = string.Format("{0:MMdd}", start.AddDays(i));
-                List<Tuple<string, string, double>> scenarios = GetRequestsData(date);
+                List<Tuple<string, string,string, double>> scenarios = GetRequestsData(date);
                 value.Add(string.Format("{0:MM/dd}", start.AddDays(i)));
                 for (int j = 1; j < scenarios.Count; j++)
                 {
@@ -190,7 +190,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             for (int i = 0; i < 8; i++)
             {
                 string date = string.Format("{0:MMdd}", start.AddDays(i));
-                List<Tuple<string, string, double>> scenarios = GetRequestsData(date);
+                List<Tuple<string, string,string, double>> scenarios = GetRequestsData(date);
                 value.Add(string.Format("{0:MM/dd}", start.AddDays(i)));
                 for (int j = 1; j < scenarios.Count; j++)
                 {
@@ -220,11 +220,11 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
         }
 
-        private List<Tuple<string, string, double>> GetRequestsData(string date)
+        private List<Tuple<string, string, string ,double>> GetRequestsData(string date)
         {
             Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IISRequestDetails" + date + ".json");
             List<IISRequestDetails> requestDetails = new List<IISRequestDetails>();
-            List<Tuple<string, string, double>> scenarios = new List<Tuple<string, string, double>>();
+            List<Tuple<string, string, string, double>> scenarios = new List<Tuple<string, string, string, double>>();
             if (dict != null)
             {
                 foreach (KeyValuePair<string, string> keyValuePair in dict)
@@ -236,7 +236,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
 
                 foreach (IGrouping<string, IISRequestDetails> group in requestGroups)
                 {
-                    scenarios.Add(new Tuple<string, string, double>(group.Key, Convert.ToInt32(group.Average(item => item.RequestsPerHour)).ToString(), Convert.ToInt32(group.Average(item => item.AvgTimeTakenInMilliSeconds))));
+                    scenarios.Add(new Tuple<string, string, string, double>(group.Key, Convert.ToInt32(group.Average(item => item.RequestsPerHour)).ToString(), Convert.ToInt32(group.Max(item => item.RequestsPerHour)).ToString(), Convert.ToInt32(group.Average(item => item.AvgTimeTakenInMilliSeconds))));
                 }
             }
 
