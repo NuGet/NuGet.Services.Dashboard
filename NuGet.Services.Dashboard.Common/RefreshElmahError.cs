@@ -52,18 +52,25 @@ namespace NuGet.Services.Dashboard.Common
 
         public List<ElmahError> ExecuteRefresh()
         {
-            if(StorageAccount == null) StorageAccount = CloudStorageAccount.Parse(ConnectionString);
+        return GetElmahError(DateTime.Now.Subtract(new TimeSpan(LastNHours, 0, 0)), DateTime.Now);
+        }
+
+        public List<ElmahError> GetElmahError(DateTime start, DateTime end)
+        {
+            if (StorageAccount == null) StorageAccount = CloudStorageAccount.Parse(ConnectionString);
             List<string> nonCriticalErrorDictionary = new JavaScriptSerializer().Deserialize<List<string>>(Load(StorageAccount, "Configuration.ElmahNonCriticalErrors.json", ContainerName));
             TableErrorLog log = new TableErrorLog(string.Format(ElmahAccountCredentials));
             List<ErrorLogEntry> entities = new List<ErrorLogEntry>();
 
-            log.GetErrors(0, 500 * LastNHours, entities); //retrieve n * LastNHours errors assuming a max of 500 errors per hour.
+            int lasthours = DateTime.Now.Subtract(start).Hours + 1;
+
+            log.GetErrors(0, 500 * lasthours, entities); //retrieve n * LastNHours errors assuming a max of 500 errors per hour.
             List<ElmahError> listOfErrors = new List<ElmahError>();
 
             //Get the error from Last N hours.
-            if (entities.Any(entity => entity.Error.Time.ToUniversalTime() > DateTime.Now.Subtract(new TimeSpan(LastNHours, 0, 0)).ToUniversalTime()))
+            if (entities.Any(entity => entity.Error.Time.ToUniversalTime() > start.ToUniversalTime() && entity.Error.Time.ToUniversalTime() < end.ToUniversalTime()))
             {
-                entities = entities.Where(entity => entity.Error.Time.ToUniversalTime() > DateTime.Now.Subtract(new TimeSpan(LastNHours, 0, 0)).ToUniversalTime()).ToList();
+                entities = entities.Where(entity => entity.Error.Time.ToUniversalTime() > start.ToUniversalTime() && entity.Error.Time.ToUniversalTime() < end.ToUniversalTime()).ToList();
                 var elmahGroups = entities.GroupBy(item => item.Error.Message);
 
                 //Group the error based on exception and send alerts if critical errors exceed the thresold values.
@@ -82,12 +89,11 @@ namespace NuGet.Services.Dashboard.Common
                     }
                     //for severity, assume all refresh error, severity = 0
                     listOfErrors.Add(new ElmahError(errorGroups.Key.ToString(), errorGroups.Count(), errorGroups.Min(item => item.Error.Time.ToLocalTime()), errorGroups.Max(item => item.Error.Time.ToLocalTime()), string.Format(link, errorGroups.First().Id), errorGroups.First().Error.Detail, severity));
-                    
+
                 }
             }
 
             return listOfErrors;
-           
         }
 
         private string Load(CloudStorageAccount storageAccount, string name, string containerName = "dashboard")
