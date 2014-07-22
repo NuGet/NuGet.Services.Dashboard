@@ -1,0 +1,41 @@
+﻿@using NuGetDashboard.Models;
+@model ThresholdViewModel
+
+@{
+    ViewBag.Title = "Edit";
+}
+div class="page secondary with-sidebar">
+<div class="page-header">
+    <div class="page-header-content" id="headercontent">
+        <h1 id="title">Threshold<small>Edit</small></h1>
+        <a href="/" id="backbutton" class=" back-button big page-back"></a>
+    </div>
+</div>
+
+<<div style="width:800px;" class="fg-color-darken" id="Edit">
+ @using (Html.BeginForm())
+ {
+       <table class="hovered">
+        <tbody>
+            <tr>
+                <td>Threshold Name</td>
+                <td>@Model.ID</td>
+            </tr>
+            <tr>
+                <td>Threshold Type</td>
+                <td>@Model.Type</td>
+            </tr>
+            <tr>
+                <td>Standard Value</td>
+                <td>@Html.TextBoxFor(x => x.standard)</td>
+            </tr>
+            <tr>
+                <td>Current Value</td>
+                <td>@Html.TextBoxFor(x => x.current)</td>
+            </tr>
+        </tbody>
+    </table>
+    <input type="submit" value="Save" />
+     
+ }
+</div>
