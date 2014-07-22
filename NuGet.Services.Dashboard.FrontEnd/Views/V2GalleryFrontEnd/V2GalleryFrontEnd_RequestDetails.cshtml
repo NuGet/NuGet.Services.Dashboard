@@ -2,7 +2,7 @@
 @using System.Collections.Generic;
 @using System.Linq;
 @using NuGet.Services.Dashboard.Common;
-@model List<Tuple<string, string, double>>
+@model List<Tuple<string, string, string,double>>
 
 <div class="fg-color-darken" style="width:600px">
     <h2>Today's hourly Average</h2>
@@ -17,10 +17,13 @@
                     Average requests per hour
                 </th>
                 <th>
+                    Peak requests per hour
+                </th>
+                <th>
                     Avg time taken in Milli seconds
                 </th>
             </tr>
-            @foreach (Tuple<string, string, double> scenario in @Model)
+            @foreach (Tuple<string, string,string ,double> scenario in @Model)
             {
                 <tr>
                     <td>
@@ -31,6 +34,9 @@
                     </td>
                     <td>
                        @scenario.Item3
+                    </td>
+                    <td>
+                        @scenario.Item4
                     </td>                 
                 </tr>
             }
