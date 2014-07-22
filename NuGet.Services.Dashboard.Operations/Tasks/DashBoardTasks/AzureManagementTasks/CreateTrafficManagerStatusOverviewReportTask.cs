@@ -16,7 +16,6 @@ using System.Web.Script.Serialization;
 using NuGetGallery;
 using NuGetGallery.Infrastructure;
 using Elmah;
-using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml;
 

@@ -152,7 +152,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             {
                 string date = string.Format("{0:MMdd}", start.AddDays(i));
                 List<Tuple<string, string,string, double>> scenarios = GetRequestsData(date);
-                value.Add(string.Format("{0:MM/dd}", start.AddDays(i)));
+                value.Add(string.Format("{0:MM:dd}", start.AddDays(i)));
                 for (int j = 1; j < scenarios.Count; j++)
                 {
                     if (request.ContainsKey(scenarios[j].Item1))
@@ -191,7 +191,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             {
                 string date = string.Format("{0:MMdd}", start.AddDays(i));
                 List<Tuple<string, string,string, double>> scenarios = GetRequestsData(date);
-                value.Add(string.Format("{0:MM/dd}", start.AddDays(i)));
+                value.Add(string.Format("{0:MM:dd}", start.AddDays(i)));
                 for (int j = 1; j < scenarios.Count; j++)
                 {
                     if (time.ContainsKey(scenarios[j].Item1))
