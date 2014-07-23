@@ -42,7 +42,30 @@ namespace NuGetDashboard.Utilities
             {
                 return null;
             }
-        }      
+        }
+        public static Stream ToStream(JToken jToken)
+        {
+            MemoryStream stream = new MemoryStream();
+            TextWriter writer = new StreamWriter(stream);
+            writer.Write(jToken.ToString());
+            writer.Flush();
+            stream.Seek(0, SeekOrigin.Begin);
+            return stream;
+        }
+
+        public static Uri CreateBlob(string name, string contentType, Stream content)
+        {
+            string containerName = MvcApplication.StorageContainer;
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(_connectionString);
+            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
+            CloudBlockBlob blockBlob = container.GetBlockBlobReference(name);
+
+            blockBlob.Properties.ContentType = contentType;
+            blockBlob.UploadFromStream(content);
+
+            return blockBlob.Uri;
+        }
 
         /// <summary>
         /// Gets the JSON data from the blob.

@@ -5,6 +5,7 @@ param(
   [Parameter(Mandatory=$true)][string]$FrontEndLegacyDBConnectionString,
   [Parameter(Mandatory=$true)][string]$SubscriptionId,
   [Parameter(Mandatory=$false)][string]$FrontEndCloudServiceName="nuget-prod-0-v2gallery",
+  [Parameter(Mandatory=$false)][string]$FrontEndDatebaseName,
   [Parameter(Mandatory=$false)][string]$TrafficManagerProfileName="nuget-prod-v2gallery",  
   [Parameter(Mandatory=$true)][string]$WareHouseDBConnectionString,
   [Parameter(Mandatory=$true)][string]$FrontEndLegacyDBConnectionStringForFailOverDC,
@@ -65,7 +66,7 @@ CreateTask "CreatePingdomServiceDisruptionReport" "psdrt -user $PingdomUserName 
 
 #worker Tasks
 CreateTask "RunBackgroundChecksForWorkerJobs" "rbgc -db `"$FrontEndLegacyDBConnectionString`" -iis `"$FrontEndStorageConnectionString`" -name $WorkServiceAdminUser -key $WorkServiceAdminKey0 -url $WorkServiceEndpoint -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
-CreateTask "RunBackgroundCheckForFailoverDC" "rbgfdc -db `"$FrontEndLegacyDBConnectionStringForFailOverDC`" -pst `"$FrontEndStorageConnectionStringForFailOverDC`" -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
+CreateTask "RunBackgroundCheckForFailoverDC" "rbgfdc -db `"$FrontEndLegacyDBConnectionStringForFailOverDC`" -pst `"$FrontEndStorageConnectionStringForFailOverDC`" -dbn $FrontEndDatebaseName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 CreateTask "CreateWorkJobDetailReport" "cwjdrt -name $WorkServiceAdminUser -key0 $WorkServiceAdminKey0 -key1 $WorkServiceAdminKey1 -lid $SubscriptionId -cid $SchedulerCloudServiceId -jid $SchedulerJobId -cername $ProdManagementCertName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 
 
