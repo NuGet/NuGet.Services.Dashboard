@@ -1,70 +1,87 @@
-﻿//using System.Collections.Generic;
-//using System.Linq;
-//using System.Data;
-//using System.Data.SqlClient;
-//using System.IO;
-//using System.Threading;
-//using System.Threading.Tasks;
-//using Microsoft.WindowsAzure.Storage;
-//using Microsoft.WindowsAzure.Storage.Blob;
-//using Newtonsoft.Json.Linq;
-//using NuGetGallery.Operations.Common;
-//using AnglicanGeek.DbExecutor;
-//using System;
-//using System.Net;
-//using System.Web.Script.Serialization;
-//using NuGetGallery;
-//using NuGetGallery.Infrastructure;
-//using Elmah;
-//using System.IO;
-//using Microsoft.WindowsAzure.Storage;
-//using Microsoft.WindowsAzure.Storage.Table;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Data;
+using System.Data.SqlClient;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+using Newtonsoft.Json.Linq;
+using NuGetGallery.Operations.Common;
+using AnglicanGeek.DbExecutor;
+using System;
+using System.Net;
+using System.Web.Script.Serialization;
+using NuGetGallery;
+using NuGetGallery.Infrastructure;
+using Elmah;
+using Microsoft.WindowsAzure.Storage.Table;
 
 
-//namespace NuGetGallery.Operations
-//{
-//    [Command("CreateElmahErrorOverviewReportTask", "Creates trending report for Elmah error count", AltName = "ceeort")]
-//    public class CreateWADPerformanceDiagnosticsReportTask : StorageTask
-//    {
-//        [Option("WADTableStorageAccount", AltName = "wad")]
-//        public CloudStorageAccount WADTableStoragAccount { get; set; }
+namespace NuGetGallery.Operations
+{
+    [Command("CreatePerfUsageReportTask", "Create performance counter usage report task", AltName = "cpurt")]
+    public class CreateWADPerformanceDiagnosticsReportTask : StorageTask
+    {
+        [Option("PerfCounterTableStorageAccount", AltName = "table")]
+        public string PerfCounterTableStorageAccount { get; set; }
 
-//        [Option("DeploymentID", AltName = "di")]
-//        public CloudStorageAccount DeploymentID { get; set; }
+        [Option("PerfCounterName", AltName = "counter")]
+        public string PerfCounterName { get; set; }
 
-//        public override void ExecuteCommand()
-//        {
-//            PerformanceDataContext context = new PerformanceDataContext(
-//          accountStorage.TableEndpoint.ToString(), accountStorage.Credentials);
-//            var data = context.PerfData;
-//            CloudTableQuery<PerformanceData> query = null;
-//            query = (from d in data
-//                     where d.PartitionKey.CompareTo("0" + startPeriod.Ticks) >= 0
-//                                            && d.PartitionKey.CompareTo
-//                        ("0" + endPeriod.Ticks) <= 0
-//                                             && d.CounterName == counterFullName
-//                                                 && d.EventTickCount >= startPeriod.Ticks
-//                                                     && d.EventTickCount <= endPeriod.Ticks
-//                                                          && d.DeploymentId == deploymentid
-//                                                             && d.Role == roleName
-//                                                                 && d.RoleInstance ==
-//                                roleInstanceName
-//                     select d).AsTableServiceQuery<PerformanceData>();
-//            List<PerformanceData> selectedData = new List<PerformanceData>();
-//            try
-//            {
-//                selectedData = query.Execute().ToList<PerformanceData>();
-//            }
-//            catch
-//            {
-//            }
-//            return selectedData;
+        [Option("frequencyInMin", AltName = "f")]
+        public int frequencyInMin { get; set; }
 
-//        }
+        [Option("DeployId",AltName = "id")]
+        public string DeployId { get; set; }
+
+        public override void ExecuteCommand()
+        {
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(PerfCounterTableStorageAccount);
+            CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+            CloudTable table = tableClient.GetTableReference("WAD"+DeployId+"PT5MRTable");
+            int count = 0;
+            double sum = 0;
+
+            TableQuery<dataEntity> rangeQuery = new TableQuery<dataEntity>().Where(TableQuery.CombineFilters(
+                                                TableQuery.GenerateFilterConditionForDate("Timestamp", QueryComparisons.GreaterThan, DateTime.UtcNow.AddMinutes(-frequencyInMin)),
+                                                TableOperators.And,
+                                                TableQuery.GenerateFilterCondition("CounterName", QueryComparisons.Equal, PerfCounterName)));
+
+            foreach (dataEntity entity in table.ExecuteQuery(rangeQuery))
+            {
+                count++;
+                sum += entity.Total / entity.Count;
+            }
+
+            ReportHelpers.AppendDatatoBlob(StorageAccount, DeployId + PerfCounterName + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), (sum/count).ToString()), 24*60 / frequencyInMin, ContainerName);
+
+        }
+
+        private class dataEntity : TableEntity
+        {
+            public int Count { get; set; }
+            public double Total { get; set; }
+
+            public string CounterName { get; set; }
+
+            public string Role { get; set; }
+
+            public string DepolymentId { get; set; }
+
+            public dataEntity() { }
+
+            public dataEntity(string PartitionKey, string RowKey)
+            {
+                this.PartitionKey = PartitionKey;
+                this.RowKey = RowKey;
+            }
+        }
 
 
 
-//    }
-//}
+    }
+}
 
 
