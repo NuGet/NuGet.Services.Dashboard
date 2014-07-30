@@ -15,13 +15,14 @@
         <li class="active"><a href="#RequestsToday">Request Categorization Weekly trend</a></li>
         <li ><a href="#RequestsThisWeek">Over all Requests Weekly Trend</a></li>
         <li><a href="#Errors">Errors Weekly Trend</a></li>
+        <li><a href="#LatencyReport">E2E Latency Report</a></li>
       
     </ul>    
     <div class="frames">
         <div class="frame active" id="RequestsToday">@Html.Action("RequestsToday", "V2GalleryFrontEnd");</div>
         <div class="frame" id="RequestsThisWeek">@Html.Action("RequestsThisWeek", "V2GalleryFrontEnd");</div>
         <div class="frame" id="Errors">@Html.Action("ErrorsThisWeek", "V2GalleryFrontEnd");</div>
-       
+        <div class="frame" id="LatencyReport">@Html.Action("LatencyReport", "V2GalleryFrontEnd");</div>
     </div>
 
 </div>

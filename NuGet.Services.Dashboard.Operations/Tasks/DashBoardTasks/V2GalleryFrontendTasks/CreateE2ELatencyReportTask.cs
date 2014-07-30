@@ -13,6 +13,8 @@ using System.IO.Compression;
 using Ionic.Zip;
 using System.Web.Script.Serialization;
 using NuGetGallery.Operations.Common;
+using System.Globalization;
+using NuGet.Services.Dashboard.Common;
 
 namespace NuGetGallery.Operations
 {
@@ -32,44 +34,36 @@ namespace NuGetGallery.Operations
 
         public override void ExecuteCommand()
         {
+            string today=DateTime.Today.ToString("d");
             DateTime now = DateTime.Now;
-            string file = Path.Combine(Environment.CurrentDirectory, "DashboardUploadTest.2.0.0.nupkg");
+            string file = Path.Combine(Environment.CurrentDirectory, "DashboardUploadTestOriginal.nupkg");
             string newPackage = GetNewPackage(file);
             Console.WriteLine("Pushing :{0}", newPackage);
             int exitCode = 0;
             long timeElapsed=UploadPackage(newPackage, Source, ApiKey, out exitCode);
-            File.Delete(newPackage);
+
+           
+            //File.Copy(file, Path.Combine(Environment.CurrentDirectory, "DashboardUploadTestOriginal.nupkg"));
+            //File.Delete(newPackage);
             File.Delete("backup");
             UploadPackageDetails entry = new UploadPackageDetails(now, timeElapsed, exitCode);
             var json = new JavaScriptSerializer().Serialize(entry);
-            ReportHelpers.AppendDatatoBlob(StorageAccount, (DateTime.Today + "UploadPackageTimeElapsed.json"), new Tuple<string, string>(string.Format("{0:HH-mm}", DateTime.Now), timeElapsed.ToString()), 48, ContainerName);
+            Console.WriteLine(DateTime.Today.ToString("d"));
+            ReportHelpers.AppendDatatoBlob(StorageAccount, ("UploadPackageTimeElapsed" + today + ".json"), new Tuple<string, string>(string.Format("{0:HH-mm}", DateTime.Now), timeElapsed.ToString()), 48, ContainerName);
         }
 
-        public class UploadPackageDetails
-        {
-            public DateTime now;
-            public long timeElapsed;
-            public int exitCode;
-
-            public UploadPackageDetails()
-            {
-
-            }
-
-            public UploadPackageDetails(DateTime _now, long _timeElapsed,int _exitCode)
-            {
-                this.now = _now;
-                this.timeElapsed = _timeElapsed;
-                this.exitCode = _exitCode;
-            }
-        }
+        
 
         public static string GetNewPackage(string fileName)
         {
             ZipPackage package = new ZipPackage(fileName);
             string packageId = package.Id;
             string packageVersionMajor = package.Version.Version.Major.ToString();
-            int major = Convert.ToInt32(packageVersionMajor);
+            string packageVersionMinor = package.Version.Version.Minor.ToString();
+            string packageVersionBuild = package.Version.Version.Build.ToString();
+            int versionMajor = Convert.ToInt32(packageVersionMajor);
+            int versionMinor = Convert.ToInt32(packageVersionMinor);
+            int versionBuild = Convert.ToInt32(packageVersionBuild);
             string nuspecFilePath = packageId + ".nuspec";
             using (ZipFile zipFile = new ZipFile(fileName))
             {
@@ -78,9 +72,9 @@ namespace NuGetGallery.Operations
                 string extractedfile = Path.Combine(Environment.CurrentDirectory, nuspecFilePath);
                 string newFile = "Updated" + nuspecFilePath;
 
-                string newVersion = (++major).ToString();
+                string newVersion = (++versionMajor).ToString()+"."+packageVersionMinor+"."+packageVersionBuild;
                 string nuspecContent = File.ReadAllText(extractedfile);
-                string updatedContent = nuspecContent.Replace(packageVersionMajor, newVersion);
+                string updatedContent = nuspecContent.Replace(packageVersionMajor + "." + packageVersionMinor + "."+packageVersionBuild, newVersion);
                 StreamWriter sw = new StreamWriter(newFile);
                 sw.Write(updatedContent);
                 sw.Flush();
@@ -89,9 +83,13 @@ namespace NuGetGallery.Operations
                 zipFile.RemoveEntry(entry);
                 File.Replace(newFile, extractedfile, "backup", true);
                 zipFile.AddFile(extractedfile, ".");
-                string newfileName = packageId + ".nupkg";
-                zipFile.Save(newfileName);
-                return newfileName;
+                //string newfileName =Path.Combine(Environment.CurrentDirectory, packageId + ".nupkg");
+                zipFile.Save(fileName);
+                Console.WriteLine("Here");
+                //File.Delete(Path.Combine(Environment.CurrentDirectory, "DashboardUploadTestOriginal.nupkg"));
+                //File.Copy(newfileName, fileName);
+                //File.Delete(Path.Combine(Environment.CurrentDirectory, "DashboardUploadTest.nupkg"));
+                return fileName;
             }
         }
 

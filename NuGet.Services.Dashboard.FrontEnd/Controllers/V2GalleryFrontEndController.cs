@@ -54,6 +54,17 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         }
 
         [HttpGet]
+        public ActionResult LatencyReport()
+        {
+            string today = DateTime.Today.ToString("d");
+            string blobName= "UploadPackageTimeElapsed"+today;
+            //string[] blobNames = new string[8];
+            //for (int i = 0; i < 8; i++)
+            //    blobNames[i] = "UploadPackageTimeElapsed"+today;
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobName, "MillisecondsPerUpload", 3, 800));
+        }
+
+        [HttpGet]
         public ActionResult RequestPerHourTrendToday()
         {
             List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
