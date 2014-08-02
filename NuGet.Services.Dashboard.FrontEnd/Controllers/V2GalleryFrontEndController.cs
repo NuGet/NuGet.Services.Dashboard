@@ -27,7 +27,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         {
             return View("~/Views/V2GalleryFrontEnd/V2GalleryFrontEnd_Details.cshtml");
         }
-     
+
         [HttpGet]
         public ActionResult ErrorsThisWeek()
         {
@@ -41,15 +41,15 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public ActionResult RequestsThisWeek()
         {
             string[] blobNames = new string[8];
-            for (int i = 0; i < 8;i++)
-                   blobNames[i] = "IISRequests" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow().AddDays(-i));
+            for (int i = 0; i < 8; i++)
+                blobNames[i] = "IISRequests" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow().AddDays(-i));
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "RequestsPerHour", 24, 800));
         }
 
         [HttpGet]
         public ActionResult RequestsToday()
         {
-            List<Tuple<string, string,string, double>> scenarios = GetRequestsData(String.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()));
+            List<Tuple<string, string, string, double>> scenarios = GetRequestsData(String.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()));
             return PartialView("~/Views/V2GalleryFrontEnd/V2GalleryFrontEnd_RequestDetails.cshtml", scenarios);
         }
 
@@ -57,11 +57,11 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public ActionResult LatencyReport()
         {
             string today = DateTime.Today.ToString("d");
-            string blobName= "UploadPackageTimeElapsed"+today;
-            //string[] blobNames = new string[8];
-            //for (int i = 0; i < 8; i++)
-            //    blobNames[i] = "UploadPackageTimeElapsed"+today;
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobName, "MillisecondsPerUpload", 3, 800));
+            string[] blobNames = new string[2];
+
+            blobNames[0] = "UploadPackageTimeElapsed" + today;
+            blobNames[1] = "SearchPackageTimeElapsed" + today;
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "MillisecondsPerUpload", 3, 800));
         }
 
         [HttpGet]
@@ -162,7 +162,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             for (int i = 0; i < 8; i++)
             {
                 string date = string.Format("{0:MMdd}", start.AddDays(i));
-                List<Tuple<string, string,string, double>> scenarios = GetRequestsData(date);
+                List<Tuple<string, string, string, double>> scenarios = GetRequestsData(date);
                 value.Add(string.Format("{0:MM/dd}", start.AddDays(i)));
                 for (int j = 1; j < scenarios.Count; j++)
                 {
@@ -178,13 +178,13 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                     }
                 }
             }
-           
+
             foreach (KeyValuePair<string, List<object>> each in request)
             {
                 seriesSet.Add(new DotNet.Highcharts.Options.Series
                 {
                     Data = new Data(each.Value.ToArray()),
-                    Name = each.Key.Replace(" ","_")
+                    Name = each.Key.Replace(" ", "_")
                 });
             }
             DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, value, "WeeklyAvgRequestPerHourTrend", 500);
@@ -201,7 +201,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             for (int i = 0; i < 8; i++)
             {
                 string date = string.Format("{0:MMdd}", start.AddDays(i));
-                List<Tuple<string, string,string, double>> scenarios = GetRequestsData(date);
+                List<Tuple<string, string, string, double>> scenarios = GetRequestsData(date);
                 value.Add(string.Format("{0:MM/dd}", start.AddDays(i)));
                 for (int j = 1; j < scenarios.Count; j++)
                 {
@@ -231,7 +231,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
         }
 
-        private List<Tuple<string, string, string ,double>> GetRequestsData(string date)
+        private List<Tuple<string, string, string, double>> GetRequestsData(string date)
         {
             Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IISRequestDetails" + date + ".json");
             List<IISRequestDetails> requestDetails = new List<IISRequestDetails>();
@@ -263,13 +263,13 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         [HttpGet]
         public ActionResult Throughput()
         {
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("IISRequests" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) , "RequestsPerHour"));
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName("IISRequests" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()), "RequestsPerHour"));
         }
 
         [HttpGet]
         public JsonResult GetCurrentThroughputStatus()
         {
-            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IISRequests" + string.Format("{0:MMdd}",DateTimeUtility.GetPacificTimeNow()) + ".json");
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("IISRequests" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + ".json");
             if (dict != null && dict.Count > 0)
                 return Json(dict.Values.ElementAt(dict.Count - 1), JsonRequestBehavior.AllowGet);
             else
