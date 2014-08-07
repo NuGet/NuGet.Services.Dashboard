@@ -1,27 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Diagnostics;
-using System.CodeDom.Compiler;
-using Microsoft.CSharp;
-using System.Configuration;
-using NuGet;
-using System.IO.Compression;
+﻿using AnglicanGeek.DbExecutor;
 using Ionic.Zip;
-using System.Web.Script.Serialization;
-using NuGetGallery.Operations.Common;
-using System.Globalization;
-using NuGet.Services.Dashboard.Common;
-using System.Net.Http;
 using Newtonsoft.Json.Linq;
+using NuGet;
+using NuGet.Services.Dashboard.Common;
+using NuGetGallery.Operations.Common;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Data.SqlTypes;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Web.Script.Serialization;
+
 
 namespace NuGetGallery.Operations
 {
     [Command("CreateE2ELatencyReportTask", "Logs time take to upload package to various services", AltName = "ce2elrt")]
-    public class CreateE2ELatencyReportTask : StorageTask
+    public class CreateE2ELatencyReportTask : DatabaseAndStorageTask
     {
         [Option("Source", AltName = "src")]
         public string Source { get; set; }
@@ -32,35 +29,56 @@ namespace NuGetGallery.Operations
         [Option("PackageName", AltName = "package")]
         public string TestPackageName { get; set; }
 
+        [Option("CatalogUrl", AltName = "cau")]
+        public string CatalogUrl { get; set; }
+
+        [Option("ResolverBlobsBaseUrl", AltName = "reu")]
+
+        public string ResolverBlobsBaseUrl { get; set; }
+
         internal static string NugetExePath = @"NuGet.exe";
         internal static string PushCommandString = " push ";
         internal static string SourceSwitchString = " -Source ";
         internal static string APIKeySwitchString = " -ApiKey ";
         internal static string SearchAPIBase = "https://api-search.int.nugettest.org/search";
+        internal static string ProductionCatalog = "http://nugetdev0.blob.core.windows.net/ng-catalogs/4/index.json";
+
         public override void ExecuteCommand()
         {
             StopWatches timer = new StopWatches();
-            string today = DateTime.Today.ToString("d");
-            DateTime now = DateTime.Now;
+            DateTime today = DateTime.Today;
+            string day = string.Format("{0:d}", today);
+            //DateTime now = DateTime.Now;
             string version = string.Empty;
-            string file = Path.Combine(Environment.CurrentDirectory, TestPackageName+".nupkg");
+            string file = Path.Combine(Environment.CurrentDirectory, TestPackageName + ".nupkg");
             string newPackage = GetNewPackage(file, out version);
             Console.WriteLine("Pushing :{0}", newPackage);
-
             long UploadTimeElapsed = UploadPackage(newPackage, Source, ApiKey, timer);
-            long SearchTimeElapsed=-1;
-            while (SearchTimeElapsed==-1)
+            long SearchTimeElapsed = -1;
+
+            //SearchPackage is called until the uploaded package is seen in the search result
+            while (SearchTimeElapsed == -1)
             {
                 SearchTimeElapsed = SearchPackage(timer, TestPackageName, version);
             }
 
+            ReportHelpers.AppendDatatoBlob(StorageAccount, ("UploadPackageTimeElapsed" + day + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), UploadTimeElapsed.ToString()), 48, ContainerName);
+            ReportHelpers.AppendDatatoBlob(StorageAccount, ("SearchPackageTimeElapsed" + day + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), SearchTimeElapsed.ToString()), 48, ContainerName);
+
+            JToken timeStampCatalog;
+            int CatalogLag = CatalogPackage(timer, TestPackageName, out timeStampCatalog);
+            JToken timeStampResolver;
+            double ResolverLag = CheckLagBetweenCatalogAndResolverBlobs(out timeStampResolver);
             File.Delete("backup");
-            Console.WriteLine(DateTime.Today.ToString("d"));
-            ReportHelpers.AppendDatatoBlob(StorageAccount, ("UploadPackageTimeElapsed" + today + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), UploadTimeElapsed.ToString()), 48, ContainerName);
-            ReportHelpers.AppendDatatoBlob(StorageAccount, ("SearchPackageTimeElapsed" + today + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), SearchTimeElapsed.ToString()), 48, ContainerName);
+            Console.WriteLine(DateTime.Today.ToString("d"));           
+            ReportHelpers.AppendDatatoBlob(StorageAccount, ("CatalogLag" + day + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), CatalogLag.ToString()), 48, ContainerName);
+            ReportHelpers.CreateBlob(StorageAccount,("LastCatalogTimeStamp.json"),ContainerName, "SqlDateTime", ReportHelpers.ToStream(timeStampCatalog));
+            ReportHelpers.AppendDatatoBlob(StorageAccount, ("ResolverLag" + day + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), ResolverLag.ToString()), 48, ContainerName);
+            ReportHelpers.CreateBlob(StorageAccount, ("LastResolverTimeStamp.json"), ContainerName, "SqlDateTime", ReportHelpers.ToStream(timeStampResolver));
         }
 
-        public static string GetNewPackage(string fileName, out string version)
+        //changes the version of the package to be uploaded (+1) and returns the fileName 
+        private string GetNewPackage(string fileName, out string version)
         {
             ZipPackage package = new ZipPackage(fileName);
             string packageId = package.Id;
@@ -95,13 +113,11 @@ namespace NuGetGallery.Operations
             }
         }
 
-        public static long InvokeNugetProcess(StopWatches timer, string arguments, out string standardError, out string standardOutput, string WorkingDir = null)
+        //pushes the package to the source specified (Source) and returns the time elapsed in milliseconds to upload the package, or -1 if upload fails
+        private long InvokeNugetProcess(StopWatches timer, string arguments, out string standardError, out string standardOutput, string WorkingDir = null)
         {
             Process nugetProcess = new Process();
-            string pathToNugetExe = Path.Combine(Environment.CurrentDirectory, NugetExePath);
-            //  Console.WriteLine("The NuGet.exe command to be executed is: " + pathToNugetExe + " " + arguments);
-
-            // During the actual test run, a script will copy the latest NuGet.exe and overwrite the existing one
+            string pathToNugetExe = Path.Combine(Environment.CurrentDirectory, NugetExePath);          
             ProcessStartInfo nugetProcessStartInfo = new ProcessStartInfo(pathToNugetExe);
             nugetProcessStartInfo.Arguments = arguments;
             nugetProcessStartInfo.RedirectStandardError = true;
@@ -112,18 +128,18 @@ namespace NuGetGallery.Operations
             nugetProcessStartInfo.CreateNoWindow = true;
             nugetProcess.StartInfo = nugetProcessStartInfo;
             nugetProcess.StartInfo.WorkingDirectory = WorkingDir;
-            nugetProcess.Start();
             timer.UploadTimeElapsed = Stopwatch.StartNew();
+            nugetProcess.Start();
             timer.UploadTimeElapsed.Start();
             standardError = nugetProcess.StandardError.ReadToEnd();
+            Console.WriteLine(standardError);
             standardOutput = nugetProcess.StandardOutput.ReadToEnd();
+            Console.WriteLine(standardOutput);
             nugetProcess.WaitForExit();
             timer.UploadTimeElapsed.Stop();
-
             timer.SearchTimeElapsed = Stopwatch.StartNew();
             if (nugetProcess.ExitCode == 0)
             {
-
                 return timer.UploadTimeElapsed.ElapsedMilliseconds;
             }
 
@@ -134,58 +150,109 @@ namespace NuGetGallery.Operations
             }
         }
 
-        /// <summary>
-        /// Uploads the given package to the specified source and returns the exit code.
-        /// </summary>
-        /// <param name="packageFullPath"></param>
-        /// <param name="sourceName"></param>
-        /// <returns></returns>
-        public static long UploadPackage(string packageFullPath, string sourceName, string ApiKey, StopWatches timer)
+        // Uploads the given package to the specified source and returns time elapsed to upload, or -1 if upload fails.
+        private long UploadPackage(string packageFullPath, string sourceName, string ApiKey, StopWatches timer)
         {
             string standardOutput = string.Empty;
             string standardError = string.Empty;
             return InvokeNugetProcess(timer, string.Join(string.Empty, new string[] { PushCommandString, @"""" + packageFullPath + @"""", APIKeySwitchString, ApiKey, SourceSwitchString, sourceName }), out standardError, out standardOutput);
         }
 
-        /// <summary>
-        /// Uploads the given package to the specified source and returns the exit code.
-        /// </summary>
-        /// <param name="packageFullPath"></param>
-        /// <param name="sourceName"></param>
-        /// <returns></returns>
-        //public static long UploadPackage(string packageFullPath, string sourceName, out string standardOutput, out string standardError,out int exitCode)
-        //{
-        //    return InvokeNugetProcess(string.Join(string.Empty, new string[] { PushCommandString, @"""" + packageFullPath + @"""", SourceSwitchString, sourceName }), out standardError, out standardOutput, out exitCode);
-        //}
-
-        public static long SearchPackage(StopWatches timer, string TestPackageName, string Version)
+        //searches for the package (id, version) specified, returns -1 if not found and is invoked again by the calling code, until the package is found
+        private long SearchPackage(StopWatches timer, string TestPackageName, string Version)
         {
             string uri = SearchAPIBase + "/query?q=%27" + TestPackageName + "%27&luceneQuery=false";
             Uri searchAPI = new Uri(uri);
             System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
             string JSONResult = client.GetStringAsync(searchAPI).Result;
-            //JObject dataObj = JObject.Parse(JSONResult);
             SearchResult result = new SearchResult();
             result = new JavaScriptSerializer().Deserialize<SearchResult>(JSONResult);
-            //PackageRegistration registration = new PackageRegistration(TestPackageName);
-            //SearchDocument document = new SearchDocument(registration, Version);
-
             foreach (var document in result.data)
             {
-                if (document.Version==Version && document.PackageRegistration.Id==TestPackageName)
+                if (document.Version == Version && document.PackageRegistration.Id == TestPackageName)
                 {
                     Console.WriteLine(document.PackageRegistration.Id + " " + document.Version);
                     timer.SearchTimeElapsed.Stop();
                     return timer.SearchTimeElapsed.ElapsedMilliseconds;
-
                 }
-
             }
 
             return -1;
         }
+
+        private int CatalogPackage(StopWatches timer, string TestPackageName,out JToken commitTimeStamp)
+        {
+            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
+            string root = client.GetStringAsync(ProductionCatalog).Result;
+            JObject indexObj = JObject.Parse(root);
+            JToken context = null;
+            indexObj.TryGetValue("@context", out context);
+            commitTimeStamp=null;
+            indexObj.TryGetValue("commitTimestamp", out commitTimeStamp);
+            SqlDateTime timeStamp=commitTimeStamp.ToObject<SqlDateTime>();
+            using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
+            {
+                using (var dbExecutor = new SqlExecutor(sqlConnection))
+                {
+                    sqlConnection.Open();
+                    string query=string.Format("Select count(*) from Packages where Created> '{0}'", timeStamp);
+                    int lag=dbExecutor.Query<Int32>(query).SingleOrDefault();
+                    return lag;
+                }
+            }
+
+            //IEnumerable<JToken> rootItems = indexObj["items"].OrderBy(item => item["commitTimestamp"].ToObject<DateTime>());
+            //int pageCount = rootItems.Count();
+            //Console.WriteLine(pageCount);
+            //Uri pageUri = indexObj["http://nugetprod0.blob.core.windows.net/ng-catalogs/0/page" + (pageCount - 1)].ToObject<Uri>();
+            //string page = client.GetStringAsync(pageUri).Result;
+            //JObject pageObj = JObject.Parse(root);
+            //IEnumerable<JToken> pageItems = pageObj["items"].OrderBy(item => item["commitTimestamp"].ToObject<DateTime>());
+            
+        }
+
+        private double CheckLagBetweenCatalogAndResolverBlobs(out JToken timeStampResolver)
+        {
+            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
+            Task<string> cursorStringTask = client.GetStringAsync(new Uri(ResolverBlobsBaseUrl + "meta/cursor.json"));
+            string cursorString = cursorStringTask.Result;  // Not async!
+            JObject cursorJson = JObject.Parse(cursorString);
+
+            DateTime cursorTimestamp = cursorJson["http://schema.nuget.org/collectors/resolver#cursor"]["@value"].ToObject<DateTime>();
+
+            Task<string> catalogIndexStringTask = client.GetStringAsync(CatalogUrl);
+            string catalogIndexString = catalogIndexStringTask.Result;
+            JObject catalogIndex = JObject.Parse(catalogIndexString);
+
+            DateTime catalogTimestamp = catalogIndex["commitTimestamp"].ToObject<DateTime>();
+
+            TimeSpan span = cursorTimestamp - catalogTimestamp;
+
+            double delta = span.TotalMinutes;
+            timeStampResolver = cursorTimestamp;
+
+            //string outputMessage;
+
+            //outputMessage = string.Format("The lag from the package catalog to the resolver blob set is {0} minutes. Threshold is {1}. The resolver blob pipeline may be running too slowly.", delta, thresholdValues.CatalogToResolverBlobLagThresholdInMinutes);
+            //if (delta > thresholdValues.CatalogToResolverBlobLagThresholdInMinutes || delta < 0)
+            //{
+            //    new SendAlertMailTask
+            //    {
+            //        AlertSubject = "Alert: resolver blob generation lag",
+            //        Details = outputMessage,
+            //        AlertName = "Alert for CheckLagBetweenCatalogAndResolverBlobs",
+            //        Component = "LagBetweenCatalogAndResolverBlobs"
+            //    }.ExecuteCommand();
+            //}
+
+            //Console.WriteLine(outputMessage);
+            return delta;
+        }
+
     }
 
+
+    //object that will hold all the stop watches for the different tasks
     public class StopWatches
     {
         public Stopwatch UploadTimeElapsed;

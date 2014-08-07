@@ -83,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlertThresholds.cs" />
+    <Compile Include="LatencyAverageDetails.cs" />
     <Compile Include="SearchResult.cs" />
     <Compile Include="VsTrending.cs" />
     <Compile Include="RefreshElmahError.cs" />
@@ -98,7 +99,9 @@
     <Compile Include="WorkJobInvocation.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Readme\Elmah.txt" />

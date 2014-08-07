@@ -53,6 +53,16 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             return PartialView("~/Views/V2GalleryFrontEnd/V2GalleryFrontEnd_RequestDetails.cshtml", scenarios);
         }
 
+
+        [HttpGet]
+        public ActionResult LatencyToday()
+        {
+            List<Tuple<string, double, double, double>> scenarios = GetLatencyData(String.Format("{0:d}", DateTimeUtility.GetPacificTimeNow()));
+            ViewBag.catalog = GetCatalogLag();
+            ViewBag.resolver = GetResolverLag();
+            return PartialView("~/Views/V2GalleryFrontEnd/V2GalleryFrontEnd_LatencyDetails.cshtml", scenarios);
+        }
+
         [HttpGet]
         public ActionResult LatencyReport()
         {
@@ -229,6 +239,156 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             }
             DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, value, "WeeklyAvgTimeInMsTrend", 500);
             return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
+        }
+
+        //HERE: CHANGE TO USE LATENCY REPORTS
+        [HttpGet]
+        public ActionResult AverageLatencyTrendThisWeek()
+        {
+            List<string> value = new List<string>();
+            Dictionary<string, List<object>> time = new Dictionary<string, List<object>>();
+            List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
+            DateTime start = DateTimeUtility.GetPacificTimeNow().AddDays(-2);
+            for (int i = 0; i <= 2; i++)
+            {
+                string date = string.Format("{0:d}", start.AddDays(i));
+                List<Tuple<string, double, double, double>> scenarios = GetLatencyData(date);
+                value.Add(string.Format("{0:d}", start.AddDays(i)));
+                for (int j = 0; j < scenarios.Count; j++)
+                {
+                    if (time.ContainsKey(scenarios[j].Item1))
+                    {
+                        time[scenarios[j].Item1].Add(scenarios[j].Item2.ToString());
+                    }
+
+                    else
+                    {
+                        List<object> Yvalue = new List<object>();
+                        Yvalue.Add(scenarios[j].Item2.ToString());
+                        time.Add(scenarios[j].Item1, Yvalue);
+                    }
+                }
+            }
+
+            foreach (KeyValuePair<string, List<object>> each in time)
+            {
+                seriesSet.Add(new DotNet.Highcharts.Options.Series
+                {
+                    Data = new Data(each.Value.ToArray()),
+                    Name = each.Key.Replace(" ", "_")
+                });
+            }
+            DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, value, "WeeklyAvgLatencyTrend", 500);
+            return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
+        }
+
+        private List<Tuple<string, double, double, double>> GetLatencyData(string date)
+        {
+            Dictionary<string, string> uploadDict = BlobStorageService.GetDictFromBlob("UploadPackageTimeElapsed" + date + ".json");
+            Dictionary<string, string> searchDict = BlobStorageService.GetDictFromBlob("SearchPackageTimeElapsed" + date + ".json");
+            List<Tuple<string, double, double, double>> result = new List<Tuple<string, double, double, double>>();
+            if (uploadDict != null)
+            {
+                List<double> latency = new List<double>();
+                foreach (KeyValuePair<string, string> keyValuePair in uploadDict)
+                {
+                    latency.Add(Convert.ToDouble(keyValuePair.Value));
+                }
+
+                double average = latency.Average();
+                double highest = latency.Max();
+                double lowest = latency.Min();
+                result.Add(new Tuple<string, double, double, double>("Upload", average, highest, lowest));
+            }
+
+            if (searchDict != null)
+            {
+                List<double> latency = new List<double>();
+                foreach (KeyValuePair<string, string> keyValuePair in searchDict)
+                {
+                    latency.Add(Convert.ToDouble(keyValuePair.Value));
+                }
+
+                double average = latency.Average();
+                double highest = latency.Max();
+                double lowest = latency.Min();
+                result.Add(new Tuple<string, double, double, double>("Search", average, highest, lowest));
+            }
+
+            return result;
+        }
+
+        [HttpGet]
+        public string GetCatalogLag()
+        {
+            string blobName;
+            string date = String.Format("{0:d}", DateTimeUtility.GetPacificTimeNow());
+            blobName = "CatalogLag" + date + ".json";
+            Dictionary<string, string> CatalogDict = BlobStorageService.GetDictFromBlob(blobName);
+            List<TimeSpan> timeStamps = new List<TimeSpan>();
+            if (CatalogDict != null && CatalogDict.Count > 0)
+            {
+                foreach (KeyValuePair<string, string> entry in CatalogDict)
+                {
+                    DateTime time = DateTime.Parse(string.Format("{0:HH:mm}", entry.Key));
+                    timeStamps.Add(time.TimeOfDay);
+                }
+
+
+                string latest = timeStamps.Max().Hours + ":" + timeStamps.Max().Minutes;
+                string value = CatalogDict[latest.ToString()];
+
+                return "Lag: " + value; ; 
+            }
+
+            else return "Lag: N/A";
+        }
+
+        [HttpGet]
+        public string GetResolverLag()
+        {
+            string blobName;
+            string date = String.Format("{0:d}", DateTimeUtility.GetPacificTimeNow());
+            blobName = "ResolverLag" + date + ".json";
+            Dictionary<string, string> ResolverDict = BlobStorageService.GetDictFromBlob(blobName);
+            List<TimeSpan> timeStamps = new List<TimeSpan>();
+            if (ResolverDict != null && ResolverDict.Count > 0)
+            {
+                foreach (KeyValuePair<string, string> entry in ResolverDict)
+                {
+                    DateTime time = DateTime.Parse(string.Format("{0:HH:mm}", entry.Key));
+                    timeStamps.Add(time.TimeOfDay);
+                }
+
+
+                string latest = timeStamps.Max().Hours + ":" + timeStamps.Max().Minutes;
+                string value = ResolverDict[latest.ToString()];
+
+                return "Lag: " + value; 
+            }
+
+            else return "Lag: N/A";
+        }
+
+        [HttpGet]
+        public JsonResult GetHourlyPackagetatus()
+        {
+            Dictionary<string, string> dict = BlobStorageService.GetDictFromBlob("Uploads" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow()) + "HourlyReport.json");
+            if (dict != null && dict.Count > 0)
+            {
+                //find the sum of values of each hour from today's report.
+                int sum = 0;
+                foreach (KeyValuePair<string, string> pair in dict)
+                {
+                    int count = Convert.ToInt32(pair.Value);
+                    sum = sum + count;
+                }
+                return Json(sum.ToString(), JsonRequestBehavior.AllowGet);
+            }
+            else
+            {
+                return Json("N/A");
+            }
         }
 
         private List<Tuple<string, string, string, double>> GetRequestsData(string date)
