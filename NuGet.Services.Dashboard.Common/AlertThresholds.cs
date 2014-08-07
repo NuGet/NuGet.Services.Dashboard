@@ -28,7 +28,8 @@ namespace NuGet.Services.Dashboard.Common
         public int WorkJobErrorThreshold = 30;
         public int DatabaseImportErrorThreshold = 39000;
         public int PingdomServiceDistruptionErrorThresholdInSeconds = 30; // specifies the limit on down time for each pindom micro service (second)
-    
+        public int MetricsServiceErrorThreshold = 20;
+
         // warning threhold
         public int DatabaseConnectionsWarningThreshold = int.MaxValue; // Specifies the limit on maximum number of DB connections on Gallery DB.
         public int DatabaseRequestsWarningThreshold = int.MaxValue; // Specifies the limit on the maximum number of DB requests on Gallery DB. 
