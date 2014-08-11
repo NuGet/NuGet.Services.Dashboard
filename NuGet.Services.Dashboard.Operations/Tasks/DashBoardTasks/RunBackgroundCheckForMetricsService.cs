@@ -69,18 +69,18 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         private bool TryHitMetricsEndPoint(string id, string version, string ipAddress, string userAgent, string operation, string dependentPackage, string projectGuids)
         {
             var jObject = GetJObject(id, version, ipAddress, userAgent, operation, dependentPackage, projectGuids);
-            Task<bool> task = TryHitMetricsEndPoint(jObject);
-            return task.Result;
+            bool result = TryHitMetricsEndPoint(jObject);
+            return result;
         }
 
 
-        private async Task<bool> TryHitMetricsEndPoint(JObject jObject)
+        private bool TryHitMetricsEndPoint(JObject jObject)
         {
             try
             {
                 using (var httpClient = new System.Net.Http.HttpClient())
                 {
-                    var response = await httpClient.PostAsync(new Uri(MetricsServiceUri + MetricsDownloadEventMethod), new StringContent(jObject.ToString(), Encoding.UTF8, ContentTypeJson));
+                    var response = httpClient.PostAsync(new Uri(MetricsServiceUri + MetricsDownloadEventMethod), new StringContent(jObject.ToString(), Encoding.UTF8, ContentTypeJson)).Result;
                     //print the header 
                     Console.WriteLine("HTTP status code : {0}", response.StatusCode);
                     if (response.StatusCode == HttpStatusCode.Accepted)
