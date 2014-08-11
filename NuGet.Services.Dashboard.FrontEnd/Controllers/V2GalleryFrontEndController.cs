@@ -57,7 +57,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         [HttpGet]
         public ActionResult LatencyToday()
         {
-            List<Tuple<string, double, double, double>> scenarios = GetLatencyData(String.Format("{0:d}", DateTimeUtility.GetPacificTimeNow()));
+            List<Tuple<string, long, long, long>> scenarios = GetLatencyData(String.Format("{0:d}", DateTimeUtility.GetPacificTimeNow()));
             ViewBag.catalog = GetCatalogLag();
             ViewBag.resolver = GetResolverLag();
             return PartialView("~/Views/V2GalleryFrontEnd/V2GalleryFrontEnd_LatencyDetails.cshtml", scenarios);
@@ -71,7 +71,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             blobNames[0] = "UploadPackageTimeElapsed" + today;
             blobNames[1] = "SearchPackageTimeElapsed" + today;
             blobNames[2] = "DownloadPackageTimeElapsed" + today;
-            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "MillisecondsPerUpload", 3, 800));
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "LatencyInMilliseconds", 3, 800));
         }
 
         [HttpGet]
@@ -248,11 +248,11 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             List<string> value = new List<string>();
             Dictionary<string, List<object>> time = new Dictionary<string, List<object>>();
             List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
-            DateTime start = DateTimeUtility.GetPacificTimeNow().AddDays(-7);
-            for (int i = 0; i <= 7; i++)
+            DateTime start = DateTimeUtility.GetPacificTimeNow().AddDays(-5);
+            for (int i = 0; i <= 5; i++)
             {
                 string date = string.Format("{0:d}", start.AddDays(i));
-                List<Tuple<string, double, double, double>> scenarios = GetLatencyData(date);
+                List<Tuple<string, long, long, long>> scenarios = GetLatencyData(date);
                 value.Add(string.Format("{0:d}", start.AddDays(i)));
                 for (int j = 0; j < scenarios.Count; j++)
                 {
@@ -283,12 +283,12 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
         }
 
-        private List<Tuple<string, double, double, double>> GetLatencyData(string date)
+        private List<Tuple<string, long, long, long>> GetLatencyData(string date)
         {
             Dictionary<string, string> uploadDict = BlobStorageService.GetDictFromBlob("UploadPackageTimeElapsed" + date + ".json");
             Dictionary<string, string> searchDict = BlobStorageService.GetDictFromBlob("SearchPackageTimeElapsed" + date + ".json");
             Dictionary<string, string> downloadDict = BlobStorageService.GetDictFromBlob("DownloadPackageTimeElapsed" + date + ".json");
-            List<Tuple<string, double, double, double>> result = new List<Tuple<string, double, double, double>>();
+            List<Tuple<string, long, long, long>> result = new List<Tuple<string, long, long, long>>();
             if (uploadDict != null)
             {
                 List<double> latency = new List<double>();
@@ -297,10 +297,10 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                     latency.Add(Convert.ToDouble(keyValuePair.Value));
                 }
 
-                double average = latency.Average();
-                double highest = latency.Max();
-                double lowest = latency.Min();
-                result.Add(new Tuple<string, double, double, double>("Upload", average, highest, lowest));
+                long average = Convert.ToInt64(latency.Average());
+                long highest = Convert.ToInt64(latency.Max());
+                long lowest = Convert.ToInt64(latency.Min());
+                result.Add(new Tuple<string, long, long, long>("Upload", average, highest, lowest));
             }
 
             if (searchDict != null)
@@ -311,10 +311,10 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                     latency.Add(Convert.ToDouble(keyValuePair.Value));
                 }
 
-                double average = latency.Average();
-                double highest = latency.Max();
-                double lowest = latency.Min();
-                result.Add(new Tuple<string, double, double, double>("Search", average, highest, lowest));
+                long average = Convert.ToInt64(latency.Average());
+                long highest = Convert.ToInt64(latency.Max());
+                long lowest = Convert.ToInt64(latency.Min());
+                result.Add(new Tuple<string, long, long, long>("Search", average, highest, lowest));
             }
 
             if (downloadDict != null)
@@ -325,12 +325,11 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                     latency.Add(Convert.ToDouble(keyValuePair.Value));
                 }
 
-                double average = latency.Average();
-                double highest = latency.Max();
-                double lowest = latency.Min();
-                result.Add(new Tuple<string, double, double, double>("Download", average, highest, lowest));
+                long average = Convert.ToInt64(latency.Average());
+                long highest = Convert.ToInt64(latency.Max());
+                long lowest = Convert.ToInt64(latency.Min());
+                result.Add(new Tuple<string, long, long, long>("Download", average, highest, lowest));
             }
-
 
             return result;
         }
@@ -352,8 +351,9 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                 }
 
                 string latest = timeStamps.Max().Hours + ":" + timeStamps.Max().Minutes;
-                string value = CatalogDict[latest.ToString()];
-                return "Lag: " + value; ; 
+                double value = Double.Parse(CatalogDict[latest.ToString()]);
+                long lag = Convert.ToInt64(value);
+                return "Lag: " + lag; 
             }
 
             else return "Lag: N/A";
@@ -376,8 +376,9 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                 }
 
                 string latest = timeStamps.Max().Hours + ":" + timeStamps.Max().Minutes;
-                string value = ResolverDict[latest.ToString()];
-                return "Lag: " + value; 
+                double value = Double.Parse(ResolverDict[latest.ToString()]);
+                long lag = Convert.ToInt64(value);
+                return "Lag: " + lag;  
             }
 
             else return "Lag: N/A";

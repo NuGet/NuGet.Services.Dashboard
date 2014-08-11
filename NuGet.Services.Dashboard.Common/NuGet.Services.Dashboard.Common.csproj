@@ -83,7 +83,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlertThresholds.cs" />
-    <Compile Include="LatencyAverageDetails.cs" />
     <Compile Include="SearchResult.cs" />
     <Compile Include="VsTrending.cs" />
     <Compile Include="RefreshElmahError.cs" />

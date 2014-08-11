@@ -2,15 +2,15 @@
 @using System.Collections.Generic;
 @using System.Linq;
 @using NuGet.Services.Dashboard.Common;
-@model List<Tuple<string, double, double, double>>
+@model List<Tuple<string, long, long, long>>
 @{
     @ViewBag.catalog
     @ViewBag.resolver
 }
 
 <div class="fg-color-darken" style="width:600px">
-    <h2>Catalog Lag</h2><h3> Number of packages </h3><p>@ViewBag.catalog </p> <br /> 
-    <h2>Resolver Lag</h2><h3> In milliseconds </h3> <p>@ViewBag.resolver</p> <br/>
+    <h2>Catalog Lag</h2><h3> Lag between Gallery DB and Catalog (in number of packages) </h3><p>@ViewBag.catalog </p> <br /> 
+    <h2>Resolver Blobs Lag</h2><h3> Lag between Catalog and Resolver Blobs (In minutes) </h3> <p>@ViewBag.resolver</p> <br/>
 </div>
     <div class="fg-color-darken" style="width:600px">
         <h2>Today's hourly Average</h2>
@@ -31,7 +31,7 @@
                         Lowest time taken in Milli seconds
                     </th>
                 </tr>
-                @foreach (Tuple<string, double, double, double> scenario in @Model)
+                @foreach (Tuple<string, long, long, long> scenario in @Model)
                 {
                     <tr>
                         <td>
