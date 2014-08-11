@@ -67,10 +67,10 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public ActionResult LatencyReport()
         {
             string today = DateTime.Today.ToString("d");
-            string[] blobNames = new string[2];
-
+            string[] blobNames = new string[3];
             blobNames[0] = "UploadPackageTimeElapsed" + today;
             blobNames[1] = "SearchPackageTimeElapsed" + today;
+            blobNames[2] = "DownloadPackageTimeElapsed" + today;
             return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "MillisecondsPerUpload", 3, 800));
         }
 
@@ -248,8 +248,8 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             List<string> value = new List<string>();
             Dictionary<string, List<object>> time = new Dictionary<string, List<object>>();
             List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
-            DateTime start = DateTimeUtility.GetPacificTimeNow().AddDays(-2);
-            for (int i = 0; i <= 2; i++)
+            DateTime start = DateTimeUtility.GetPacificTimeNow().AddDays(-7);
+            for (int i = 0; i <= 7; i++)
             {
                 string date = string.Format("{0:d}", start.AddDays(i));
                 List<Tuple<string, double, double, double>> scenarios = GetLatencyData(date);
@@ -278,6 +278,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                     Name = each.Key.Replace(" ", "_")
                 });
             }
+
             DotNet.Highcharts.Highcharts chart = ChartingUtilities.GetLineChart(seriesSet, value, "WeeklyAvgLatencyTrend", 500);
             return PartialView("~/Views/Shared/PartialChart.cshtml", chart);
         }
@@ -286,6 +287,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         {
             Dictionary<string, string> uploadDict = BlobStorageService.GetDictFromBlob("UploadPackageTimeElapsed" + date + ".json");
             Dictionary<string, string> searchDict = BlobStorageService.GetDictFromBlob("SearchPackageTimeElapsed" + date + ".json");
+            Dictionary<string, string> downloadDict = BlobStorageService.GetDictFromBlob("DownloadPackageTimeElapsed" + date + ".json");
             List<Tuple<string, double, double, double>> result = new List<Tuple<string, double, double, double>>();
             if (uploadDict != null)
             {
@@ -315,6 +317,21 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                 result.Add(new Tuple<string, double, double, double>("Search", average, highest, lowest));
             }
 
+            if (downloadDict != null)
+            {
+                List<double> latency = new List<double>();
+                foreach (KeyValuePair<string, string> keyValuePair in downloadDict)
+                {
+                    latency.Add(Convert.ToDouble(keyValuePair.Value));
+                }
+
+                double average = latency.Average();
+                double highest = latency.Max();
+                double lowest = latency.Min();
+                result.Add(new Tuple<string, double, double, double>("Download", average, highest, lowest));
+            }
+
+
             return result;
         }
 
@@ -334,10 +351,8 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                     timeStamps.Add(time.TimeOfDay);
                 }
 
-
                 string latest = timeStamps.Max().Hours + ":" + timeStamps.Max().Minutes;
                 string value = CatalogDict[latest.ToString()];
-
                 return "Lag: " + value; ; 
             }
 
@@ -360,10 +375,8 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
                     timeStamps.Add(time.TimeOfDay);
                 }
 
-
                 string latest = timeStamps.Max().Hours + ":" + timeStamps.Max().Minutes;
                 string value = ResolverDict[latest.ToString()];
-
                 return "Lag: " + value; 
             }
 

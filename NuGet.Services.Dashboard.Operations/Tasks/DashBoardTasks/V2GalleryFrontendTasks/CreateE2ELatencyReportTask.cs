@@ -11,6 +11,10 @@ using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 
@@ -45,34 +49,43 @@ namespace NuGetGallery.Operations
 
         public override void ExecuteCommand()
         {
+
             StopWatches timer = new StopWatches();
             DateTime today = DateTime.Today;
             string day = string.Format("{0:d}", today);
-            //DateTime now = DateTime.Now;
             string version = string.Empty;
             string file = Path.Combine(Environment.CurrentDirectory, TestPackageName + ".nupkg");
             string newPackage = GetNewPackage(file, out version);
-            Console.WriteLine("Pushing :{0}", newPackage);
-            long UploadTimeElapsed = UploadPackage(newPackage, Source, ApiKey, timer);
-            long SearchTimeElapsed = -1;
 
+            Console.WriteLine("Pushing :{0}", newPackage);
+            long UploadTimeElapsed = UploadPackage(timer, newPackage, Source, ApiKey);
+            ReportHelpers.AppendDatatoBlob(StorageAccount, ("UploadPackageTimeElapsed" + day + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), UploadTimeElapsed.ToString()), 48, ContainerName);
+            File.Delete("backup"); 
+
+            long DownloadTimeElapsed = -1;
+            timer.DownloadTimeElapsed = Stopwatch.StartNew();
+            Task<string> result = null;
+            result = DownloadPackageFromFeed(timer, TestPackageName, version, out DownloadTimeElapsed);
+            Console.WriteLine(result.Status);
+            DownloadTimeElapsed = timer.DownloadTimeElapsed.ElapsedMilliseconds;
+            ReportHelpers.AppendDatatoBlob(StorageAccount, ("DownloadPackageTimeElapsed" + day + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), DownloadTimeElapsed.ToString()), 48, ContainerName);
+
+            long SearchTimeElapsed = -1;
             //SearchPackage is called until the uploaded package is seen in the search result
             while (SearchTimeElapsed == -1)
             {
                 SearchTimeElapsed = SearchPackage(timer, TestPackageName, version);
             }
-
-            ReportHelpers.AppendDatatoBlob(StorageAccount, ("UploadPackageTimeElapsed" + day + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), UploadTimeElapsed.ToString()), 48, ContainerName);
             ReportHelpers.AppendDatatoBlob(StorageAccount, ("SearchPackageTimeElapsed" + day + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), SearchTimeElapsed.ToString()), 48, ContainerName);
+
 
             JToken timeStampCatalog;
             int CatalogLag = CatalogPackage(timer, TestPackageName, out timeStampCatalog);
-            JToken timeStampResolver;
-            double ResolverLag = CheckLagBetweenCatalogAndResolverBlobs(out timeStampResolver);
-            File.Delete("backup");
-            Console.WriteLine(DateTime.Today.ToString("d"));           
             ReportHelpers.AppendDatatoBlob(StorageAccount, ("CatalogLag" + day + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), CatalogLag.ToString()), 48, ContainerName);
-            ReportHelpers.CreateBlob(StorageAccount,("LastCatalogTimeStamp.json"),ContainerName, "SqlDateTime", ReportHelpers.ToStream(timeStampCatalog));
+            ReportHelpers.CreateBlob(StorageAccount, ("LastCatalogTimeStamp.json"), ContainerName, "SqlDateTime", ReportHelpers.ToStream(timeStampCatalog));
+
+            JToken timeStampResolver;
+            double ResolverLag = CheckLagBetweenCatalogAndResolverBlobs(out timeStampResolver);                       
             ReportHelpers.AppendDatatoBlob(StorageAccount, ("ResolverLag" + day + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), ResolverLag.ToString()), 48, ContainerName);
             ReportHelpers.CreateBlob(StorageAccount, ("LastResolverTimeStamp.json"), ContainerName, "SqlDateTime", ReportHelpers.ToStream(timeStampResolver));
         }
@@ -117,7 +130,7 @@ namespace NuGetGallery.Operations
         private long InvokeNugetProcess(StopWatches timer, string arguments, out string standardError, out string standardOutput, string WorkingDir = null)
         {
             Process nugetProcess = new Process();
-            string pathToNugetExe = Path.Combine(Environment.CurrentDirectory, NugetExePath);          
+            string pathToNugetExe = Path.Combine(Environment.CurrentDirectory, NugetExePath);
             ProcessStartInfo nugetProcessStartInfo = new ProcessStartInfo(pathToNugetExe);
             nugetProcessStartInfo.Arguments = arguments;
             nugetProcessStartInfo.RedirectStandardError = true;
@@ -137,6 +150,7 @@ namespace NuGetGallery.Operations
             Console.WriteLine(standardOutput);
             nugetProcess.WaitForExit();
             timer.UploadTimeElapsed.Stop();
+            timer.DownloadTimeElapsed = Stopwatch.StartNew();
             timer.SearchTimeElapsed = Stopwatch.StartNew();
             if (nugetProcess.ExitCode == 0)
             {
@@ -151,7 +165,7 @@ namespace NuGetGallery.Operations
         }
 
         // Uploads the given package to the specified source and returns time elapsed to upload, or -1 if upload fails.
-        private long UploadPackage(string packageFullPath, string sourceName, string ApiKey, StopWatches timer)
+        private long UploadPackage(StopWatches timer, string packageFullPath, string sourceName, string ApiKey)
         {
             string standardOutput = string.Empty;
             string standardError = string.Empty;
@@ -180,23 +194,104 @@ namespace NuGetGallery.Operations
             return -1;
         }
 
-        private int CatalogPackage(StopWatches timer, string TestPackageName,out JToken commitTimeStamp)
+        private Task<string> DownloadPackageFromFeed(StopWatches timer, string packageId, string version, out long DownloadTimeElapsed, string operation = "Install")
+        {
+            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
+            string requestUri = "https://int.nugettest.org/api/v2/" + @"Package/" + packageId + @"/" + version;
+            bool flag = false;
+            CancellationTokenSource cts = new CancellationTokenSource();
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+            request.Headers.Add("user-agent", "TestAgent");
+            request.Headers.Add("NuGet-Operation", operation);
+            Task<HttpResponseMessage> responseTask = client.SendAsync(request);
+            TaskCompletionSource<string> tcs = new TaskCompletionSource<string>();
+            responseTask.ContinueWith((rt) =>
+             {
+                 HttpResponseMessage responseMessage = rt.Result;
+                 if (responseMessage.StatusCode == HttpStatusCode.OK)
+                 {
+                     try
+                     {
+                         string filename;
+                         ContentDispositionHeaderValue contentDisposition = responseMessage.Content.Headers.ContentDisposition;
+                         if (contentDisposition != null)
+                         {
+                             filename = contentDisposition.FileName;
+                         }
+                         else
+                         {
+                             filename = packageId; // if file name not present set the package Id for the file name. 
+                         }
+                         FileStream fileStream = File.Create(filename);
+                         Task contentTask = responseMessage.Content.CopyToAsync(fileStream);
+
+                         contentTask.ContinueWith((ct) =>
+                         {
+                             try
+                             {
+                                 fileStream.Close();
+                                 tcs.SetResult(filename);
+
+                                 timer.DownloadTimeElapsed.Stop();
+                                 flag = true;
+                                 Console.WriteLine(ct.Status);
+                                 return;
+
+                             }
+                             catch (Exception e)
+                             {
+                                 tcs.SetException(e);
+                                 flag = false;
+                             }
+                         });
+
+
+                     }
+                     catch (Exception e)
+                     {
+                         tcs.SetException(e);
+                         flag = false;
+                     }
+                 }
+                 else
+                 {
+                     string msg = string.Format("Http StatusCode: {0}", responseMessage.StatusCode);
+                     tcs.SetException(new ApplicationException(msg));
+                     flag = false;
+                 }
+             });
+
+            if (flag == true)
+            {
+                DownloadTimeElapsed = timer.DownloadTimeElapsed.ElapsedMilliseconds;
+            }
+
+            else
+            {
+                DownloadTimeElapsed = -1;
+            }
+
+            return tcs.Task;
+        }
+
+
+        private int CatalogPackage(StopWatches timer, string TestPackageName, out JToken commitTimeStamp)
         {
             System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
             string root = client.GetStringAsync(ProductionCatalog).Result;
             JObject indexObj = JObject.Parse(root);
             JToken context = null;
             indexObj.TryGetValue("@context", out context);
-            commitTimeStamp=null;
+            commitTimeStamp = null;
             indexObj.TryGetValue("commitTimestamp", out commitTimeStamp);
-            SqlDateTime timeStamp=commitTimeStamp.ToObject<SqlDateTime>();
+            SqlDateTime timeStamp = commitTimeStamp.ToObject<SqlDateTime>();
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
             {
                 using (var dbExecutor = new SqlExecutor(sqlConnection))
                 {
                     sqlConnection.Open();
-                    string query=string.Format("Select count(*) from Packages where Created> '{0}'", timeStamp);
-                    int lag=dbExecutor.Query<Int32>(query).SingleOrDefault();
+                    string query = string.Format("Select count(*) from Packages where Created> '{0}'", timeStamp);
+                    int lag = dbExecutor.Query<Int32>(query).SingleOrDefault();
                     return lag;
                 }
             }
@@ -208,7 +303,7 @@ namespace NuGetGallery.Operations
             //string page = client.GetStringAsync(pageUri).Result;
             //JObject pageObj = JObject.Parse(root);
             //IEnumerable<JToken> pageItems = pageObj["items"].OrderBy(item => item["commitTimestamp"].ToObject<DateTime>());
-            
+
         }
 
         private double CheckLagBetweenCatalogAndResolverBlobs(out JToken timeStampResolver)
@@ -253,10 +348,11 @@ namespace NuGetGallery.Operations
 
 
     //object that will hold all the stop watches for the different tasks
-    public class StopWatches
+    internal class StopWatches
     {
-        public Stopwatch UploadTimeElapsed;
+        internal Stopwatch UploadTimeElapsed;
         public Stopwatch SearchTimeElapsed;
+        public Stopwatch DownloadTimeElapsed;
         public Stopwatch CatalogTimeElapsed;
     }
 }
