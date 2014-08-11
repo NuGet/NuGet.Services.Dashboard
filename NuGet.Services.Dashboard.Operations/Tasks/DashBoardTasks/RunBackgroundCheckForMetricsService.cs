@@ -48,7 +48,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     string test = string.Format(sql, DateTime.UtcNow.AddMinutes(-30).ToString("yyyy-MM-dd H:mm:ss"));
                     var request = dbExecutor.Query<Int32>(string.Format(sql, DateTime.UtcNow.AddMinutes(-30).ToString("yyyy-MM-dd H:mm:ss"))).SingleOrDefault();
 
-                    int failureRate = request*10;
+                    int failureRate = (10 - request)*10;
 
                     AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
                     if (failureRate > thresholdValues.MetricsServiceErrorThreshold)
