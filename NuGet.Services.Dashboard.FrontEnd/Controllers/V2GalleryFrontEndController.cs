@@ -248,8 +248,8 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             List<string> value = new List<string>();
             Dictionary<string, List<object>> time = new Dictionary<string, List<object>>();
             List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
-            DateTime start = DateTimeUtility.GetPacificTimeNow().AddDays(-5);
-            for (int i = 0; i <= 5; i++)
+            DateTime start = DateTimeUtility.GetPacificTimeNow().AddDays(-8);
+            for (int i = 0; i < 8; i++)
             {
                 string date = string.Format("{0:d}", start.AddDays(i));
                 List<Tuple<string, long, long, long>> scenarios = GetLatencyData(date);

@@ -86,13 +86,13 @@ namespace NuGetGallery.Operations
 
             //catalog lag
             JToken timeStampCatalog;
-            long CatalogLag = DBToCatalogLag(timer, TestPackageName, out timeStampCatalog);
+            int CatalogLag = DBToCatalogLag(timer, TestPackageName, out timeStampCatalog);
             ReportHelpers.AppendDatatoBlob(StorageAccount, ("CatalogLag" + day + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), CatalogLag.ToString()), 48, ContainerName);
             ReportHelpers.CreateBlob(StorageAccount, ("LastCatalogTimeStamp.json"), ContainerName, "SqlDateTime", ReportHelpers.ToStream(timeStampCatalog));
 
             //resolver lag
             JToken timeStampResolver;
-            long ResolverLag = CatalogToResolverLag(out timeStampResolver);                       
+            double ResolverLag = CatalogToResolverLag(out timeStampResolver);                       
             ReportHelpers.AppendDatatoBlob(StorageAccount, ("ResolverLag" + day + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), ResolverLag.ToString()), 48, ContainerName);
             ReportHelpers.CreateBlob(StorageAccount, ("LastResolverTimeStamp.json"), ContainerName, "SqlDateTime", ReportHelpers.ToStream(timeStampResolver));
         }
@@ -282,7 +282,7 @@ namespace NuGetGallery.Operations
         }
 
         //calculates the number of packages added to DB after the catalog was last modified
-        private long DBToCatalogLag(StopWatches timer, string TestPackageName, out JToken commitTimeStamp)
+        private int DBToCatalogLag(StopWatches timer, string TestPackageName, out JToken commitTimeStamp)
         {
             System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
             string root = client.GetStringAsync(CatalogUrl).Result;
@@ -298,14 +298,14 @@ namespace NuGetGallery.Operations
                 {
                     sqlConnection.Open();
                     string query = string.Format("Select count(*) from Packages where Created> '{0}'", timeStamp);
-                    long lag = dbExecutor.Query<Int64>(query).SingleOrDefault();
+                    int lag = dbExecutor.Query<int>(query).SingleOrDefault();
                     return lag;
                 }
             }
         }
 
         //calculates the lag between the catalog and resolver in minutes
-        private long CatalogToResolverLag(out JToken timeStampResolver)
+        private double CatalogToResolverLag(out JToken timeStampResolver)
         {
             System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
             Task<string> cursorStringTask = client.GetStringAsync(new Uri(ResolverBlobsBaseUrl + "meta/cursor.json"));
@@ -317,7 +317,7 @@ namespace NuGetGallery.Operations
             JObject catalogIndex = JObject.Parse(catalogIndexString);
             DateTime catalogTimestamp = catalogIndex["commitTimestamp"].ToObject<DateTime>();
             TimeSpan span = catalogTimestamp - cursorTimestamp;
-            long delta = Convert.ToInt64(span.TotalMinutes);
+            double delta = span.TotalMinutes;
             timeStampResolver = cursorTimestamp;
             return delta;
         }
