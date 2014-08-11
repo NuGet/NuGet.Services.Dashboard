@@ -387,7 +387,9 @@
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Web.config" />
+    <Content Include="Views\Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Views\Pingdom\Pingdom_Index.cshtml" />
     <Content Include="Views\Pingdom\Pingdom_Now.cshtml" />
     <Content Include="Views\Pingdom\Pingdom_Details.cshtml" />
@@ -413,6 +415,7 @@
     <Content Include="Views\Threshold\Threshold_Details.cshtml" />
     <Content Include="Views\Threshold\Edit.cshtml" />
     <Content Include="Views\Threshold\Create.cshtml" />
+    <Content Include="Views\V2GalleryFrontEnd\V2GalleryFrontEnd_LatencyDetails.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
