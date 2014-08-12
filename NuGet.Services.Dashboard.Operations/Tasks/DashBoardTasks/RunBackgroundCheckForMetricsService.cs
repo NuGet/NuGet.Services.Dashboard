@@ -103,7 +103,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 using (var dbExecutor = new SqlExecutor(sqlConnection))
                 {
                     sqlConnection.Open();
-                    string test = string.Format(sql, DateTime.UtcNow.AddMinutes(-30).ToString("yyyy-MM-dd H:mm:ss"));
                     var request = dbExecutor.Query<Int32>(string.Format(sql, DateTime.UtcNow.AddMinutes(-5).ToString("yyyy-MM-dd H:mm:ss"))).SingleOrDefault();
 
                     if (request == 0)
