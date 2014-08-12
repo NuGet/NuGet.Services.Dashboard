@@ -39,7 +39,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
         public override void ExecuteCommand()
         {
-            //loggingStatusCheck();
+            loggingStatusCheck();
             heartBeatCheck();
 
         }
@@ -82,10 +82,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
         private void loggingStatusCheck()
         {
-            for (int i = 0; i < 10; i++)
-            {
-                TryHitMetricsEndPoint("RIAServices.Server", "4.2.0", "120.0.0.0", "NuGetDashboard", "DashboardTest", "None", null);
-            }
+            TryHitMetricsEndPoint("RIAServices.Server", "4.2.0", "120.0.0.0", "NuGetDashboard", "DashboardTest", "None", null);
+            
 
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
             {
@@ -93,17 +91,17 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 {
                     sqlConnection.Open();
                     string test = string.Format(sql, DateTime.UtcNow.AddMinutes(-30).ToString("yyyy-MM-dd H:mm:ss"));
-                    var request = dbExecutor.Query<Int32>(string.Format(sql, DateTime.UtcNow.AddMinutes(-30).ToString("yyyy-MM-dd H:mm:ss"))).SingleOrDefault();
+                    var request = dbExecutor.Query<Int32>(string.Format(sql, DateTime.UtcNow.AddMinutes(-5).ToString("yyyy-MM-dd H:mm:ss"))).SingleOrDefault();
 
-                    int failureRate = (10 - request) * 10;
+                    
 
                     AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
-                    if (failureRate > thresholdValues.MetricsServiceErrorThreshold)
+                    if (request == 0)
                     {
                         new SendAlertMailTask
                         {
                             AlertSubject = string.Format("Error: Alert for metrics service"),
-                            Details = string.Format("Rate of failure exceeded Error threshold.Threshold count : {0}%, the current metrics service failure rate is {1}%", thresholdValues.MetricsServiceErrorThreshold, failureRate),
+                            Details = "Metrics logging failure happen, logging status check failed",
                             AlertName = string.Format("Error: Alert for metrics service"),
                             Component = "Metrics service",
                             Level = "Error"
