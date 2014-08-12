@@ -251,9 +251,9 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
             DateTime start = DateTimeUtility.GetPacificTimeNow().AddDays(-8);
             for (int i = 0; i < 8; i++)
             {
-                string date = string.Format("{0:d}", start.AddDays(i));
+                string date = string.Format("{0:yyyy-MM-dd}", start.AddDays(i));
                 List<Tuple<string, long, long, long>> scenarios = GetLatencyData(date);
-                value.Add(string.Format("{0:d}", start.AddDays(i)));
+                value.Add(string.Format("{0:yyyy-MM-dd}", start.AddDays(i)));
                 for (int j = 0; j < scenarios.Count; j++)
                 {
                     if (time.ContainsKey(scenarios[j].Item1))
@@ -338,7 +338,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public string GetCatalogLag()
         {
             string blobName;
-            string date = String.Format("{0:d}", DateTimeUtility.GetPacificTimeNow());
+            string date = String.Format("{0:yyyy-MM-dd}", DateTimeUtility.GetPacificTimeNow());
             blobName = "CatalogLag" + date + ".json";
             Dictionary<string, string> CatalogDict = BlobStorageService.GetDictFromBlob(blobName);
             List<TimeSpan> timeStamps = new List<TimeSpan>();
@@ -363,7 +363,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         public string GetResolverLag()
         {
             string blobName;
-            string date = String.Format("{0:d}", DateTimeUtility.GetPacificTimeNow());
+            string date = String.Format("{0:yyyy-MM-dd}", DateTimeUtility.GetPacificTimeNow());
             blobName = "ResolverLag" + date + ".json";
             Dictionary<string, string> ResolverDict = BlobStorageService.GetDictFromBlob(blobName);
             List<TimeSpan> timeStamps = new List<TimeSpan>();
