@@ -75,7 +75,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                       
                     }
 
-                    //AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
                     AlertThresholds thresholdValues = new AlertThresholds();
                     int failureRate = error * 100 / (total+error);
                     if (failureRate > thresholdValues.MetricsServiceErrorThreshold)

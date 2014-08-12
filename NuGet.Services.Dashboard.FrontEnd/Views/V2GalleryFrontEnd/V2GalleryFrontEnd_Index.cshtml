@@ -8,7 +8,7 @@
             success: function (result) {
                 $("#CurrentRequests").html(result);
             }
-        });
+        });      
 
         $.ajax({
             url: '@Url.Action("GetCurrentErrorRateStatus", "V2GalleryFrontEnd")',
@@ -50,6 +50,7 @@
                 $("#CurrentIndexing").html("<h1>" + result + "</h1>");
             }
         });
+
         window.setTimeout(UpdateStatus, 5000 * 60);
     };
 </script>
