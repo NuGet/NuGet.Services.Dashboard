@@ -57,7 +57,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         [HttpGet]
         public ActionResult LatencyToday()
         {
-            List<Tuple<string, long, long, long>> scenarios = GetLatencyData(String.Format("{0:d}", DateTimeUtility.GetPacificTimeNow()));
+            List<Tuple<string, long, long, long>> scenarios = GetLatencyData(String.Format("{0:yyyy-MM-dd}", DateTimeUtility.GetPacificTimeNow()));
             ViewBag.catalog = GetCatalogLag();
             ViewBag.resolver = GetResolverLag();
             return PartialView("~/Views/V2GalleryFrontEnd/V2GalleryFrontEnd_LatencyDetails.cshtml", scenarios);
@@ -66,7 +66,7 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         [HttpGet]
         public ActionResult LatencyReport()
         {
-            string today = DateTime.Today.ToString("d");
+            string today = String.Format("{0:yyyy-MM-dd}", DateTimeUtility.GetPacificTimeNow());
             string[] blobNames = new string[3];
             blobNames[0] = "UploadPackageTimeElapsed" + today;
             blobNames[1] = "SearchPackageTimeElapsed" + today;

@@ -55,7 +55,7 @@ namespace NuGetGallery.Operations
 
             StopWatches timer = new StopWatches();
             DateTime today = DateTime.Today;
-            string day = string.Format("{0:d}", today);
+            string day = string.Format("{0:yyyy-MM-dd}", today);
             string version = string.Empty;
             string file = Path.Combine(Environment.CurrentDirectory, TestPackageName + ".nupkg");
             string newPackage = GetNewPackage(file, out version);
