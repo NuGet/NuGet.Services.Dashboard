@@ -11,6 +11,10 @@ using AnglicanGeek.DbExecutor;
 using NuGet.Services.Dashboard.Common;
 using NuGetGallery.Operations.Common;
 using System.Web.Script.Serialization;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+using System.IO;
+
 
 namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 {
@@ -35,6 +39,49 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
         public override void ExecuteCommand()
         {
+            //loggingStatusCheck();
+            heartBeatCheck();
+
+        }
+
+        private void heartBeatCheck()
+        {
+            CloudBlobClient blobClient = StorageAccount.CreateCloudBlobClient();
+            CloudBlobContainer container = blobClient.GetContainerReference(ContainerName);
+            CloudBlockBlob blob = container.GetBlockBlobReference("nuget-prod-0-metrics/2014/08/08/19/541386.applicationLog.csv");
+            string content = string.Empty;
+            if (blob != null)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                
+                    blob.DownloadToStream(memoryStream);
+
+                    StreamReader sr = new StreamReader(memoryStream);
+                    sr.BaseStream.Seek(0, SeekOrigin.Begin);
+                    string line;
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        string[] entry = line.Split(",".ToArray());
+                        if (entry[1].Equals( "Error"))
+                        {
+                            new SendAlertMailTask
+                            {
+                                AlertSubject = string.Format("Error: Alert for metrics service"),
+                                Details = string.Format("Heart beat Error happen, detail is {0}",entry),
+                                AlertName = string.Format("Error: Alert for metrics service"),
+                                Component = "Metrics service",
+                                Level = "Error"
+                            }.ExecuteCommand();
+                        }
+                    }
+
+                }
+            }
+        }
+
+        private void loggingStatusCheck()
+        {
             for (int i = 0; i < 10; i++)
             {
                 TryHitMetricsEndPoint("RIAServices.Server", "4.2.0", "120.0.0.0", "NuGetDashboard", "DashboardTest", "None", null);
@@ -48,7 +95,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     string test = string.Format(sql, DateTime.UtcNow.AddMinutes(-30).ToString("yyyy-MM-dd H:mm:ss"));
                     var request = dbExecutor.Query<Int32>(string.Format(sql, DateTime.UtcNow.AddMinutes(-30).ToString("yyyy-MM-dd H:mm:ss"))).SingleOrDefault();
 
-                    int failureRate = (10 - request)*10;
+                    int failureRate = (10 - request) * 10;
 
                     AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
                     if (failureRate > thresholdValues.MetricsServiceErrorThreshold)
