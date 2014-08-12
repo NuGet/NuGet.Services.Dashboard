@@ -40,15 +40,19 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         public override void ExecuteCommand()
         {
             loggingStatusCheck();
-            heartBeatCheck();
-
+            string[] instanceID = new JavaScriptSerializer().Deserialize<string[]>(ReportHelpers.Load(StorageAccount, "MetricsServiceInstanceId.json", ContainerName));
+            foreach (string id in instanceID)
+            {
+                heartBeatCheck(id);
+            }
         }
 
-        private void heartBeatCheck()
+        private void heartBeatCheck(string instanceId)
         {
+            string filename = string.Format("nuget-prod-0-metrics/{0:yyyy/MM/dd/H}/{1}.applicationLog.csv",DateTime.UtcNow,instanceId);
             CloudBlobClient blobClient = StorageAccount.CreateCloudBlobClient();
             CloudBlobContainer container = blobClient.GetContainerReference(ContainerName);
-            CloudBlockBlob blob = container.GetBlockBlobReference("nuget-prod-0-metrics/2014/08/08/19/541386.applicationLog.csv");
+            CloudBlockBlob blob = container.GetBlockBlobReference(filename);
             string content = string.Empty;
             if (blob != null)
             {
@@ -60,20 +64,30 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     StreamReader sr = new StreamReader(memoryStream);
                     sr.BaseStream.Seek(0, SeekOrigin.Begin);
                     string line;
+                    int error = 0;
+                    int total = 0;
                     while ((line = sr.ReadLine()) != null)
                     {
                         string[] entry = line.Split(",".ToArray());
-                        if (entry[1].Equals( "Error"))
+
+                        if (entry.Contains("Error")) error++;
+                        if (entry.Contains("Information")) total++;
+                      
+                    }
+
+                    //AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
+                    AlertThresholds thresholdValues = new AlertThresholds();
+                    int failureRate = error * 100 / (total+error);
+                    if (failureRate > thresholdValues.MetricsServiceErrorThreshold)
+                    {
+                        new SendAlertMailTask
                         {
-                            new SendAlertMailTask
-                            {
-                                AlertSubject = string.Format("Error: Alert for metrics service"),
-                                Details = string.Format("Heart beat Error happen, detail is {0}",entry),
-                                AlertName = string.Format("Error: Alert for metrics service"),
-                                Component = "Metrics service",
-                                Level = "Error"
-                            }.ExecuteCommand();
-                        }
+                            AlertSubject = string.Format("Error: Alert for metrics service"),
+                            Details = string.Format("Metrics hear beat error is more than threshold, threshold is {0}%, current error rate is {1}%, error detail is in file {3}", thresholdValues.MetricsServiceErrorThreshold, failureRate, filename),
+                            AlertName = string.Format("Error: Alert for metrics service"),
+                            Component = "Metrics service",
+                            Level = "Error"
+                        }.ExecuteCommand();
                     }
 
                 }
@@ -93,9 +107,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     string test = string.Format(sql, DateTime.UtcNow.AddMinutes(-30).ToString("yyyy-MM-dd H:mm:ss"));
                     var request = dbExecutor.Query<Int32>(string.Format(sql, DateTime.UtcNow.AddMinutes(-5).ToString("yyyy-MM-dd H:mm:ss"))).SingleOrDefault();
 
-                    
-
-                    AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
                     if (request == 0)
                     {
                         new SendAlertMailTask
