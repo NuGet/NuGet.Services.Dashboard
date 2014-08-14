@@ -95,6 +95,49 @@ namespace NuGetGallery.Operations
             double ResolverLag = CatalogToResolverLag(out timeStampResolver);                       
             ReportHelpers.AppendDatatoBlob(StorageAccount, ("ResolverLag" + day + ".json"), new Tuple<string, string>(string.Format("{0:HH:mm}", DateTime.Now), ResolverLag.ToString()), 48, ContainerName);
             ReportHelpers.CreateBlob(StorageAccount, ("LastResolverTimeStamp.json"), ContainerName, "SqlDateTime", ReportHelpers.ToStream(timeStampResolver));
+            SendAlerts(UploadTimeElapsed, DownloadTimeElapsed, SearchTimeElapsed, CatalogLag, ResolverLag);
+        }
+
+        private void SendAlerts(long Upload, long Download, long Search, int Catalog, double ResolverBlobs)
+        {
+            AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
+
+            if (Upload> thresholdValues.UploadPackageThreshold)
+            {
+                CreateAlert(Upload.ToString(), thresholdValues.UploadPackageThreshold.ToString(), "Upload", "Upload API");
+            }
+
+            if (Download>thresholdValues.DownloadPackageThreshold)
+            {
+                CreateAlert(Download.ToString(), thresholdValues.DownloadPackageThreshold.ToString(), "Download", "Download API");
+            }
+
+            if (Search>thresholdValues.SearchPackageThreshold)
+            {
+                CreateAlert(Search.ToString(), thresholdValues.SearchPackageThreshold.ToString(), "Search", "Search API");
+            }
+
+            if (Catalog>thresholdValues.CatalogLagThreshold)
+            {
+                CreateAlert(Catalog.ToString(), thresholdValues.CatalogLagThreshold.ToString(), "Catalog Lag", "Database to Catalog");
+            }
+
+            if (ResolverBlobs>thresholdValues.ResolverLagThreshold)
+            {
+                CreateAlert(ResolverBlobs.ToString(), thresholdValues.ResolverLagThreshold.ToString(), "Resolver Lag", "Catalog to Resolver Blobs");
+            }
+        }
+
+        private void CreateAlert(string value, string threshold, string scenarioName, string component)
+        {
+            new SendAlertMailTask
+            {
+                AlertSubject = "Error: E2E Latency Task Alert for "+scenarioName+" scenario",
+                Details = string.Format("Error Threshold: {0}, Actual Value: {1} ", threshold, value),
+                AlertName = "Error: Latency Task Alert",
+                Component = component,
+                Level = "Error"
+            }.ExecuteCommand();
         }
 
         //changes the version of the package to be uploaded (+1) and returns the fileName 
