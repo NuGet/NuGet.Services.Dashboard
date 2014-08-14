@@ -40,55 +40,56 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         public override void ExecuteCommand()
         {
             loggingStatusCheck();
-            string[] instanceID = new JavaScriptSerializer().Deserialize<string[]>(ReportHelpers.Load(StorageAccount, "MetricsServiceInstanceId.json", ContainerName));
-            foreach (string id in instanceID)
-            {
-                heartBeatCheck(id);
-            }
+            heartBeatCheck();
+            
         }
 
-        private void heartBeatCheck(string instanceId)
+        private void heartBeatCheck()
         {
-            string filename = string.Format("nuget-prod-0-metrics/{0:yyyy/MM/dd/H}/{1}.applicationLog.csv",DateTime.UtcNow,instanceId);
+            string filename = string.Format("nuget-prod-0-metrics/{0:yyyy/MM/dd/H}/",DateTime.UtcNow);
             CloudBlobClient blobClient = StorageAccount.CreateCloudBlobClient();
             CloudBlobContainer container = blobClient.GetContainerReference(ContainerName);
-            CloudBlockBlob blob = container.GetBlockBlobReference(filename);
+            CloudBlobDirectory blobdir = container.GetDirectoryReference(filename);
             string content = string.Empty;
-            if (blob != null)
+
+            foreach (CloudBlockBlob blob in blobdir.ListBlobs())
             {
-                using (var memoryStream = new MemoryStream())
+                if (blob != null)
                 {
-                
-                    blob.DownloadToStream(memoryStream);
-
-                    StreamReader sr = new StreamReader(memoryStream);
-                    sr.BaseStream.Seek(0, SeekOrigin.Begin);
-                    string line;
-                    int error = 0;
-                    int total = 0;
-                    while ((line = sr.ReadLine()) != null)
+                    using (var memoryStream = new MemoryStream())
                     {
-                        string[] entry = line.Split(",".ToArray());
 
-                        if (entry.Contains("Error")) error++;
-                        if (entry.Contains("Information")) total++;
-                      
-                    }
+                        blob.DownloadToStream(memoryStream);
 
-                    AlertThresholds thresholdValues = new AlertThresholds();
-                    int failureRate = error * 100 / (total+error);
-                    if (failureRate > thresholdValues.MetricsServiceErrorThreshold)
-                    {
-                        new SendAlertMailTask
+                        StreamReader sr = new StreamReader(memoryStream);
+                        sr.BaseStream.Seek(0, SeekOrigin.Begin);
+                        string line;
+                        int error = 0;
+                        int total = 0;
+                        while ((line = sr.ReadLine()) != null)
                         {
-                            AlertSubject = string.Format("Error: Alert for metrics service"),
-                            Details = string.Format("Metrics hear beat error is more than threshold, threshold is {0}%, current error rate is {1}%, error detail is in file {3}", thresholdValues.MetricsServiceErrorThreshold, failureRate, filename),
-                            AlertName = string.Format("Error: Alert for metrics service"),
-                            Component = "Metrics service",
-                            Level = "Error"
-                        }.ExecuteCommand();
-                    }
+                            string[] entry = line.Split(",".ToArray());
 
+                            if (entry.Contains("Error")) error++;
+                            if (entry.Contains("Information")) total++;
+
+                        }
+
+                        AlertThresholds thresholdValues = new AlertThresholds();
+                        int failureRate = error * 100 / (total + error);
+                        if (failureRate > thresholdValues.MetricsServiceErrorThreshold)
+                        {
+                            new SendAlertMailTask
+                            {
+                                AlertSubject = string.Format("Error: Alert for metrics service"),
+                                Details = string.Format("Metrics hear beat error is more than threshold, threshold is {0}%, current error rate is {1}%, error detail is in file {3}", thresholdValues.MetricsServiceErrorThreshold, failureRate, filename),
+                                AlertName = string.Format("Error: Alert for metrics service"),
+                                Component = "Metrics service",
+                                Level = "Error"
+                            }.ExecuteCommand();
+                        }
+
+                    }
                 }
             }
         }
