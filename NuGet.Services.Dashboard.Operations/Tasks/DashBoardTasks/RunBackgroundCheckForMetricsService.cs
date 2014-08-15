@@ -24,18 +24,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         [Option("MetricsServiceUri", AltName = "uri")]
         public string MetricsServiceUri { get; set; }
 
-        public const string IdKey = "id";
-        public const string VersionKey = "version";
-        public const string IPAddressKey = "ipAddress";
-        public const string UserAgentKey = "userAgent";
-        public const string OperationKey = "operation";
-        public const string DependentPackageKey = "dependentPackage";
-        public const string ProjectGuidsKey = "projectGuids";
-        public const string HTTPPost = "POST";
-        public const string MetricsDownloadEventMethod = "/DownloadEvent";
-        public const string ContentTypeJson = "application/json";
-
-        private string loggingCheckSql = @"DECLARE @lastDownloadDateTime datetime;
+        private string StatusCheckSql = @"DECLARE @lastDownloadDateTime datetime;
                                            SET @lastDownloadDateTime =
                                            (SELECT     TOP(1) [Timestamp]
                                            FROM        PackageStatistics
@@ -51,7 +40,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         private AlertThresholds thresholdValues = new AlertThresholds();
         public override void ExecuteCommand()
         {
-            loggingStatusCheck();
+            StatusCheck();
             heartBeatCheck();
             
         }
@@ -106,21 +95,21 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             }
         }
 
-        private void loggingStatusCheck()
+        private void StatusCheck()
         {
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
             {
                 using (var dbExecutor = new SqlExecutor(sqlConnection))
                 {
                     sqlConnection.Open();
-                    var request = dbExecutor.Query<Int32>(loggingCheckSql).SingleOrDefault();
+                    var request = dbExecutor.Query<Int32>(StatusCheckSql).SingleOrDefault();
 
                     if (request > thresholdValues.MetricsServiceStatusErrorThreshold)
                     {
                         new SendAlertMailTask
                         {
                             AlertSubject = string.Format("Error: Alert for metrics service"),
-                            Details = string.Format("Metrics logging failure happen, logging status check failed,current time is {0}, In last {1} seconds, there is no download",DateTime.Now.ToString(),request),
+                            Details = string.Format("Metrics status check failure happen,current time is {0}, In last {1} seconds, there is no download",DateTime.Now.ToString(),request),
                             AlertName = string.Format("Error: Alert for metrics service"),
                             Component = "Metrics service",
                             Level = "Error"
