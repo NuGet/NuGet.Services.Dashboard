@@ -45,6 +45,9 @@
     <Reference Include="EntityFramework">
       <HintPath>..\packages\EntityFramework.5.0.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
+    <Reference Include="Ionic.Zip">
+      <HintPath>..\packages\DotNetZip.1.9.3\lib\net20\Ionic.Zip.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Data.Edm, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Data.Edm.5.6.0\lib\net40\Microsoft.Data.Edm.dll</HintPath>
     </Reference>
@@ -142,11 +145,13 @@
     </Compile>
     <Compile Include="Common\ResourceHelper.cs" />
     <Compile Include="Tasks\DashBoardTasks\PingdomTasks\CreatePingdomServiceDisruptionReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\RunBackgroundCheckForMetricsService.cs" />
     <Compile Include="Tasks\DashBoardTasks\SearchServiceTasks\CreateSearchCpuMemStatusReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\AzureManagementTasks\CreateCloudServiceDetailsReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\DatabaseTasks\CreateDatabaseDetailedReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\DatabaseTasks\CreateDatabaseMetricsReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\DatabaseTasks\CreateDatabaseSizeReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\V2GalleryFrontendTasks\CreateE2ELatencyReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\V2GalleryFrontendTasks\CreateElmahErrorDetailedReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\V2GalleryFrontendTasks\CreateElmahErrorOverviewReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\PingdomTasks\CreatePingdomDetailedReportTask.cs" />
