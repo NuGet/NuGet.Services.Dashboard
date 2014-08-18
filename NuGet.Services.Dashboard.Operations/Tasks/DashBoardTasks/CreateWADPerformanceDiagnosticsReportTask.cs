@@ -56,7 +56,7 @@ namespace NuGetGallery.Operations
                 sum += entity.Total / entity.Count;
             }
 
-            ReportHelpers.AppendDatatoBlob(StorageAccount, DeployId + PerfCounterName + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), (sum/count).ToString()), 24*60 / frequencyInMin, ContainerName);
+            ReportHelpers.AppendDatatoBlob(StorageAccount, ServiceName + PerfCounterName + string.Format("{0:MMdd}", DateTime.Now) + ".json", new Tuple<string, string>(String.Format("{0:HH:mm}", DateTime.Now), (sum/count).ToString("F")), 24*60 / frequencyInMin, ContainerName);
 
         }
 
