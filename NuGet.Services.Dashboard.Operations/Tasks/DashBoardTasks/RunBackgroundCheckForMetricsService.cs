@@ -47,7 +47,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
         private void heartBeatCheck()
         {
-            string filename = string.Format("nuget-prod-0-metrics/{0:yyyy/MM/dd/H}/",DateTime.UtcNow);
+            string filename = string.Format("nuget-prod-0-metrics/{0:yyyy/MM/dd/HH}/",DateTime.UtcNow);
             CloudBlobClient blobClient = StorageAccount.CreateCloudBlobClient();
             CloudBlobContainer container = blobClient.GetContainerReference(ContainerName);
             CloudBlobDirectory blobdir = container.GetDirectoryReference(filename);
@@ -76,14 +76,12 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
                         }
 
-                        
-                        int failureRate = error * 100 / (total + error);
-                        if (failureRate > thresholdValues.MetricsServiceHeartbeatErrorThreshold)
+                        if (error > thresholdValues.MetricsServiceHeartbeatErrorThreshold)
                         {
                             new SendAlertMailTask
                             {
                                 AlertSubject = string.Format("Error: Alert for metrics service"),
-                                Details = string.Format("Metrics hear beat error is more than threshold, threshold is {0}%, current error rate is {1}%, error detail is in file {3}", thresholdValues.MetricsServiceHeartbeatErrorThreshold, failureRate, filename),
+                                Details = string.Format("Metrics hear beat error happen, threshold is {0}%, error number is {1}, error detail is in file {2}", thresholdValues.MetricsServiceHeartbeatErrorThreshold,error,filename),
                                 AlertName = string.Format("Error: Alert for metrics service"),
                                 Component = "Metrics service",
                                 Level = "Error"
