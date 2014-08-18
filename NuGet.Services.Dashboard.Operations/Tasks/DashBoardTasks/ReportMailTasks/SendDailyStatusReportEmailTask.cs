@@ -313,14 +313,14 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             sr.Close();
 
             mailBody = mailBody.Replace("{availability}", Availability.ToString() + "%");
-            mailBody = mailBody.Replace("{downloads}", Downloads.ToString());
-            mailBody = mailBody.Replace("{restore}", Restore.ToString());
-            mailBody = mailBody.Replace("{searchqueries}", string.Join(", ", SearchQueries));
+            mailBody = mailBody.Replace("{downloads}", Downloads.ToString("#,##0"));
+            mailBody = mailBody.Replace("{restore}", Restore.ToString("#,##0"));
+            mailBody = mailBody.Replace("{searchqueries}", SearchQueries.ToString("#,##0"));
             mailBody = mailBody.Replace("{uploads}", Uploads.ToString());
             mailBody = mailBody.Replace("{newusers}", NewUsers.ToString());
-            mailBody = mailBody.Replace("{TrafficPerHour}", TrafficPerHour.ToString());
-            mailBody = mailBody.Replace("{trafficmax}", TrafficMax.ToString());
-            mailBody = mailBody.Replace("{trafficmin}", TrafficMin.ToString());
+            mailBody = mailBody.Replace("{TrafficPerHour}", TrafficPerHour.ToString("#,##0"));
+            mailBody = mailBody.Replace("{trafficmax}", TrafficMax.ToString("#,##0"));
+            mailBody = mailBody.Replace("{trafficmin}", TrafficMin.ToString("#,##0"));
             mailBody = mailBody.Replace("{TrafficPerHourNotes}", TrafficPerHourNotes.ToString());
             mailBody = mailBody.Replace("{RequestPerHour}", RequestPerHour.ToString());
             mailBody = mailBody.Replace("{requestmax}", RequestMax.ToString());
