@@ -24,29 +24,30 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         [Option("MetricsServiceUri", AltName = "uri")]
         public string MetricsServiceUri { get; set; }
 
-        public string sql = @"SELECT count(*) FROM [dbo].[PackageStatistics] where [UserAgent] = 'NuGetDashboard' and [Timestamp] > '{0}'";
+        private string StatusCheckSql = @"DECLARE @lastDownloadDateTime datetime;
+                                           SET @lastDownloadDateTime =
+                                           (SELECT     TOP(1) [Timestamp]
+                                           FROM        PackageStatistics
+                                           ORDER BY    [Key] DESC)
 
-        public const string IdKey = "id";
-        public const string VersionKey = "version";
-        public const string IPAddressKey = "ipAddress";
-        public const string UserAgentKey = "userAgent";
-        public const string OperationKey = "operation";
-        public const string DependentPackageKey = "dependentPackage";
-        public const string ProjectGuidsKey = "projectGuids";
-        public const string HTTPPost = "POST";
-        public const string MetricsDownloadEventMethod = "/DownloadEvent";
-        public const string ContentTypeJson = "application/json";
+                                           DECLARE @currentDateTime datetime;
+                                           SET @currentDateTime = GETUTCDATE()
 
+                                           DECLARE @secondsSinceLastDownload int
+                                           SET @secondsSinceLastDownload = datediff(s, @lastDownloadDateTime, @currentDateTime)
+
+                                           SELECT @secondsSinceLastDownload as secondsSinceLastDownload";
+        private AlertThresholds thresholdValues = new AlertThresholds();
         public override void ExecuteCommand()
         {
-            loggingStatusCheck();
+            StatusCheck();
             heartBeatCheck();
             
         }
 
         private void heartBeatCheck()
         {
-            string filename = string.Format("nuget-prod-0-metrics/{0:yyyy/MM/dd/H}/",DateTime.UtcNow);
+            string filename = string.Format("nuget-prod-0-metrics/{0:yyyy/MM/dd/HH}/",DateTime.UtcNow.AddHours(-1));
             CloudBlobClient blobClient = StorageAccount.CreateCloudBlobClient();
             CloudBlobContainer container = blobClient.GetContainerReference(ContainerName);
             CloudBlobDirectory blobdir = container.GetDirectoryReference(filename);
@@ -66,23 +67,27 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         string line;
                         int error = 0;
                         int total = 0;
+                        StringBuilder errorLog = new StringBuilder();
                         while ((line = sr.ReadLine()) != null)
                         {
                             string[] entry = line.Split(",".ToArray());
 
-                            if (entry.Contains("Error")) error++;
+                            if (entry.Contains("Error"))
+                            {
+                                error++;
+                                errorLog.AppendLine(entry.ToString());
+
+                            }
                             if (entry.Contains("Information")) total++;
 
                         }
 
-                        AlertThresholds thresholdValues = new AlertThresholds();
-                        int failureRate = error * 100 / (total + error);
-                        if (failureRate > thresholdValues.MetricsServiceErrorThreshold)
+                        if (error > thresholdValues.MetricsServiceHeartbeatErrorThreshold)
                         {
                             new SendAlertMailTask
                             {
                                 AlertSubject = string.Format("Error: Alert for metrics service"),
-                                Details = string.Format("Metrics hear beat error is more than threshold, threshold is {0}%, current error rate is {1}%, error detail is in file {3}", thresholdValues.MetricsServiceErrorThreshold, failureRate, filename),
+                                Details = string.Format("Metrics hear beat error happen, threshold is {0}%, error number is {1}, error detail is {2}", thresholdValues.MetricsServiceHeartbeatErrorThreshold,error,errorLog.ToString()),
                                 AlertName = string.Format("Error: Alert for metrics service"),
                                 Component = "Metrics service",
                                 Level = "Error"
@@ -94,24 +99,21 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             }
         }
 
-        private void loggingStatusCheck()
+        private void StatusCheck()
         {
-            TryHitMetricsEndPoint("RIAServices.Server", "4.2.0", "120.0.0.0", "NuGetDashboard", "DashboardTest", "None", null);
-            
-
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
             {
                 using (var dbExecutor = new SqlExecutor(sqlConnection))
                 {
                     sqlConnection.Open();
-                    var request = dbExecutor.Query<Int32>(string.Format(sql, DateTime.UtcNow.AddMinutes(-5).ToString("yyyy-MM-dd H:mm:ss"))).SingleOrDefault();
+                    var request = dbExecutor.Query<Int32>(StatusCheckSql).SingleOrDefault();
 
-                    if (request == 0)
+                    if (request > thresholdValues.MetricsServiceStatusErrorThreshold)
                     {
                         new SendAlertMailTask
                         {
                             AlertSubject = string.Format("Error: Alert for metrics service"),
-                            Details = "Metrics logging failure happen, logging status check failed",
+                            Details = string.Format("Metrics status check failure happen,current time is {0}, In last {1} seconds, there is no download",DateTime.Now.ToString(),request),
                             AlertName = string.Format("Error: Alert for metrics service"),
                             Component = "Metrics service",
                             Level = "Error"
@@ -121,53 +123,5 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             }
         }
 
-        private bool TryHitMetricsEndPoint(string id, string version, string ipAddress, string userAgent, string operation, string dependentPackage, string projectGuids)
-        {
-            var jObject = GetJObject(id, version, ipAddress, userAgent, operation, dependentPackage, projectGuids);
-            bool result = TryHitMetricsEndPoint(jObject);
-            return result;
-        }
-
-
-        private bool TryHitMetricsEndPoint(JObject jObject)
-        {
-            try
-            {
-                using (var httpClient = new System.Net.Http.HttpClient())
-                {
-                    var response = httpClient.PostAsync(new Uri(MetricsServiceUri + MetricsDownloadEventMethod), new StringContent(jObject.ToString(), Encoding.UTF8, ContentTypeJson)).Result;
-                    //print the header 
-                    Console.WriteLine("HTTP status code : {0}", response.StatusCode);
-                    if (response.StatusCode == HttpStatusCode.Accepted)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-            }
-            catch (HttpRequestException hre)
-            {
-                Console.WriteLine("Exception : {0}", hre.Message);
-                return false;
-            }
-        }
-
-        private JObject GetJObject(string id, string version, string ipAddress, string userAgent, string operation, string dependentPackage, string projectGuids)
-        {
-            var jObject = new JObject();
-            jObject.Add(IdKey, id);
-            jObject.Add(VersionKey, version);
-            if (!String.IsNullOrEmpty(ipAddress)) jObject.Add(IPAddressKey, ipAddress);
-            if (!String.IsNullOrEmpty(userAgent)) jObject.Add(UserAgentKey, userAgent);
-            if (!String.IsNullOrEmpty(operation)) jObject.Add(OperationKey, operation);
-            if (!String.IsNullOrEmpty(dependentPackage)) jObject.Add(DependentPackageKey, dependentPackage);
-            if (!String.IsNullOrEmpty(projectGuids)) jObject.Add(ProjectGuidsKey, projectGuids);
-
-
-            return jObject;
-        }
     }
 }
