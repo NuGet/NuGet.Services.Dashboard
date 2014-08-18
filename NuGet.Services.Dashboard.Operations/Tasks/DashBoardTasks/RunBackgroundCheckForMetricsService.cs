@@ -47,7 +47,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
         private void heartBeatCheck()
         {
-            string filename = string.Format("nuget-prod-0-metrics/{0:yyyy/MM/dd/HH}/",DateTime.UtcNow);
+            string filename = string.Format("nuget-prod-0-metrics/{0:yyyy/MM/dd/HH}/",DateTime.UtcNow.AddHours(-1));
             CloudBlobClient blobClient = StorageAccount.CreateCloudBlobClient();
             CloudBlobContainer container = blobClient.GetContainerReference(ContainerName);
             CloudBlobDirectory blobdir = container.GetDirectoryReference(filename);
@@ -67,11 +67,17 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         string line;
                         int error = 0;
                         int total = 0;
+                        StringBuilder errorLog = new StringBuilder();
                         while ((line = sr.ReadLine()) != null)
                         {
                             string[] entry = line.Split(",".ToArray());
 
-                            if (entry.Contains("Error")) error++;
+                            if (entry.Contains("Error"))
+                            {
+                                error++;
+                                errorLog.AppendLine(entry.ToString());
+
+                            }
                             if (entry.Contains("Information")) total++;
 
                         }
@@ -81,7 +87,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                             new SendAlertMailTask
                             {
                                 AlertSubject = string.Format("Error: Alert for metrics service"),
-                                Details = string.Format("Metrics hear beat error happen, threshold is {0}%, error number is {1}, error detail is in file {2}", thresholdValues.MetricsServiceHeartbeatErrorThreshold,error,filename),
+                                Details = string.Format("Metrics hear beat error happen, threshold is {0}%, error number is {1}, error detail is {2}", thresholdValues.MetricsServiceHeartbeatErrorThreshold,error,errorLog.ToString()),
                                 AlertName = string.Format("Error: Alert for metrics service"),
                                 Component = "Metrics service",
                                 Level = "Error"
