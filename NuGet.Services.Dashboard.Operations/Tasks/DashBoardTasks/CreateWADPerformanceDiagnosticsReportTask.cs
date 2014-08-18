@@ -33,11 +33,12 @@ namespace NuGetGallery.Operations
         [Option("frequencyInMin", AltName = "f")]
         public int frequencyInMin { get; set; }
 
-        [Option("DeployId",AltName = "id")]
-        public string DeployId { get; set; }
+        [Option("ServiceName", AltName = "name")]
+        public string ServiceName { get; set; }
 
         public override void ExecuteCommand()
         {
+            string DeployId = new JavaScriptSerializer().Deserialize<string>(ReportHelpers.Load(StorageAccount, "DeploymentId_" + ServiceName + ".json", ContainerName));
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(PerfCounterTableStorageAccount);
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
             CloudTable table = tableClient.GetTableReference("WAD"+DeployId+"PT5MRTable");
