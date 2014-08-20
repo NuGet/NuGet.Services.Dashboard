@@ -32,7 +32,7 @@ param(
 
  $time = [System.DateTime]::Now
  $time = $time.AddMinutes(-($time.Minute))
-
+ 
  function CreateTask()
 {
 param([string]$taskName, [string]$argument, [int]$interval)
@@ -80,6 +80,6 @@ CreateTask "CreateTrafficManagerStatusOverviewReport" "ctmort -id $SubscriptionI
 CreateTask "CreateV2GalleryInstanceCountReport" "ccsdrt -id $SubscriptionId -name $FrontEndCloudServiceName -cername $ProdManagementCertName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 CreateTask "CreateVsTrendingReportFor30Day" "cvtrt -db `"$WareHouseDBConnectionString`" -n 30 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 180
 CreateTask "CreateVsTrendingReportFor1Day" "cvtrt -db `"$WareHouseDBConnectionString`" -n 1 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 180
-
+CreateTask "CreateDailyStatusReport" sdsret -st `"$DashboardStorageConnectionString` -ct prod0 -rec nugetcore@microsoft.com 1440
 #Metrics service
 CreateTask "RunBackgroundCheckForMerticsService" "rbms -uri `"$MetricsServiceApi`" -db `"$StatDBConnectionString`" -st `"$MetricsLogConnectionString`" -ct $MetricsLogContainerName " 5
