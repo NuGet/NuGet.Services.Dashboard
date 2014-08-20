@@ -33,20 +33,6 @@ param(
  $time = [System.DateTime]::Now
  $time = $time.AddMinutes(-($time.Minute))
  
- #Calculate the previous day's date in MMDD form
- $yesterday = (Get-Date).AddDays(-1)
- $month = $yesterday.Month
- if ($month -lt 10)
- {
-     $month = "0" + $yesterday.Month.ToString()
- }
- $day = $yesterday.Day
- if ($day -lt 10)
- {
-     $day = "0" + $yesterday.Day.ToString()
- }
- $ydate = $month.ToString() + $day.ToString()
-
  function CreateTask()
 {
 param([string]$taskName, [string]$argument, [int]$interval)
@@ -94,7 +80,6 @@ CreateTask "CreateTrafficManagerStatusOverviewReport" "ctmort -id $SubscriptionI
 CreateTask "CreateV2GalleryInstanceCountReport" "ccsdrt -id $SubscriptionId -name $FrontEndCloudServiceName -cername $ProdManagementCertName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 CreateTask "CreateVsTrendingReportFor30Day" "cvtrt -db `"$WareHouseDBConnectionString`" -n 30 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 180
 CreateTask "CreateVsTrendingReportFor1Day" "cvtrt -db `"$WareHouseDBConnectionString`" -n 1 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 180
-# This task can be scheduled to run past 12:00am of next day. By then all data collection is complete for the past 24 hours.
-CreateTask "CreateDailyStatusReport" sdsret -st `"$DashboardStorageConnectionString` -ct prod0 -date $ydate -rec nugetcore@microsoft.com
+CreateTask "CreateDailyStatusReport" sdsret -st `"$DashboardStorageConnectionString` -ct prod0 -rec nugetcore@microsoft.com 1440
 #Metrics service
 CreateTask "RunBackgroundCheckForMerticsService" "rbms -uri `"$MetricsServiceApi`" -db `"$StatDBConnectionString`" -st `"$MetricsLogConnectionString`" -ct $MetricsLogContainerName " 5

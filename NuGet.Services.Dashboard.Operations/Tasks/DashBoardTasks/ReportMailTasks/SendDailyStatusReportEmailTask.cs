@@ -22,8 +22,20 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         public string MailRecepientAddress { get; set; }
 
         [Option("Date", AltName = "date")]
-        public string Date { get; set; }
+        public string Date 
+        { 
+            get
+            {
+                _ydate = string.Format("{0:MMdd}", DateTime.Now.AddDays(-1));
+                return _ydate;
+            } 
+            set         
+            {
+                _ydate = value;
+            }
+        }
 
+        private string _ydate;
         public const int SecondsInAnHour = 3600;
 
         public double Availability
@@ -106,14 +118,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             }
         }
 
-        public string TrafficPerHourNotes
-        {
-            get
-            {
-                return string.Empty;
-            }
-        }
-
         public int RequestPerHour
         {
             get
@@ -138,14 +142,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             }
         }
 
-        public string RequestPerHourNotes
-        {
-            get
-            {
-                return String.Empty;
-            }
-        }
-
         public int ErrorsPerHour
         {
             get
@@ -165,14 +161,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             get
             {
                 return GetTupleMetricValues("ErrorRate" + Date + ".json").Item4;
-            }
-        }
-
-        public string ErrorsPerHourNotes
-        {
-            get
-            {
-                return String.Empty;
             }
         }
 
@@ -200,14 +188,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             }
         }
 
-        public string IndexLagNotes
-        {
-            get
-            {
-                return string.Empty;
-            }
-        }
-
         public int InstanceCount
         {
             get
@@ -229,14 +209,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             get
             {
                 return GetTupleMetricValues("nuget-prod-0-v2galleryInstanceCount" + Date + "HourlyReport.json").Item4;
-            }
-        }
-
-        public string InstanceCountNotes
-        {
-            get
-            {
-                return string.Empty;
             }
         }
 
@@ -321,23 +293,18 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             mailBody = mailBody.Replace("{TrafficPerHour}", TrafficPerHour.ToString("#,##0"));
             mailBody = mailBody.Replace("{trafficmax}", TrafficMax.ToString("#,##0"));
             mailBody = mailBody.Replace("{trafficmin}", TrafficMin.ToString("#,##0"));
-            mailBody = mailBody.Replace("{TrafficPerHourNotes}", TrafficPerHourNotes.ToString());
             mailBody = mailBody.Replace("{RequestPerHour}", RequestPerHour.ToString());
             mailBody = mailBody.Replace("{requestmax}", RequestMax.ToString());
             mailBody = mailBody.Replace("{requestmin}", RequestMin.ToString());
-            mailBody = mailBody.Replace("{RequestPerHourNotes}", RequestPerHourNotes.ToString());
             mailBody = mailBody.Replace("{ErrorsPerHour}", ErrorsPerHour.ToString());
             mailBody = mailBody.Replace("{errormax}", ErrorsMax.ToString());
             mailBody = mailBody.Replace("{errormin}", ErrorsMin.ToString());
-            mailBody = mailBody.Replace("{ErrorsPerHourNotes}", ErrorsPerHourNotes.ToString());
             mailBody = mailBody.Replace("{IndexLag}", IndexLag.ToString());
             mailBody = mailBody.Replace("{indexmax}", IndexMax.ToString());
             mailBody = mailBody.Replace("{indexmin}", IndexMin.ToString());
-            mailBody = mailBody.Replace("{IndexLagNotes}", IndexLagNotes.ToString());
             mailBody = mailBody.Replace("{InstanceCount}", InstanceCount.ToString());
             mailBody = mailBody.Replace("{instancemax}", InstanceMax.ToString());
             mailBody = mailBody.Replace("{instancemin}", InstanceMin.ToString());
-            mailBody = mailBody.Replace("{InstanceCountNotes}", InstanceCountNotes.ToString());
             mailBody = mailBody.Replace("{overallworkercount}", OverallWorkerCount.ToString());
             mailBody = mailBody.Replace("{successcount}", SuccessCount.ToString());
             mailBody = mailBody.Replace("{failedjobnames}", string.Join(", ", FailedJobNames));
