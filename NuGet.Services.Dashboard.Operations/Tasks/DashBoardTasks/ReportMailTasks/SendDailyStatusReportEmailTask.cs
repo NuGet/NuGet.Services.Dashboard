@@ -291,7 +291,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage();
             message.From = new MailAddress(ConfigurationManager.AppSettings["SmtpUserName"], "NuGet Daily Status Report");
             message.To.Add(new MailAddress(MailRecepientAddress, MailRecepientAddress));
-            message.Subject = string.Format("NuGet Gallery Daily Status Report - " + DateTime.Today.ToShortDateString());
+            message.Subject = string.Format("NuGet Gallery Daily Status Report - for " + DateTime.Today.AddDays(-1).ToShortDateString());
             message.IsBodyHtml = true;
             message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(@"<html><body>" + GetMailContent() + "</body></html>", new ContentType("text/html")));
 
