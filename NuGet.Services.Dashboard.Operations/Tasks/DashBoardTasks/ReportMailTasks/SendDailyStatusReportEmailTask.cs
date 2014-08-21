@@ -284,7 +284,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             string mailBody = sr.ReadToEnd();
             sr.Close();
 
-            mailBody = mailBody.Replace("{availability}", Availability.ToString() + "%");
+            mailBody = mailBody.Replace("{availability}", Availability.ToString("f2") + "%");
             mailBody = mailBody.Replace("{downloads}", Downloads.ToString("#,##0"));
             mailBody = mailBody.Replace("{restore}", Restore.ToString("#,##0"));
             mailBody = mailBody.Replace("{searchqueries}", SearchQueries.ToString("#,##0"));
