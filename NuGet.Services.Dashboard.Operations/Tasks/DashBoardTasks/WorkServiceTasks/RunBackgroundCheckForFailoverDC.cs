@@ -42,51 +42,12 @@ namespace NuGetGallery.Operations
             sqlQueryForDbAge = string.Format("select create_date from sys.databases where name = '{0}'", DbName);
             thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
             List<Tuple<string, string>> jobOutputs = new List<Tuple<string, string>>();
-             jobOutputs.Add(new Tuple<string,string>("ImportDBToFailoverDC", CheckAgeOfLiveDatabase()));
-             jobOutputs.Add(new Tuple<string,string>("SyncPackagesToFailoverDC", CheckLagBetweenDBAndBlob()));
-             jobOutputs.Add(new Tuple<string, string>("ImportCompletionStatus", CheckForInCompleteDBImport()));
+            jobOutputs.Add(new Tuple<string,string>("SyncPackagesToFailoverDC", CheckLagBetweenDBAndBlob()));
+            jobOutputs.Add(new Tuple<string, string>("ImportCompletionStatus", CheckForInCompleteDBImport()));
             JArray reportObject = ReportHelpers.GetJson(jobOutputs);
             ReportHelpers.CreateBlob(StorageAccount, "RunBackgroundCheckForFailoverDCReport.json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));        
         }
 
-        private string CheckAgeOfLiveDatabase()
-        {
-            string outputMessage;
-            var cstr = Util.GetMasterConnectionString(ConnectionString.ConnectionString);
-            using(var connection = new SqlConnection(cstr))
-            using (var db = new SqlExecutor(connection))
-            {
-                connection.Open();
-                var dbAge = db.Query<DateTime>(sqlQueryForDbAge).SingleOrDefault();
-                double delta = DateTime.UtcNow.Subtract(dbAge).TotalMinutes;
-                outputMessage = string.Format("The NuGetGallery DB created time in failover DC as of {0} UTC is {1}. Current Lag: {2} minutes. Allowed Error lag: {3} minutes", DateTime.UtcNow.ToString(), dbAge.ToString(), delta, thresholdValues.FailoverDBAgeErrorThresholdInMinutes);
-                if(delta > thresholdValues.FailoverDBAgeErrorThresholdInMinutes)
-                {
-                   new SendAlertMailTask
-                   {
-                       AlertSubject = "Error: Failover Datacentre alert activated for Import Database job",
-                       Details = outputMessage,
-                       AlertName = "Error: Alert for ImportDatabaseToFailoverDC",
-                       Component = "ImportDatabaseToFailOverDC",
-                       Level = "Error"
-                   }.ExecuteCommand();
-                }
-                else if (delta > thresholdValues.FailoverDBAgeWarningThresholdInMinutes)
-                {
-                   
-                   new SendAlertMailTask
-                   {
-                       AlertSubject = "Warning: Failover Datacentre alert activated for Import Database job",
-                       Details = string.Format("The NuGetGallery DB created time in failover DC as of {0} UTC is {1}. Current Lag: {2} minutes. Allowed Warning lag: {3} minutes", DateTime.UtcNow.ToString(),dbAge.ToString(),delta ,thresholdValues.FailoverDBAgeWarningThresholdInMinutes),
-                       AlertName = "Warning: Alert for ImportDatabaseToFailoverDC",
-                       Component = "ImportDatabaseToFailOverDC",
-                       Level = "Warning"
-                   }.ExecuteCommand();
-
-                }
-            }
-            return outputMessage;
-        }
 
         private string CheckForInCompleteDBImport()
         {
