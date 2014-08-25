@@ -216,7 +216,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         {
             get
             {
-                return GetMetricCountFromBlob("Configuration.WorkJobInstances.json");
+                List<WorkInstanceDetail> details = GetWorkJobDetail();
+                return details.Count;
             }
         }
 
@@ -284,7 +285,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             string mailBody = sr.ReadToEnd();
             sr.Close();
 
-            mailBody = mailBody.Replace("{availability}", Availability.ToString() + "%");
+            mailBody = mailBody.Replace("{availability}", Availability.ToString("f2") + "%");
             mailBody = mailBody.Replace("{downloads}", Downloads.ToString("#,##0"));
             mailBody = mailBody.Replace("{restore}", Restore.ToString("#,##0"));
             mailBody = mailBody.Replace("{searchqueries}", SearchQueries.ToString("#,##0"));
@@ -425,10 +426,17 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 {
                     count--;
                     failedJobNames.Add(detail.jobName);
-                    notableIssues.Add(detail.ErrorMessage.Keys.First().Substring(0, 100) + ".....<br/>");
+                    if (detail.ErrorMessage.Keys.First().Length > 100)
+                    {
+                        notableIssues.Add(detail.ErrorMessage.Keys.First().Substring(0, 100) + ".....<br/>");
+                    }
+                    else
+                    {
+                        notableIssues.Add(detail.ErrorMessage.Keys.First().ToString() + ".....<br/>");
+                    }
                 }
             }
-            notableIssues.Add("<br/>For more details, please refer to https://dashboard.nuget.org/WorkJob/WorkJobDetail.");
+            notableIssues.Add("<br/>For more details, please refer to https://dashboard.nuget.org/WorkJobs/WorkJobs_Detail.");
             return new Tuple<int, string[], string[]>(count, failedJobNames.ToArray(), notableIssues.ToArray());
         }
         #endregion
