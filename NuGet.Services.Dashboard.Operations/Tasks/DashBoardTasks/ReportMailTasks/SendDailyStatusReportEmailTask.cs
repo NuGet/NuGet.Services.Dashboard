@@ -216,7 +216,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         {
             get
             {
-                return GetMetricCountFromBlob("Configuration.WorkJobInstances.json");
+                List<WorkInstanceDetail> details = GetWorkJobDetail();
+                return details.Count;
             }
         }
 
@@ -425,10 +426,17 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 {
                     count--;
                     failedJobNames.Add(detail.jobName);
-                    notableIssues.Add(detail.ErrorMessage.Keys.First().Substring(0, 100) + ".....<br/>");
+                    if (detail.ErrorMessage.Keys.First().Length > 100)
+                    {
+                        notableIssues.Add(detail.ErrorMessage.Keys.First().Substring(0, 100) + ".....<br/>");
+                    }
+                    else
+                    {
+                        notableIssues.Add(detail.ErrorMessage.Keys.First().ToString() + ".....<br/>");
+                    }
                 }
             }
-            notableIssues.Add("<br/>For more details, please refer to https://dashboard.nuget.org/WorkJob/WorkJobDetail.");
+            notableIssues.Add("<br/>For more details, please refer to https://dashboard.nuget.org/WorkJobs/WorkJobs_Detail.");
             return new Tuple<int, string[], string[]>(count, failedJobNames.ToArray(), notableIssues.ToArray());
         }
         #endregion
