@@ -45,9 +45,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         {
             thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
             List<Tuple<string, string>> jobOutputs = new List<Tuple<string, string>>();
-            jobOutputs.Add(new Tuple<string,string>("BackupDataBaseJob", CheckForBackUpDatabaseJob()));
-            jobOutputs.Add(new Tuple<string, string>("CleanOnlineBackup", CheckForCleanOnlineDatabaseJob()));
-            jobOutputs.Add(new Tuple<string, string>("PurgePackageStatistics", CheckForPurgePackagStatisticsJob()));
+            //jobOutputs.Add(new Tuple<string, string>("PurgePackageStatistics", CheckForPurgePackagStatisticsJob()));
             jobOutputs.Add(new Tuple<string, string>("HandleQueuedPackageEdits", CheckForHandleQueuedPackageEditJob()));
            // jobOutputs.Add(new Tuple<string, string>("BackupPackages", CheckForBackupPackagesJob())); commenting out this check temporarily as ListBlobs on ng-backups container is giving error.
             JArray reportObject = ReportHelpers.GetJson(jobOutputs);
@@ -55,93 +53,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         }
 
         #region PrivateMethods
-        private string CheckForBackUpDatabaseJob()
-        {
-            string outputMessage;
-            var cstr = Util.GetMasterConnectionString(ConnectionString.ConnectionString);
-            using(var connection = new SqlConnection(cstr))
-            using (var db = new SqlExecutor(connection))
-            {
-                connection.Open();
-                var lastBackupTime = Util.GetLastBackupTime(db, BackupPrefix);
-                outputMessage = string.Format("Last backup time in utc as of {0} is {1}. Acceptable Error Threshold lag in minutes : {2}", DateTime.UtcNow, lastBackupTime, thresholdValues.BackupDBAgeErrorThresholdInMinutes);
-                if (lastBackupTime <= DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(thresholdValues.BackupDBAgeErrorThresholdInMinutes)))
-                {
-                    string urlLog = getLastInvocation("BackupLegacyDatabase", 2);
-                    new SendAlertMailTask
-                    {
-                        AlertSubject = "Error: Work service job background check alert activated for BackupDataBase job",
-                        Details = outputMessage +  Environment.NewLine + string.Format("last two log url is {0}",urlLog),
-                        AlertName = "Error: Alert for BackupDatabase",
-                        Component = "BackupDatabase Job",
-                        Level = "Error"
-                    }.ExecuteCommand();
-                }
-                else if (lastBackupTime <= DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(thresholdValues.BackupDBAgeWarningThresholdInMinutes)))
-                {
-                    string urlLog = getLastInvocation("BackupLegacyDatabase", 2);
-                    new SendAlertMailTask
-                    {
-                        AlertSubject = "Warning: Work service job background check alert activated for BackupDataBase job",
-                        Details = string.Format("Last backup time in utc as of {0} is {1}. Acceptable Warning Threshold lag in minutes : {2}, last two log url is {3}", DateTime.UtcNow, lastBackupTime, thresholdValues.BackupDBAgeWarningThresholdInMinutes,urlLog),
-                        AlertName = "Warning: Alert for BackupDatabase",
-                        Component = "BackupDatabase Job",
-                        Level = "Warning"
-                    }.ExecuteCommand();
-                }
-            }
-            return outputMessage;            
-        }
-
-        private string CheckForCleanOnlineDatabaseJob()
-        {
-            string outputMessage;
-            var cstr = Util.GetMasterConnectionString(ConnectionString.ConnectionString);
-            using (var connection = new SqlConnection(cstr))
-            using (var dbExecutor = new SqlExecutor(connection))
-            {
-                connection.Open();
-                var allBackups = dbExecutor.Query<Db>(
-               "SELECT name, state FROM sys.databases WHERE name LIKE '" + BackupPrefix + "%' AND state = @state",
-               new { state = Util.OnlineState });
-                int onlineBackupCount = 0;
-                if(allBackups == null || allBackups.Count() == 0)
-                {
-                    onlineBackupCount = 0;
-                }
-                else
-                {
-                    onlineBackupCount = allBackups.Count();
-                }
-
-                outputMessage = string.Format("No of online databases is {0}. Acceptable Error threshold count : {1}", onlineBackupCount, thresholdValues.OnlineDBBackupsErrorThreshold);
-                if (onlineBackupCount >= thresholdValues.OnlineDBBackupsErrorThreshold)
-                {
-                    string urlLog = getLastInvocation("CleanLegacyDatabaseBackups", 2);
-                    new SendAlertMailTask
-                    {
-                        AlertSubject = "Error: Work service job background check alert activated for CleanOnlineDatabase job",
-                        Details = outputMessage + Environment.NewLine + string.Format("last two log url is {0}", urlLog),
-                        AlertName = "Error: Alert for CleanOnlineDatabase",
-                        Component = "CleanOnlineDatabase Job",
-                        Level = "Error"
-                    }.ExecuteCommand();
-                }
-                else if (onlineBackupCount >= thresholdValues.OnlineDBBackupsWarningThreshold)
-                {
-                    string urlLog = getLastInvocation("CleanLegacyDatabaseBackups", 2);
-                    new SendAlertMailTask
-                    {
-                        AlertSubject = "Warning: Work service job background check alert activated for CleanOnlineDatabase job",
-                        Details = string.Format("No of online databases is {0}. Acceptable Warning threshold count : {1}, last two log url is {2}", onlineBackupCount, thresholdValues.OnlineDBBackupsWarningThreshold,urlLog),
-                        AlertName = "Warning: Alert for CleanOnlineDatabase",
-                        Component = "CleanOnlineDatabase Job",
-                        Level = "Warning"
-                    }.ExecuteCommand();
-                }
-            }
-            return outputMessage;
-        }
 
             private string CheckForPurgePackagStatisticsJob()
             {
