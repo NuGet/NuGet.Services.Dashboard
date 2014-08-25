@@ -28,7 +28,42 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         private const string PackagesContainerName = "packages";
         private const string BackupPackagesContainerName = "ng-backups";
         public AlertThresholds thresholdValues;
-        
+
+        private string prodSQL = @"SELECT COUNT(*) AS [DownloadCount]
+                                        , PackageId
+                                        , PackageVersion
+                                        , Operation
+                                    FROM(
+                                         SELECT Id AS PackageId
+                                        , Version AS PackageVersion
+                                        , Operation
+                                    FROM        PackageStatistics
+                                    INNER JOIN Packages ON Packages.[Key] = PackageStatistics.PackageKey
+                                    INNER JOIN  PackageRegistrations ON PackageRegistrations.[Key] = Packages.PackageRegistrationKey
+                                    WHERE Timestamp >= '{0}'
+                                    AND Timestamp < '{1}'
+                                    ) data
+                                    GROUP BY PackageId
+                                    , PackageVersion
+                                    , Operation
+                                    ORDER BY[DownloadCount] DESC";
+
+        private string wareSQL = @"SELECT  SUM(DownloadCount) AS DownloadCount
+                                            ,   PackageId
+                                            ,   PackageVersion
+                                            ,   Operation
+                                            FROM        Fact_Download
+                                            INNER JOIN  Dimension_Date ON Dimension_Date.Id = Dimension_Date_Id
+                                            INNER JOIN  Dimension_Package ON Dimension_Package.Id = Dimension_Package_Id
+                                            INNER JOIN  Dimension_Operation ON Dimension_Operation.Id = Dimension_Operation_Id
+                                            WHERE       [Date] = '{0}'
+                                            GROUP BY    PackageId
+                                            ,   PackageVersion
+                                            ,   Operation
+                                            ORDER BY    DownloadCount DESC";
+
+        [Option("Connection string to the warehouse database server", AltName = "wdb")]
+        public SqlConnectionStringBuilder WarehouseDb { get; set; }
 
         [Option("PackagesStorageAccount", AltName = "iis")]
         public CloudStorageAccount PackagesStorage { get; set; }
@@ -41,18 +76,22 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
         [Option("WorkServiceEndpoint", AltName = "url")]
         public string WorkServiceEndpoint { get; set; }
+
+
         public override void ExecuteCommand()
         {
             thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
             List<Tuple<string, string>> jobOutputs = new List<Tuple<string, string>>();
+            jobOutputs.Add(new Tuple<string, string>("PackageStatics", CheckoutForPackageStatics()));
             //jobOutputs.Add(new Tuple<string, string>("PurgePackageStatistics", CheckForPurgePackagStatisticsJob()));
             jobOutputs.Add(new Tuple<string, string>("HandleQueuedPackageEdits", CheckForHandleQueuedPackageEditJob()));
-           // jobOutputs.Add(new Tuple<string, string>("BackupPackages", CheckForBackupPackagesJob())); commenting out this check temporarily as ListBlobs on ng-backups container is giving error.
+            // jobOutputs.Add(new Tuple<string, string>("BackupPackages", CheckForBackupPackagesJob())); commenting out this check temporarily as ListBlobs on ng-backups container is giving error.
             JArray reportObject = ReportHelpers.GetJson(jobOutputs);
             ReportHelpers.CreateBlob(StorageAccount, "RunBackGroundChecksForWorkerJobsReport.json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));              
         }
 
         #region PrivateMethods
+           
 
             private string CheckForPurgePackagStatisticsJob()
             {
@@ -206,6 +245,74 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                }
                return sb.ToString();
            }
+
+        private string CheckoutForPackageStatics()
+        {
+            string outputMessage = string.Format("Package statistic is not correct on {0}", DateTime.UtcNow.AddDays(-1).ToString("MM/dd/yyyy"));
+            List<DbEntry> prodDB;
+            List<DbEntry> warehouseDB;
+            using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
+            {
+                using (var dbExecutor = new SqlExecutor(sqlConnection))
+                {
+                    sqlConnection.Open();
+                    var content = dbExecutor.Query<DbEntry>(string.Format(prodSQL, DateTime.UtcNow.AddDays(-1).ToString("MM/dd/yyyy"), DateTime.UtcNow.ToString("MM/dd/yyyy")));
+                    prodDB = content.ToList<DbEntry>();
+                }
+            }
+
+            using (var sqlConnection = new SqlConnection(WarehouseDb.ConnectionString))
+            {
+                using (var dbExecutor = new SqlExecutor(sqlConnection))
+                {
+                    sqlConnection.Open();
+                    var content = dbExecutor.Query<DbEntry>(string.Format(wareSQL, DateTime.UtcNow.AddDays(-1).ToString("MM/dd/yyyy")));
+                    warehouseDB = content.ToList<DbEntry>();
+                }
+            }
+
+            bool correct = true;
+
+            if (warehouseDB.Count != prodDB.Count) correct = false;
+            for (int i = 0; i < prodDB.Count; i++)
+            {
+                if (!warehouseDB[i].PackageId.Equals(prodDB[i].PackageId) || !warehouseDB[i].PackageVersion.Equals(prodDB[i].PackageVersion) || warehouseDB[i].DownloadCount != prodDB[i].DownloadCount)
+                {
+                    correct = false;
+                    break;
+                }
+
+                if (!warehouseDB[i].Operation.Equals(prodDB[i].Operation) && !(warehouseDB[i].Operation.Equals("(unknown)") && prodDB[i].Operation == null))
+                {
+                    correct = false;
+                    break;
+                }
+            }
+
+            if(!correct)
+            {
+                new SendAlertMailTask
+                {
+                    AlertSubject = "Error: Work service job background check alert activated for Package Statistics job",
+                    Details = outputMessage,
+                    AlertName = "Error: Alert for Package Statistics",
+                    Component = "BackupPackages Job",
+                    Level = "Warning"
+                }.ExecuteCommand();
+            }
+            return outputMessage;
+
+        }
+
+        private class DbEntry
+        {
+            public int DownloadCount { get; set; }
+            public string PackageId { get; set; }
+            public string PackageVersion { get; set; }
+            public string Operation { get; set; }
+
+            
+        }
 
         #endregion PrivateMethods
     }    
