@@ -248,7 +248,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
         private string CheckoutForPackageStatics()
         {
-            string outputMessage = string.Format("Package statistic is not correct on {0}", DateTime.UtcNow.AddDays(-1).ToString("MM/dd/yyyy"));
+            string outputMessage;
             List<DbEntry> prodDB;
             List<DbEntry> warehouseDB;
             using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
@@ -272,36 +272,59 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             }
 
             bool correct = true;
+            string[] Operation = new JavaScriptSerializer().Deserialize<string[]>(ReportHelpers.Load(StorageAccount, "OperationType.json", ContainerName));
+            Dictionary<string, int> proddict = GenerateDict(prodDB, Operation);
+            Dictionary<string, int> warehousedict = GenerateDict(warehouseDB, Operation);
 
-            if (warehouseDB.Count != prodDB.Count) correct = false;
-            for (int i = 0; i < prodDB.Count; i++)
+            if (warehousedict.Count != proddict.Count)
             {
-                if (!warehouseDB[i].PackageId.Equals(prodDB[i].PackageId) || !warehouseDB[i].PackageVersion.Equals(prodDB[i].PackageVersion) || warehouseDB[i].DownloadCount != prodDB[i].DownloadCount)
-                {
-                    correct = false;
-                    break;
-                }
-
-                if (!warehouseDB[i].Operation.Equals(prodDB[i].Operation) && !(warehouseDB[i].Operation.Equals("(unknown)") && prodDB[i].Operation == null))
-                {
-                    correct = false;
-                    break;
-                }
+                correct = false;
+                outputMessage = string.Format("Package statistic total pacakage number is not correct on {0}", DateTime.UtcNow.AddDays(-1).ToString("MM/dd/yyyy"));
             }
 
-            if(!correct)
+            else
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (string key in proddict.Keys)
+                {
+                    if (!warehousedict[key].Equals(proddict[key]))
+                    {
+                        correct = false;
+                        sb.Append(key + " ");
+                    }
+                }
+                outputMessage = string.Format("Package statistic is not correct on {0}, following package stat is not right, which are {1}", DateTime.UtcNow.AddDays(-1).ToString("MM/dd/yyyy"),sb.ToString());
+            }
+
+            if (!correct)
             {
                 new SendAlertMailTask
                 {
                     AlertSubject = "Error: Work service job background check alert activated for Package Statistics job",
                     Details = outputMessage,
                     AlertName = "Error: Alert for Package Statistics",
-                    Component = "BackupPackages Job",
-                    Level = "Warning"
+                    Component = "Package Statistics Job",
+                    Level = "Error"
                 }.ExecuteCommand();
             }
             return outputMessage;
 
+        }
+
+        private Dictionary<string, int> GenerateDict(List<DbEntry> DB, string[] Operation)
+        {
+            Dictionary<string, int> dict = new Dictionary<string, int>();
+            foreach (DbEntry each in DB)
+            {
+                if (!Operation.Contains(each.Operation)) each.Operation = "(unknown)";
+                string key = each.PackageId + each.PackageVersion + each.Operation;
+                if (dict.ContainsKey(key)) dict[key] += each.DownloadCount;
+                else
+                {
+                    dict[key] = each.DownloadCount;
+                }
+            }
+            return dict;
         }
 
         private class DbEntry
