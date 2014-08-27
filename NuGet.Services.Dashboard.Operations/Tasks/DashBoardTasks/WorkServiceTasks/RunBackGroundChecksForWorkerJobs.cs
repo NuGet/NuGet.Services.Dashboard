@@ -274,9 +274,10 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             bool correct = true;
             Dictionary<string, int> proddict = new Dictionary<string, int>();
             Dictionary<string, int> warehousedict = new Dictionary<string, int>();
+            string[] Operation = new JavaScriptSerializer().Deserialize<string[]>(ReportHelpers.Load(StorageAccount, "OperationType.json", ContainerName));
             foreach (DbEntry each in prodDB)
             {
-                if (each.Operation == null || each.Operation.Equals("Mirror")) each.Operation = "(unknown)";
+                if (!Operation.Contains(each.Operation)) each.Operation = "(unknown)";
                 string key = each.PackageId + each.PackageVersion + each.Operation;
                 if (proddict.ContainsKey(key)) proddict[key] += each.DownloadCount;
                 else
@@ -285,9 +286,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 }
             }
 
-            foreach (DbEntry each in prodDB)
+            foreach (DbEntry each in warehouseDB)
             {
-                if (each.Operation == null || each.Operation.Equals("Mirror")) each.Operation = "(unknown)";
+                if (!Operation.Contains(each.Operation)) each.Operation = "(unknown)";
                 string key = each.PackageId + each.PackageVersion + each.Operation;
                 if (warehousedict.ContainsKey(key)) warehousedict[key] += each.DownloadCount;
                 else
@@ -301,8 +302,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             {
                 foreach (string key in proddict.Keys)
                 {
-                    if (!warehousedict[key].Equals(proddict[key])) correct = false;
-                    break;
+                    if (!warehousedict[key].Equals(proddict[key]))
+                    {
+                        correct = false;
+                        break;
+                    }
                 }
             }
 
