@@ -272,32 +272,51 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             }
 
             bool correct = true;
-
-            if (warehouseDB.Count != prodDB.Count) correct = false;
-            for (int i = 0; i < prodDB.Count; i++)
+            Dictionary<string, int> proddict = new Dictionary<string, int>();
+            Dictionary<string, int> warehousedict = new Dictionary<string, int>();
+            foreach (DbEntry each in prodDB)
             {
-                if (!warehouseDB[i].PackageId.Equals(prodDB[i].PackageId) || !warehouseDB[i].PackageVersion.Equals(prodDB[i].PackageVersion) || warehouseDB[i].DownloadCount != prodDB[i].DownloadCount)
+                if (each.Operation == null || each.Operation.Equals("Mirror")) each.Operation = "(unknown)";
+                string key = each.PackageId + each.PackageVersion + each.Operation;
+                if (proddict.ContainsKey(key)) proddict[key] += each.DownloadCount;
+                else
                 {
-                    correct = false;
-                    break;
+                    proddict[key] = each.DownloadCount;
                 }
+            }
 
-                if (!warehouseDB[i].Operation.Equals(prodDB[i].Operation) && !(warehouseDB[i].Operation.Equals("(unknown)") && prodDB[i].Operation == null))
+            foreach (DbEntry each in prodDB)
+            {
+                if (each.Operation == null || each.Operation.Equals("Mirror")) each.Operation = "(unknown)";
+                string key = each.PackageId + each.PackageVersion + each.Operation;
+                if (warehousedict.ContainsKey(key)) warehousedict[key] += each.DownloadCount;
+                else
                 {
-                    correct = false;
+                    warehousedict[key] = each.DownloadCount;
+                }
+            }
+
+            if (warehousedict.Count != proddict.Count) correct = false;
+            else
+            {
+                foreach (string key in proddict.Keys)
+                {
+                    if (!warehousedict[key].Equals(proddict[key])) correct = false;
                     break;
                 }
             }
 
-            if(!correct)
+
+
+            if (!correct)
             {
                 new SendAlertMailTask
                 {
                     AlertSubject = "Error: Work service job background check alert activated for Package Statistics job",
                     Details = outputMessage,
                     AlertName = "Error: Alert for Package Statistics",
-                    Component = "BackupPackages Job",
-                    Level = "Warning"
+                    Component = "Package Statistics Job",
+                    Level = "Error"
                 }.ExecuteCommand();
             }
             return outputMessage;
