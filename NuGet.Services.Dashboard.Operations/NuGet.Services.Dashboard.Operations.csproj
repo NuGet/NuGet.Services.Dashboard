@@ -145,6 +145,7 @@
     </Compile>
     <Compile Include="Common\ResourceHelper.cs" />
     <Compile Include="Tasks\DashBoardTasks\PingdomTasks\CreatePingdomServiceDisruptionReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\ReportMailTasks\SendWeeklyStatusReportEmailTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\RunBackgroundCheckForMetricsService.cs" />
     <Compile Include="Tasks\DashBoardTasks\SearchServiceTasks\CreateSearchCpuMemStatusReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\AzureManagementTasks\CreateCloudServiceDetailsReportTask.cs" />
