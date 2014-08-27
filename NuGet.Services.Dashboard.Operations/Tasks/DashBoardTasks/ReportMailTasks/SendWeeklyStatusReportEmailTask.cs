@@ -1,12 +1,19 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using NuGet.Services.Dashboard.Common;
+using NuGetGallery.Operations.Common;
+using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net;
+using System.Net.Mail;
+using System.Net.Mime;
+using System.Web.Script.Serialization;
 
 namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
 {
-    [Command("SendDailyStatusReportEmailTask", "Creates daily status report for various gallery metrics in the past 24 hours", AltName = "sdsret")]
+    [Command("SendWeeklyStatusReportEmailTask", "Creates daily status report for various gallery metrics in the past 24 hours", AltName = "swsret")]
     public class SendWeeklyStatusReportEmailTask : StorageTask
     {
         [Option("Recepient", AltName = "rec")]
@@ -17,7 +24,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                _ydate = string.Format("{0:MMdd}", DateTime.Now.AddDays(-1));
+                _ydate = string.Format("{0:MMdd}", DateTime.Now.AddDays(-7));
                 return _ydate;
             }
             set
@@ -41,7 +48,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetDownloadNumbersFromBlob("Install1Day.json");
+                return GetDownloadNumbersFromBlob("Install7Day.json");
             }
         }
 
@@ -49,7 +56,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetDownloadNumbersFromBlob("Restore1Day.json");
+                return GetDownloadNumbersFromBlob("Restore7Day.json");
             }
         }
 
