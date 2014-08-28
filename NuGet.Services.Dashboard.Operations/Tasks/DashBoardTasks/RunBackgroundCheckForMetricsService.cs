@@ -75,19 +75,18 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                             if (entry.Contains("Error"))
                             {
                                 error++;
-                                errorLog.AppendLine(entry.ToString());
+                                errorLog.AppendLine(line);
 
                             }
                             if (entry.Contains("Information")) total++;
 
                         }
-
                         if (error > thresholdValues.MetricsServiceHeartbeatErrorThreshold)
                         {
                             new SendAlertMailTask
                             {
                                 AlertSubject = string.Format("Error: Alert for metrics service"),
-                                Details = string.Format("Metrics hear beat error happen, threshold is {0}%, error number is {1}, error detail is {2}", thresholdValues.MetricsServiceHeartbeatErrorThreshold,error,errorLog.ToString()),
+                                Details = string.Format("Metrics hear beat error happen,error number is {0}, error detail is {1}",error,errorLog),
                                 AlertName = string.Format("Error: Alert for metrics service"),
                                 Component = "Metrics service",
                                 Level = "Error"
