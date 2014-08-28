@@ -86,7 +86,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                             new SendAlertMailTask
                             {
                                 AlertSubject = string.Format("Error: Alert for metrics service"),
-                                Details = string.Format("Metrics hear beat error happen,error number is {0}, error detail is {1}",error,errorLog),
+                                Details = string.Format("Metrics heart beat error happen,error number is {0}, error detail is {1}",error,errorLog),
                                 AlertName = string.Format("Error: Alert for metrics service"),
                                 Component = "Metrics service",
                                 Level = "Error"
