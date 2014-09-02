@@ -144,6 +144,7 @@
       <DependentUpon>TaskResources.resx</DependentUpon>
     </Compile>
     <Compile Include="Common\ResourceHelper.cs" />
+    <Compile Include="Tasks\DashBoardTasks\IssLogCleanUptask.cs" />
     <Compile Include="Tasks\DashBoardTasks\PingdomTasks\CreatePingdomServiceDisruptionReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\ReportMailTasks\SendWeeklyStatusReportEmailTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\RunBackgroundCheckForMetricsService.cs" />
