@@ -86,6 +86,14 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             }
         }
 
+        public int UniqueUploads
+        {
+            get
+            {
+                return GetTupleMetricValues("UniqueUploads" + Date + "HourlyReport.json").Item2;
+            }
+        }
+
         public int NewUsers
         {
             get
@@ -290,6 +298,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             mailBody = mailBody.Replace("{restore}", Restore.ToString("#,##0"));
             mailBody = mailBody.Replace("{searchqueries}", SearchQueries.ToString("#,##0"));
             mailBody = mailBody.Replace("{uploads}", Uploads.ToString());
+            mailBody = mailBody.Replace("{uniqueuploads}", UniqueUploads.ToString());
             mailBody = mailBody.Replace("{newusers}", NewUsers.ToString());
             mailBody = mailBody.Replace("{TrafficPerHour}", TrafficPerHour.ToString("#,##0"));
             mailBody = mailBody.Replace("{trafficmax}", TrafficMax.ToString("#,##0"));
@@ -355,8 +364,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
         private double CalculateGalleryDailyUpTime()
         {
-            // Up time for DC0.feed.raw.packages.list
-            double DC0FeedUpTime = GetTupleMetricValues("DC0.-.feed.raw.packages.list" + Date + "outageReport.json").Item1;
             // Up time for Feed.top.30.by.downloads
             double feedTop30DownloadsUpTime = GetTupleMetricValues("feed.top.30.by.downloads" + Date + "outageReport.json").Item1;
             // Up time for Package.restore.download
@@ -364,7 +371,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             // Up time for Package.restore.lookup
             double packageRestoreLookupUpTime = GetTupleMetricValues("package.restore.lookup" + Date + "outageReport.json").Item1;
 
-            List<double> uptimes = new List<double>() { DC0FeedUpTime, feedTop30DownloadsUpTime, packageRestoreDownloadUpTime, packageRestoreLookupUpTime };
+            List<double> uptimes = new List<double>() { feedTop30DownloadsUpTime, packageRestoreDownloadUpTime, packageRestoreLookupUpTime };
             double overallUpTime = (uptimes.Min() / SecondsInAnHour) * 100.00;
             return overallUpTime;
         }

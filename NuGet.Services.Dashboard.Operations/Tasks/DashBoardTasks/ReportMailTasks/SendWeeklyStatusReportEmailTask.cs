@@ -20,27 +20,36 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         public string MailRecepientAddress { get; set; }
 
         [Option("Date", AltName = "date")]
-        public string Date
+        public List<string> DatesInWeek
         {
             get
             {
-                _ydate = string.Format("{0:MMdd}", DateTime.Now.AddDays(-7));
-                return _ydate;
+                if (!flag)
+                {
+                    for (int i = 1; i <= 7; i++)
+                    {
+                        string date = string.Format("{0:MMdd}", DateTime.Now.AddDays(-i));
+                        _dates.Add(date);
+                    }
+                    flag = true;
+                }
+                return _dates;
             }
             set
             {
-                _ydate = value;
+                _dates = value;
             }
         }
 
-        private string _ydate;
+        private List<string> _dates = new List<string>();
         public const int SecondsInAnHour = 3600;
+        private bool flag;
 
         public double Availability
         {
             get
             {
-                return CalculateGalleryDailyUpTime();
+                return CalculateWeeklyUpdateTimeAverage();
             }
         }
 
@@ -64,7 +73,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetSearchQueryNumbersFromBlob();
+                return GetWeeklySearchQueryNumbers();
             }
         }
 
@@ -80,7 +89,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("Uploads" + Date + "HourlyReport.json").Item2;
+                return GetWeeklyTupleMetricValues("Uploads", "HourlyReport.json").Item2;
             }
         }
 
@@ -88,7 +97,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("Users" + Date + "HourlyReport.json").Item2;
+                return GetWeeklyTupleMetricValues("Users", "HourlyReport.json").Item2;
             }
         }
 
@@ -96,7 +105,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("IISRequests" + Date + ".json").Item1;
+                return GetWeeklyTupleMetricValues("IISRequests", ".json").Item1;
             }
         }
 
@@ -104,7 +113,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("IISRequests" + Date + ".json").Item3;
+                return GetWeeklyTupleMetricValues("IISRequests", ".json").Item3;
             }
         }
 
@@ -112,7 +121,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("IISRequests" + Date + ".json").Item4;
+                return GetWeeklyTupleMetricValues("IISRequests", ".json").Item4;
             }
         }
 
@@ -120,7 +129,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("DBRequests" + Date + ".json").Item1;
+                return GetWeeklyTupleMetricValues("DBRequests", ".json").Item1;
             }
         }
 
@@ -128,7 +137,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("DBRequests" + Date + ".json").Item3;
+                return GetWeeklyTupleMetricValues("DBRequests", ".json").Item3;
             }
         }
 
@@ -136,7 +145,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("DBRequests" + Date + ".json").Item4;
+                return GetWeeklyTupleMetricValues("DBRequests", ".json").Item4;
             }
         }
 
@@ -144,21 +153,21 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("ErrorRate" + Date + ".json").Item1;
+                return GetWeeklyTupleMetricValues("ErrorRate", ".json").Item1;
             }
         }
         public int ErrorsMax
         {
             get
             {
-                return GetTupleMetricValues("ErrorRate" + Date + ".json").Item3;
+                return GetWeeklyTupleMetricValues("ErrorRate", ".json").Item3;
             }
         }
         public int ErrorsMin
         {
             get
             {
-                return GetTupleMetricValues("ErrorRate" + Date + ".json").Item4;
+                return GetWeeklyTupleMetricValues("ErrorRate", ".json").Item4;
             }
         }
 
@@ -166,7 +175,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("IndexingDiffCount" + Date + "HourlyReport.json").Item1;
+                return GetWeeklyTupleMetricValues("IndexingDiffCount", "HourlyReport.json").Item1;
             }
         }
 
@@ -174,7 +183,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("IndexingDiffCount" + Date + "HourlyReport.json").Item3;
+                return GetWeeklyTupleMetricValues("IndexingDiffCount", "HourlyReport.json").Item3;
             }
         }
 
@@ -182,7 +191,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("IndexingDiffCount" + Date + "HourlyReport.json").Item4;
+                return GetWeeklyTupleMetricValues("IndexingDiffCount", "HourlyReport.json").Item4;
             }
         }
 
@@ -190,7 +199,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("nuget-prod-0-v2galleryInstanceCount" + Date + "HourlyReport.json").Item1;
+                return GetWeeklyTupleMetricValues("nuget-prod-0-v2galleryInstanceCount", "HourlyReport.json").Item1;
             }
         }
 
@@ -198,7 +207,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("nuget-prod-0-v2galleryInstanceCount" + Date + "HourlyReport.json").Item3;
+                return GetWeeklyTupleMetricValues("nuget-prod-0-v2galleryInstanceCount", "HourlyReport.json").Item3;
             }
         }
 
@@ -206,7 +215,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetTupleMetricValues("nuget-prod-0-v2galleryInstanceCount" + Date + "HourlyReport.json").Item4;
+                return GetWeeklyTupleMetricValues("nuget-prod-0-v2galleryInstanceCount", "HourlyReport.json").Item4;
             }
         }
 
@@ -245,7 +254,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
 
         public override void ExecuteCommand()
         {
-            string dateSuffix = Date;
             SendEmail();
         }
 
@@ -260,9 +268,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
             sc.Port = 587;
             //ServicePointManager.ServerCertificateValidationCallback = delegate(object s, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) { return true; };
             System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage();
-            message.From = new MailAddress(ConfigurationManager.AppSettings["SmtpUserName"], "NuGet Daily Status Report");
+            message.From = new MailAddress(ConfigurationManager.AppSettings["SmtpUserName"], "NuGet Weekly Status Report");
             message.To.Add(new MailAddress(MailRecepientAddress, MailRecepientAddress));
-            message.Subject = string.Format("NuGet Gallery Daily Status Report - for " + DateTime.Today.AddDays(-1).ToShortDateString());
+            message.Subject = string.Format("NuGet Gallery Weekly Status Report - for Week of " + DateTime.Today.AddDays(-1).ToShortDateString() + " ~ " + DateTime.Today.AddDays(-7).ToShortDateString());
             message.IsBodyHtml = true;
             message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(@"<html><body>" + GetMailContent() + "</body></html>", new ContentType("text/html")));
 
@@ -313,6 +321,25 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         }
 
         #region Helper Methods
+
+        private Tuple<int, int, int, int> GetWeeklyTupleMetricValues(string blobNamePart1, string blobNamePart2)
+        {
+            List<int> averages = new List<int>();
+            List<int> sums = new List<int>();
+            List<int> maxs = new List<int>();
+            List<int> mins = new List<int>();
+            foreach (string date in DatesInWeek)
+            {
+                Tuple<int, int, int, int> values = GetTupleMetricValues(blobNamePart1 + date + blobNamePart2);
+                averages.Add(values.Item1);
+                sums.Add(values.Item2);
+                maxs.Add(values.Item3);
+                mins.Add(values.Item4);
+            }
+            double aver = Math.Round(averages.Average());
+            return new Tuple<int, int, int, int>(Convert.ToInt32(aver), sums.Sum(), maxs.Max(), mins.Min());
+        }
+
         private Tuple<int, int, int, int> GetTupleMetricValues(string blobName)
         {
             List<int> list = GetMetricValues(blobName);
@@ -351,7 +378,18 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
             return jArray.Count;
         }
 
-        private double CalculateGalleryDailyUpTime()
+        private double CalculateWeeklyUpdateTimeAverage()
+        {
+            List<double> uptimes = new List<double>();
+            foreach (string date in DatesInWeek)
+            {
+                double uptime = CalculateGalleryDailyUpTime(date);
+                uptimes.Add(uptime);
+            }
+            return uptimes.Average();
+        }
+
+        private double CalculateGalleryDailyUpTime(string Date)
         {
             // Up time for DC0.feed.raw.packages.list
             double DC0FeedUpTime = GetTupleMetricValues("DC0.-.feed.raw.packages.list" + Date + "outageReport.json").Item1;
@@ -378,7 +416,18 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
             return values.Sum();
         }
 
-        private int GetSearchQueryNumbersFromBlob()
+        private int GetWeeklySearchQueryNumbers()
+        {
+            List<int> searchQueries = new List<int>();
+            foreach (string date in DatesInWeek)
+            {
+                int queryNumber = GetSearchQueryNumbersFromBlob(date);
+                searchQueries.Add(queryNumber);
+            }
+            return searchQueries.Sum();
+        }
+
+        private int GetSearchQueryNumbersFromBlob(string Date)
         {
             Dictionary<string, string> dict = ReportHelpers.GetDictFromBlob(StorageAccount, "IISRequestDetails" + Date + ".json", ContainerName);
             List<IISRequestDetails> requestDetails = new List<IISRequestDetails>();
