@@ -18,12 +18,22 @@ namespace NuGetGallery.Operations
     public class CreateStatsHourlyReportTask : DatabaseAndStorageTask
     {        
         private string SqlQueryForUploads = @"SELECT Count (*) FROM [dbo].[Packages] where [Created] >= '{0}' AND  [Created] <= '{1}'";
+        private string SqlQueryForUniqueUploads = @"SELECT COUNT(*)
+                                                    From
+                                                    (
+                                                    SELECT Id
+                                                    FROM [dbo].Packages 
+                                                    INNER JOIN PackageRegistrations ON Packages.PackageRegistrationKey = PackageRegistrations.[Key]
+                                                    GROUP BY PackageRegistrations.Id
+                                                    HAVING MIN([Created]) >= '{0}' AND MIN([Created]) <= '{1}') data";
+
         private string SqlQueryForUsers = @"SELECT Count (*) FROM [dbo].[Users] where [CreatedUtc] >= '{0}' AND [CreatedUtc] <= '{1}'";
         private DateTime startingTime; //initialize start date to the NuGet initial release time.
       
         public override void ExecuteCommand()
         {
             CreateWeeklyStatReportFor(ConnectionString.ConnectionString, SqlQueryForUploads, "Uploads" + string.Format("{0:MMdd}", DateTime.Now));
+            CreateWeeklyStatReportFor(ConnectionString.ConnectionString, SqlQueryForUniqueUploads, "UniqueUploads" + string.Format("{0:MMdd}", DateTime.Now));
             CreateWeeklyStatReportFor(ConnectionString.ConnectionString, SqlQueryForUsers, "Users" + string.Format("{0:MMdd}", DateTime.Now));        
         }
 
