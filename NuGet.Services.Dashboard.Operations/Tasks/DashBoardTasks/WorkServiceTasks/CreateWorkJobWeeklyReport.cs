@@ -126,7 +126,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
             var json = new JavaScriptSerializer().Serialize(jobDetail);
             var key = new JavaScriptSerializer().Serialize(allkey);
-            ReportHelpers.CreateBlob(StorageAccount, string.Format("WorkJobDetail{0:yyyy-MM-dd}.json",DateTime.Now), ContainerName, "application/json", ReportHelpers.ToStream(json));
+            ReportHelpers.CreateBlob(StorageAccount, string.Format("WorkJobDetail{0:MMdd}.json",DateTime.Now), ContainerName, "application/json", ReportHelpers.ToStream(json));
         }
 
         private string getResultMessage(string message)
