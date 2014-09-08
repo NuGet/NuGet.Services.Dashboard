@@ -279,11 +279,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
                     string[] issues;
                     if (i != 7)
                     {
-                        issues = GetFailedJobDetails(DatesInWeek[i]).Item3;
+                        issues = GetFailedJobDetails(DatesInWeek[i - 1]).Item3;
                     }
                     else
                     {
-                        issues = GetFailedJobDetails(DatesInWeek[i], true).Item3;
+                        issues = GetFailedJobDetails(DatesInWeek[i - 1], true).Item3;
                     }
                     weeklyIssues.Add(issues);
                 }
@@ -334,7 +334,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
             mailBody = mailBody.Replace("{downloads}", Downloads.ToString("#,##0"));
             mailBody = mailBody.Replace("{restore}", Restore.ToString("#,##0"));
             mailBody = mailBody.Replace("{searchqueries}", SearchQueries.ToString("#,##0"));
-            mailBody = mailBody.Replace("{uniqueuploads}", Uploads.ToString());
+            mailBody = mailBody.Replace("{uniqueuploads}", UniqueUploads.ToString());
             mailBody = mailBody.Replace("{uploads}", Uploads.ToString());
             mailBody = mailBody.Replace("{newusers}", NewUsers.ToString());
             mailBody = mailBody.Replace("{TrafficPerHour}", TrafficPerHour.ToString("#,##0"));
@@ -361,9 +361,12 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             for (int i = 1; i <= 7; i++)
             {
-                mailBody = mailBody.Replace("{day" + i + "}", DatesInWeek[i - 1]);
-                mailBody = mailBody.Replace("{overallworkercount" + i + "}", OverallWorkerCount[i - 1].ToString());
-                mailBody = mailBody.Replace("{successcount" + i + "}", SuccessCount[i - 1].ToString());
+                string date = DatesInWeek[i - 1].Substring(0, 2) + "/" + DatesInWeek[i - 1].Substring(2, 2) + "/" + DateTime.Now.Year.ToString();
+                string workCount = OverallWorkerCount[i - 1] == 0 ? "N/A" : OverallWorkerCount[i - 1].ToString();
+                string successCount = SuccessCount[i - 1] == 0 ? "N/A" : SuccessCount[i - 1].ToString();
+                mailBody = mailBody.Replace("{day" + i + "}", date);         
+                mailBody = mailBody.Replace("{overallworkercount" + i + "}", workCount);
+                mailBody = mailBody.Replace("{successcount" + i + "}", successCount);
                 mailBody = mailBody.Replace("{failedjobnames" + i + "}", string.Join(", ", FailedJobNames[i - 1]));
                 mailBody = mailBody.Replace("{notableissues" + i + "}", string.Join("<br/>", NotableIssues[i - 1]));
             }
@@ -394,10 +397,17 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         private Tuple<int, int, int, int> GetTupleMetricValues(string blobName)
         {
             List<int> list = GetMetricValues(blobName);
-            int average = list.Sum() / list.Count;
-            int sum = list.Sum();
-            int maximum = list.Max();
-            int minimum = list.Min();
+            int average = 0;
+            int sum = 0;
+            int maximum = 0;
+            int minimum = 0;
+            if (list.Count != 0)
+            {
+                average = list.Sum() / list.Count;
+                sum = list.Sum();
+                maximum = list.Max();
+                minimum = list.Min();
+            }
             return new Tuple<int, int, int, int>(average, sum, maximum, minimum);
         }
 
@@ -408,15 +418,23 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
 
         private List<int> GetMetricValuesFromBlob(string blobName, string containerName, int startTime, int endTime)
         {
-            Dictionary<string, string> dict = ReportHelpers.GetDictFromBlob(StorageAccount, blobName, containerName);
-            List<int> values = new List<int>();
-            foreach (KeyValuePair<string, string> keyValuePair in dict)
+            Dictionary<string, string> dict =  new Dictionary<string,string>();
+            try
             {
-                int key = Convert.ToInt32(keyValuePair.Key.Replace(":", "").Replace("-", ""));
-
-                if ((key >= startTime) && (key <= endTime))
+                dict = ReportHelpers.GetDictFromBlob(StorageAccount, blobName, containerName);
+            }
+            catch (Exception) { }
+            List<int> values = new List<int>();
+            if (dict != null)
+            {
+                foreach (KeyValuePair<string, string> keyValuePair in dict)
                 {
-                    values.Add(Convert.ToInt32(keyValuePair.Value));
+                    int key = Convert.ToInt32(keyValuePair.Key.Replace(":", "").Replace("-", ""));
+
+                    if ((key >= startTime) && (key <= endTime))
+                    {
+                        values.Add(Convert.ToInt32(keyValuePair.Value));
+                    }
                 }
             }
             return values;
