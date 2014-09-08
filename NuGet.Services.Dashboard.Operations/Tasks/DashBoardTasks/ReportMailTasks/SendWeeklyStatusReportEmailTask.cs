@@ -93,6 +93,14 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
             }
         }
 
+        public int UniqueUploads
+        {
+            get
+            {
+                return GetWeeklyTupleMetricValues("UniqueUploads", "HourlyReport.json").Item2;
+            }
+        }
+
         public int NewUsers
         {
             get
@@ -219,36 +227,67 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
             }
         }
 
-        public int OverallWorkerCount
+        public List<int> OverallWorkerCount
         {
             get
             {
-                List<WorkInstanceDetail> details = GetWorkJobDetail();
-                return details.Count;
+                List<int> counts = new List<int>();
+                foreach (string date in DatesInWeek)
+                {
+                    List<WorkInstanceDetail> details = GetWorkJobDetail(date);
+                    counts.Add(details.Count);
+                }
+                return counts;
             }
         }
 
-        public int SuccessCount
+        public List<int> SuccessCount
         {
             get
             {
-                return GetFailedJobDetails().Item1;
+                List<int> successCounts = new List<int>();
+                foreach (string date in DatesInWeek)
+                {
+                    int successCount = GetFailedJobDetails(date).Item1;
+                    successCounts.Add(successCount);
+                }
+                return successCounts;
             }
         }
 
-        public string[] FailedJobNames
+        public List<string[]> FailedJobNames
         {
             get
             {
-                return GetFailedJobDetails().Item2;
+                List<string[]> weeklyJobNames = new List<string[]>();
+                foreach (string date in DatesInWeek)
+                {
+                    string[] jobNames = GetFailedJobDetails(date).Item2;
+                    weeklyJobNames.Add(jobNames);
+                }
+                return weeklyJobNames;
             }
         }
 
-        public string[] NotableIssues
+        public List<string[]> NotableIssues
         {
             get
             {
-                return GetFailedJobDetails().Item3;
+                List<string[]> weeklyIssues = new List<string[]>();
+                for (int i = 1; i <= 7; i++)
+                {
+                    string[] issues;
+                    if (i != 7)
+                    {
+                        issues = GetFailedJobDetails(DatesInWeek[i - 1]).Item3;
+                    }
+                    else
+                    {
+                        issues = GetFailedJobDetails(DatesInWeek[i - 1], true).Item3;
+                    }
+                    weeklyIssues.Add(issues);
+                }
+                return weeklyIssues;
             }
         }
 
@@ -287,7 +326,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
 
         private string GetMailContent()
         {
-            StreamReader sr = new StreamReader(@"ScriptsAndReferences\DailyStatusReport.htm");
+            StreamReader sr = new StreamReader(@"ScriptsAndReferences\WeeklyStatusReport.htm");
             string mailBody = sr.ReadToEnd();
             sr.Close();
 
@@ -295,6 +334,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
             mailBody = mailBody.Replace("{downloads}", Downloads.ToString("#,##0"));
             mailBody = mailBody.Replace("{restore}", Restore.ToString("#,##0"));
             mailBody = mailBody.Replace("{searchqueries}", SearchQueries.ToString("#,##0"));
+            mailBody = mailBody.Replace("{uniqueuploads}", UniqueUploads.ToString());
             mailBody = mailBody.Replace("{uploads}", Uploads.ToString());
             mailBody = mailBody.Replace("{newusers}", NewUsers.ToString());
             mailBody = mailBody.Replace("{TrafficPerHour}", TrafficPerHour.ToString("#,##0"));
@@ -312,10 +352,24 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
             mailBody = mailBody.Replace("{InstanceCount}", InstanceCount.ToString());
             mailBody = mailBody.Replace("{instancemax}", InstanceMax.ToString());
             mailBody = mailBody.Replace("{instancemin}", InstanceMin.ToString());
-            mailBody = mailBody.Replace("{overallworkercount}", OverallWorkerCount.ToString());
-            mailBody = mailBody.Replace("{successcount}", SuccessCount.ToString());
-            mailBody = mailBody.Replace("{failedjobnames}", string.Join(", ", FailedJobNames));
-            mailBody = mailBody.Replace("{notableissues}", string.Join("<br/>", NotableIssues));
+            mailBody = ReplaceWorkJobDetails(mailBody, DatesInWeek);
+
+            return mailBody;
+        }
+
+        private string ReplaceWorkJobDetails(string mailBody, List<string> DatesInWeek)
+        {
+            for (int i = 1; i <= 7; i++)
+            {
+                string date = DatesInWeek[i - 1].Substring(0, 2) + "/" + DatesInWeek[i - 1].Substring(2, 2) + "/" + DateTime.Now.Year.ToString();
+                string workCount = OverallWorkerCount[i - 1] == 0 ? "N/A" : OverallWorkerCount[i - 1].ToString();
+                string successCount = SuccessCount[i - 1] == 0 ? "N/A" : SuccessCount[i - 1].ToString();
+                mailBody = mailBody.Replace("{day" + i + "}", date);         
+                mailBody = mailBody.Replace("{overallworkercount" + i + "}", workCount);
+                mailBody = mailBody.Replace("{successcount" + i + "}", successCount);
+                mailBody = mailBody.Replace("{failedjobnames" + i + "}", string.Join(", ", FailedJobNames[i - 1]));
+                mailBody = mailBody.Replace("{notableissues" + i + "}", string.Join("<br/>", NotableIssues[i - 1]));
+            }
 
             return mailBody;
         }
@@ -343,10 +397,17 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         private Tuple<int, int, int, int> GetTupleMetricValues(string blobName)
         {
             List<int> list = GetMetricValues(blobName);
-            int average = list.Sum() / list.Count;
-            int sum = list.Sum();
-            int maximum = list.Max();
-            int minimum = list.Min();
+            int average = 0;
+            int sum = 0;
+            int maximum = 0;
+            int minimum = 0;
+            if (list.Count != 0)
+            {
+                average = list.Sum() / list.Count;
+                sum = list.Sum();
+                maximum = list.Max();
+                minimum = list.Min();
+            }
             return new Tuple<int, int, int, int>(average, sum, maximum, minimum);
         }
 
@@ -357,15 +418,23 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
 
         private List<int> GetMetricValuesFromBlob(string blobName, string containerName, int startTime, int endTime)
         {
-            Dictionary<string, string> dict = ReportHelpers.GetDictFromBlob(StorageAccount, blobName, containerName);
-            List<int> values = new List<int>();
-            foreach (KeyValuePair<string, string> keyValuePair in dict)
+            Dictionary<string, string> dict =  new Dictionary<string,string>();
+            try
             {
-                int key = Convert.ToInt32(keyValuePair.Key.Replace(":", "").Replace("-", ""));
-
-                if ((key >= startTime) && (key <= endTime))
+                dict = ReportHelpers.GetDictFromBlob(StorageAccount, blobName, containerName);
+            }
+            catch (Exception) { }
+            List<int> values = new List<int>();
+            if (dict != null)
+            {
+                foreach (KeyValuePair<string, string> keyValuePair in dict)
                 {
-                    values.Add(Convert.ToInt32(keyValuePair.Value));
+                    int key = Convert.ToInt32(keyValuePair.Key.Replace(":", "").Replace("-", ""));
+
+                    if ((key >= startTime) && (key <= endTime))
+                    {
+                        values.Add(Convert.ToInt32(keyValuePair.Value));
+                    }
                 }
             }
             return values;
@@ -450,20 +519,28 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
             return totalSearchRequestNumber;
         }
 
-        private List<WorkInstanceDetail> GetWorkJobDetail()
+        private List<WorkInstanceDetail> GetWorkJobDetail(string date)
         {
             List<WorkInstanceDetail> jobDetail = new List<WorkInstanceDetail>();
-            var content = ReportHelpers.Load(StorageAccount, "WorkJobDetail.json", ContainerName);
-            if (content != null)
+            try
             {
-                jobDetail = new JavaScriptSerializer().Deserialize<List<WorkInstanceDetail>>(content);
+                var content = ReportHelpers.Load(StorageAccount, "WorkJobDetail" + date + ".json", ContainerName);
+
+                if (content != null)
+                {
+                    jobDetail = new JavaScriptSerializer().Deserialize<List<WorkInstanceDetail>>(content);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
             return jobDetail;
         }
 
-        private Tuple<int, string[], string[]> GetFailedJobDetails()
+        private Tuple<int, string[], string[]> GetFailedJobDetails(string date, bool addFooter = false)
         {
-            List<WorkInstanceDetail> jobDetail = GetWorkJobDetail();
+            List<WorkInstanceDetail> jobDetail = GetWorkJobDetail(date);
             List<string> failedJobNames = new List<string>();
             List<string> notableIssues = new List<string>();
             int count = jobDetail.Count;
@@ -483,7 +560,10 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
                     }
                 }
             }
-            notableIssues.Add("<br/>For more details, please refer to https://dashboard.nuget.org/WorkJobs/WorkJobs_Detail.");
+            if (addFooter)
+            {
+                notableIssues.Add("<br/>For more details, please refer to https://dashboard.nuget.org/WorkJobs/WorkJobs_Detail.");
+            }
             return new Tuple<int, string[], string[]>(count, failedJobNames.ToArray(), notableIssues.ToArray());
         }
         #endregion
