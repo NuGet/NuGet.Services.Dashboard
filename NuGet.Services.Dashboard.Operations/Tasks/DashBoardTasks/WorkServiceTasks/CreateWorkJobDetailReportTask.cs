@@ -58,7 +58,10 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     AdminKey = WorkServiceFailoverAdminKey;
                 }
                 NetworkCredential nc = new NetworkCredential(WorkServiceUserName, AdminKey);
-                WebRequest request = WebRequest.Create(string.Format("{0}/instances/{1}?limit={2}", job.url, job.JobInstanceName, (lastNhour * 60) / job.FrequencyInMinutes));
+                //get all invocations in last 24 hours or last 10 invocations
+                int no = (lastNhour * 60) / job.FrequencyInMinutes;
+                if (no < 10) no = 10;
+                WebRequest request = WebRequest.Create(string.Format("{0}/instances/{1}?limit={2}", job.url, job.JobInstanceName, no));
                 request.Credentials = nc;
                 request.PreAuthenticate = true;
                 request.Method = "GET";
@@ -68,6 +71,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     JavaScriptSerializer js = new JavaScriptSerializer();
                     var objects = js.Deserialize<List<WorkJobInvocation>>(reader.ReadToEnd());
                     WorkJobInvocation lastJob;
+                    bool alert = false;
                     string lastCompleted = string.Empty;
                     if (objects.Any((item => item.status.Equals("Executed") && item.result.Equals("Completed"))))
                     {
@@ -89,27 +93,26 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
                     foreach (WorkJobInvocation each in objects)
                     {
-                        if (each.completedAt >= DateTime.Now.AddHours(-lastNhour))
+                        if (each.completedAt >= DateTime.Now.AddHours(-1)) alert = true; // check there is any failure happened in last one hour
+                        invocationCount++;
+                        totalRunTime += each.completedAt.Subtract(each.queuedAt).TotalSeconds;
+                        if (each.result.Equals("Faulted"))
                         {
-                            invocationCount++;
-                            totalRunTime += each.completedAt.Subtract(each.queuedAt).TotalSeconds;
-                            if (each.result.Equals("Faulted"))
+                            faultCount++;
+                            string message = getResultMessage(each.resultMessage);
+                            if (ErrorList.ContainsKey(message))
                             {
-                                faultCount++;
-                                string message = getResultMessage(each.resultMessage);
-                                if (ErrorList.ContainsKey(message))
-                                {
-                                    if (ErrorList[message].Count < 5) ErrorList[message].Add(each.logUrl);
-                                }
-
-                                else
-                                {
-                                    List<string> LogUrl = new List<string>();
-                                    LogUrl.Add(each.logUrl);
-                                    ErrorList.Add(message, LogUrl);
-                                }
+                                if (ErrorList[message].Count < 5) ErrorList[message].Add(each.logUrl);
                             }
-                        }
+
+                            else
+                            {
+                                List<string> LogUrl = new List<string>();
+                                LogUrl.Add(each.logUrl);
+                                ErrorList.Add(message, LogUrl);
+                            }
+                         }
+                        
                     }
                     if (invocationCount != 0)
                     {
@@ -120,7 +123,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
                     string[] Igonored = new JavaScriptSerializer().Deserialize<string[]>(ReportHelpers.Load(StorageAccount, "Configuration.WorkerJobToBeIgnored.json", ContainerName));
                     if (Igonored.Contains(job.JobInstanceName, StringComparer.OrdinalIgnoreCase)) continue;
-                    if (faultRate > thresholdValues.WorkJobErrorThreshold)
+                    if (faultRate > thresholdValues.WorkJobErrorThreshold && alert)
                     {
                         new SendAlertMailTask
                         {
@@ -131,7 +134,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                             Level = "Error"
                         }.ExecuteCommand();
                     }
-                    else if (faultRate > thresholdValues.WorkJobWarningThreshold)
+                    else if (faultRate > thresholdValues.WorkJobWarningThreshold && alert)
                     {
                         new SendAlertMailTask
                         {
@@ -142,18 +145,28 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                             Level = "Warning"
                         }.ExecuteCommand();
                     }
-
+                }
+                //check to make sure that the jobs that are not queued as part of scheduler are being invoked properly
+                if (invocationCount < ((lastNhour * 60 / job.FrequencyInMinutes) / 2))
+                {
+                    new SendAlertMailTask
+                    {
+                        AlertSubject = string.Format("Error: Alert for work job service : {0} failure", job.JobInstanceName),
+                        Details = string.Format("In last 24 hours, invocation of {0} is only {1}, it's less than half of scheduled jobs", job.JobInstanceName, invocationCount),
+                        AlertName = string.Format("Error: Work job service {0}", job.JobInstanceName),
+                        Component = "work job service",
+                        Level = "Error"
+                    }.ExecuteCommand();
                 }
             }
 
-             List<WorkServiceAdmin> allkey = new List<WorkServiceAdmin>();
-             allkey.Add(new WorkServiceAdmin(WorkServiceUserName, WorkServiceAdminKey));
-             allkey.Add(new WorkServiceAdmin(WorkServiceUserName,WorkServiceFailoverAdminKey));
-             
-             var json = new JavaScriptSerializer().Serialize(jobDetail);
-             var key = new JavaScriptSerializer().Serialize(allkey);
-             ReportHelpers.CreateBlob(StorageAccount, "WorkJobDetail.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
-             ReportHelpers.CreateBlob(StorageAccount, "WorkServiceAdminKey.json", ContainerName, "application/json", ReportHelpers.ToStream(key));
+            List<WorkServiceAdmin> allkey = new List<WorkServiceAdmin>();
+            allkey.Add(new WorkServiceAdmin(WorkServiceUserName, WorkServiceAdminKey));
+            allkey.Add(new WorkServiceAdmin(WorkServiceUserName,WorkServiceFailoverAdminKey));
+            var json = new JavaScriptSerializer().Serialize(jobDetail);
+            var key = new JavaScriptSerializer().Serialize(allkey);
+            ReportHelpers.CreateBlob(StorageAccount, "WorkJobDetail.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
+            ReportHelpers.CreateBlob(StorageAccount, "WorkServiceAdminKey.json", ContainerName, "application/json", ReportHelpers.ToStream(key));
         }
 
         private string getResultMessage(string message)
