@@ -58,6 +58,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     AdminKey = WorkServiceFailoverAdminKey;
                 }
                 NetworkCredential nc = new NetworkCredential(WorkServiceUserName, AdminKey);
+                //get all invocations in last 24 hours or last 10 invocations
                 int no = (lastNhour * 60) / job.FrequencyInMinutes;
                 if (no < 10) no = 10;
                 WebRequest request = WebRequest.Create(string.Format("{0}/instances/{1}?limit={2}", job.url, job.JobInstanceName, no));
@@ -92,7 +93,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
                     foreach (WorkJobInvocation each in objects)
                     {
-                        if (each.completedAt >= DateTime.Now.AddHours(-1)) alert = true;
+                        if (each.completedAt >= DateTime.Now.AddHours(-1)) alert = true; // check there is any failure happened in last one hour
                         invocationCount++;
                         totalRunTime += each.completedAt.Subtract(each.queuedAt).TotalSeconds;
                         if (each.result.Equals("Faulted"))
@@ -145,6 +146,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         }.ExecuteCommand();
                     }
                 }
+                //check to make sure that the jobs that are not queued as part of scheduler are being invoked properly
                 if (invocationCount < ((lastNhour * 60 / job.FrequencyInMinutes) / 2))
                 {
                     new SendAlertMailTask
