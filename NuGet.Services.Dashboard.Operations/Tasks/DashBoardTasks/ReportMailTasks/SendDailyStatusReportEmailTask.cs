@@ -296,6 +296,14 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             mailBody = mailBody.Replace("{availability}", Availability.ToString("f2") + "%");
             mailBody = mailBody.Replace("{downloads}", Downloads.ToString("#,##0"));
             mailBody = mailBody.Replace("{restore}", Restore.ToString("#,##0"));
+            if (Downloads == 0 || Restore == 0)
+            {
+                mailBody = mailBody.Replace("{warning}", "Please note that this report will not show the correct numbers for download and restore when ReplicatePackageStats Job is disabled or failing.");
+            }
+            else
+            {
+                mailBody = mailBody.Replace("{warning}", "");
+            }
             mailBody = mailBody.Replace("{searchqueries}", SearchQueries.ToString("#,##0"));
             mailBody = mailBody.Replace("{uploads}", Uploads.ToString());
             mailBody = mailBody.Replace("{uniqueuploads}", UniqueUploads.ToString());
