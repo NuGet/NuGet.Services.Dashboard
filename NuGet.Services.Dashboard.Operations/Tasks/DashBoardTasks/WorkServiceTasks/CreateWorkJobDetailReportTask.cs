@@ -93,6 +93,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
                     foreach (WorkJobInvocation each in objects)
                     {
+                        if (each.result.Equals("Incomplete", StringComparison.OrdinalIgnoreCase)) continue;
                         if (each.completedAt >= DateTime.Now.AddHours(-1)) alert = true; // check there is any failure happened in last one hour
                         invocationCount++;
                         totalRunTime += each.completedAt.Subtract(each.queuedAt).TotalSeconds;
