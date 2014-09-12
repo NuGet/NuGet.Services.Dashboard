@@ -66,6 +66,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 using (var reader = new StreamReader(respose.GetResponseStream()))
                 {
                     JavaScriptSerializer js = new JavaScriptSerializer();
+                    js.MaxJsonLength = Int32.MaxValue;
                     var objects = js.Deserialize<List<WorkJobInvocation>>(reader.ReadToEnd());
                     WorkJobInvocation lastJob;
                     string lastCompleted = string.Empty;
