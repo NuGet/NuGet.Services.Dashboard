@@ -30,11 +30,21 @@ namespace NuGetGallery.Operations
                                                 on [dbo].[Fact_Download].[Dimension_Date_Id] = [dbo].[Dimension_Date].[Id]
                                                 join [dbo].[Dimension_UserAgent]
                                                 on [dbo].[Fact_Download].[Dimension_UserAgent_Id] = [dbo].[Dimension_UserAgent].[Id]
-                                                where [dbo].[Dimension_Date].[Date] >= '{0}' and [Value] like '% VS %/{1}%'";
+                                                where [dbo].[Dimension_Date].[Date] >= '{0}' and [Value] like '% VS %/{1}%'
+                                                and [dbo].[Fact_Download].[Dimension_Operation_Id] IN (2, 6, 5, 9, 3, 7)";
+
+        private const string sqlQueryForVSRestore = @"SELECT sum([DownloadCount]) 
+                                                FROM  [dbo].[Dimension_Date] join [dbo].[Fact_Download] 
+                                                on [dbo].[Fact_Download].[Dimension_Date_Id] = [dbo].[Dimension_Date].[Id]
+                                                join [dbo].[Dimension_UserAgent]
+                                                on [dbo].[Fact_Download].[Dimension_UserAgent_Id] = [dbo].[Dimension_UserAgent].[Id]
+                                                where [dbo].[Dimension_Date].[Date] >= '{0}' and [Value] like '% VS %/{1}%'
+                                                and [dbo].[Fact_Download].[Dimension_Operation_Id] IN (4, 8)";
 
         public override void ExecuteCommand()
         {
             CreateReportForVSTask();
+            CreateRestoreReportForVSTask();
             CreateReportForOperationTask();
 
         }
@@ -65,6 +75,39 @@ namespace NuGetGallery.Operations
                     }
                     var json = new JavaScriptSerializer().Serialize(requests);
                     ReportHelpers.CreateBlob(StorageAccount, "VsTrend" + LastNDays.ToString() + "Day.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
+
+
+
+                }
+            }
+        }
+
+        private void CreateRestoreReportForVSTask()
+        {
+            string[] VsQuery = new JavaScriptSerializer().Deserialize<string[]>(ReportHelpers.Load(StorageAccount, "VsVersion.json", ContainerName));
+            using (var sqlConnection = new SqlConnection(ConnectionString.ConnectionString))
+            {
+                using (var dbExecutor = new SqlExecutor(sqlConnection))
+                {
+                    sqlConnection.Open();
+                    DateTime date = DateTime.UtcNow.AddDays(-LastNDays);
+                    List<VsRequest> requests = new List<VsRequest>();
+                    foreach (string each in VsQuery)
+                    {
+                        try
+                        {
+                            var request = dbExecutor.Query<Int32>(string.Format(sqlQueryForVSRestore, date.ToString("yyyy-MM-dd"), each)).SingleOrDefault();
+                            requests.Add(new VsRequest("VS" + each, request.ToString()));
+                        }
+
+                        catch
+                        {
+                            requests.Add(new VsRequest("VS" + each, "0"));
+                        }
+
+                    }
+                    var json = new JavaScriptSerializer().Serialize(requests);
+                    ReportHelpers.CreateBlob(StorageAccount, "VsRestoreTrend" + LastNDays.ToString() + "Day.json", ContainerName, "application/json", ReportHelpers.ToStream(json));
 
 
 

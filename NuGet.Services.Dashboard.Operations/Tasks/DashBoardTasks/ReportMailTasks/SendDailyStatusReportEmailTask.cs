@@ -50,7 +50,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         {
             get
             {
-                return GetDownloadNumbersFromBlob("Install1Day.json");
+                int allDownloads;
+                allDownloads = GetDownloadNumbersFromBlob("Install1Day.json") + GetDownloadNumbersFromBlob("Install-Dependency1Day.json") +
+                                GetDownloadNumbersFromBlob("Update1Day.json") + GetDownloadNumbersFromBlob("Update-Dependency1Day.json") +
+                                GetDownloadNumbersFromBlob("Reinstall1Day.json") + GetDownloadNumbersFromBlob("Reinstall-Dependency7Day.json");
+                return allDownloads;
             }
         }
 
@@ -58,7 +62,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         {
             get
             {
-                return GetDownloadNumbersFromBlob("Restore1Day.json");
+                return GetDownloadNumbersFromBlob("Restore1Day.json") + GetDownloadNumbersFromBlob("Restore-Dependency1Day.json");
             }
         }
 
@@ -66,8 +70,20 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         {
             get
             {
-                return GetSearchQueryNumbersFromBlob();
+                int avgTime = 0;
+                List<string> _dates = new List<string>();
+                string date = string.Format("{0:MMdd}", DateTime.Now.AddDays(-1));
+                _dates.Add(date);
+                return ReportHelpers.GetQueryNumbers("Search", out avgTime, _dates, StorageAccount, ContainerName);
             }
+        }
+
+        private string CreateTableForIISRequestsDistribution()
+        {
+            List<string> _dates = new List<string>();
+            string date = string.Format("{0:MMdd}", DateTime.Now.AddDays(-1));
+            _dates.Add(date);
+            return ReportHelpers.CreateTableForIISRequestsDistribution(StorageAccount, ContainerName, _dates);
         }
 
         public string[] SearchTerms
@@ -259,6 +275,46 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             SendEmail();
         }
 
+        /// <summary>
+        /// Creates the Html for a table using Install/ Update/ Restore data
+        /// </summary>
+        /// <returns></returns>
+        public string InstallUpdatesRestoresByNuGetVersion()
+        {
+            string[] installBlobNames = { "Install1Day.json", "Install-Dependency1Day.json", "Update1Day.json", "Update-Dependency1Day.json", "Reinstall1Day.json", "Reinstall-Dependency1Day.json" };
+            List<string> versions = new List<string>();
+            List<object> installs = new List<object>();
+            List<object> restores = new List<object>();
+
+            ReportHelpers.GetValuesFromBlobs(installBlobNames, StorageAccount, ContainerName, out versions, out installs);
+
+            string[] restoreBlobNames = { "Restore1Day.json", "Restore-Dependency1Day.json" };
+            ReportHelpers.GetValuesFromBlobs(restoreBlobNames, StorageAccount, ContainerName, out versions, out restores);
+
+            string installChartHtml = ReportHelpers.GetOperationsPerNuGetVersionTable(installs, restores, versions, "Install/Updates and Restores");
+            return installChartHtml;
+        }
+
+        /// <summary>
+        /// Creates the Html for a table using Install/ Update/ Restore data
+        /// </summary>
+        /// <returns></returns>
+        public string InstallUpdatesRestoresByVSVersion()
+        {
+            string[] installBlobNames = { "VsTrend1Day.json" };
+            List<string> versions = new List<string>();
+            List<object> installs = new List<object>();
+            List<object> restores = new List<object>();
+
+            ReportHelpers.GetValuesFromBlobs(installBlobNames, StorageAccount, ContainerName, out versions, out installs);
+
+            string[] restoreBlobNames = { "VsRestoreTrend1Day.json"};
+            ReportHelpers.GetValuesFromBlobs(restoreBlobNames, StorageAccount, ContainerName, out versions, out restores);
+
+            string installChartHtml = ReportHelpers.GetOperationsPerNuGetVersionTable(installs, restores, versions, "Install/Updates and Restores");
+            return installChartHtml;
+        }
+
         private void SendEmail()
         {
             SmtpClient sc = new SmtpClient("smtphost");
@@ -327,7 +383,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             mailBody = mailBody.Replace("{successcount}", SuccessCount.ToString());
             mailBody = mailBody.Replace("{failedjobnames}", string.Join(", ", FailedJobNames));
             mailBody = mailBody.Replace("{notableissues}", string.Join("<br/>", NotableIssues));
-
+            mailBody = mailBody.Replace("{InstallUpdatesRestoresPerNuGetVersion}", InstallUpdatesRestoresByNuGetVersion());
+            mailBody = mailBody.Replace("{InstallUpdatesRestoresPerVSVersion}", InstallUpdatesRestoresByVSVersion());
+            mailBody = mailBody.Replace("{IISRequestsDistribution}", CreateTableForIISRequestsDistribution());
             return mailBody;
         }
 

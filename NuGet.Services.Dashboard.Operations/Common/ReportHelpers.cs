@@ -1,11 +1,18 @@
 ﻿using Newtonsoft.Json.Linq;
+using NuGet.Services.Dashboard.Common;
+using NuGetGallery.Operations.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Web.Script.Serialization;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.Threading.Tasks;
+using DotNet.Highcharts.Enums;
+using DotNet.Highcharts.Helpers;
+using DotNet.Highcharts.Options;
 
 namespace NuGetGallery.Operations.Common
 {
@@ -158,6 +165,119 @@ namespace NuGetGallery.Operations.Common
         }
 
         /// <summary>
+        /// Returns a bar chart for a given set of values.
+        /// </summary>
+        /// <param name="seriesSet"></param>
+        /// <param name="xValues"></param>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        public static DotNet.Highcharts.Highcharts GetBarChart(List<DotNet.Highcharts.Options.Series> seriesSet, List<string> xValues, string title)
+        {
+            DotNet.Highcharts.Highcharts chart = new DotNet.Highcharts.Highcharts(title);
+            chart.InitChart(new Chart
+            {
+                Height = 320,
+                Width = 320,
+                DefaultSeriesType = ChartTypes.Column
+            });
+
+            chart.SetXAxis(new XAxis
+            {
+                Categories = xValues.ToArray()
+
+            });
+
+            chart.SetLegend(new Legend { Enabled = false });
+            chart.SetSeries(seriesSet.ToArray());
+
+            chart.SetTitle(new DotNet.Highcharts.Options.Title { Text = title.Replace("_", " ")});
+            
+            return chart;
+        }
+
+        /// <summary>
+        /// Returns a table for a given set of values.
+        /// </summary>
+        /// <param name="seriesSet"></param>
+        /// <param name="xValues"></param>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        public static string GetOperationsPerNuGetVersionTable(List<object> installs, List<object> restores, List<string> versions, string title)
+        {
+            StringBuilder sb = new StringBuilder();
+            string fontOpenTag = @"<b><span style='font-size:11.0pt;font-family:'Calibri','sans-serif';color:windowtext'>";
+            string fontCloseTag = @"</span></b>";
+            string cellOpenTag1 = @"<td width=75 valign=top style='width:75pt;border:solid #8EAADB 1.0pt;border-bottom:solid #8EAADB 1.5pt;padding:0in 5.4pt 0in 5.4pt'>";
+            string cellOpenTag2 = @"<td width=175 valign=top style='width:175pt;border:solid #8EAADB 1.0pt;border-bottom:solid #8EAADB 1.5pt;padding:0in 5.4pt 0in 5.4pt'>";
+
+            sb.Append(@"<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='border-collapse:collapse'>");
+            sb.Append(@"<tr>" + cellOpenTag1 + fontOpenTag + "Version" + fontCloseTag + "</td>");
+            sb.Append(cellOpenTag2 + fontOpenTag + "Installs/Updates" + fontCloseTag + "</td>");
+            sb.Append(cellOpenTag2 + fontOpenTag +  "Restores" + fontCloseTag + "</td></tr>");
+                                
+            int i = 0;
+            foreach (string version in versions)
+            {
+                sb.Append(@"<tr>" + cellOpenTag1);
+                sb.Append(version);
+                sb.Append(@"</td>" + cellOpenTag2);
+                sb.Append(Convert.ToInt64(installs[i]).ToString("#,##0"));
+                sb.Append(@"</td>" + cellOpenTag2);
+                sb.Append(Convert.ToInt64(restores[i++]).ToString("#,##0"));
+                sb.Append("</td></tr>");
+            }
+            sb.Append("</table>");
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Given a list of blob names, this function returns a list of key values and another list of aggregated values for those keys
+        /// For example, combined install, install-dependency counts for 2.4
+        /// </summary>
+        /// <param name="blobNames">List of blob names</param>
+        /// <param name="storageAccount">Storage Account to be used</param>
+        /// <param name="containerName">Container that has the blobs</param>
+        /// <param name="xValues">List of keys</param>
+        /// <param name="yValues">List of values</param>
+        public static void GetValuesFromBlobs(string[] blobNames, CloudStorageAccount storageAccount, string containerName, out List<string> xValues, out List<Object> yValues)
+        {
+            xValues = new List<string>();
+            yValues = new List<Object>();
+            Dictionary<string, object> combinedValues = new Dictionary<string, object>();
+
+            foreach (string blobName in blobNames)
+            {
+                string json = ReportHelpers.Load(storageAccount, blobName, containerName);
+                if (json == null)
+                {
+                    return;
+                }
+
+                JArray array = JArray.Parse(json);
+                foreach (JObject item in array)
+                {
+                    string currentKey = item["key"].ToString();
+                    object currentValue = item["value"];
+                  
+                    if (!combinedValues.ContainsKey(currentKey))
+                    {
+                        combinedValues.Add(currentKey, currentValue);
+                    }
+                    else
+                    {
+                        combinedValues[currentKey] = Convert.ToInt64(currentValue) + Convert.ToInt64(combinedValues[currentKey]);
+                    }
+                }
+            }
+
+            foreach (var item in combinedValues)
+            {
+                xValues.Add(item.Key);
+                yValues.Add(item.Value);
+            }
+        }
+
+        /// <summary>
         /// Gets the JSON data from the blob. The blobs are pre-created as key value pairs using Ops tasks.
         /// </summary>
         /// <param name="blobName"></param>
@@ -220,6 +340,82 @@ namespace NuGetGallery.Operations.Common
             blockBlob.UploadFromStream(content);
 
             return blockBlob.Uri;
+        }
+
+        public static string CreateTableForIISRequestsDistribution(CloudStorageAccount storageAccount, string containerName, List<string> datesInWeek)
+        {
+            StringBuilder sb = new StringBuilder();
+            string fontOpenTag = @"<b><span style='font-size:11.0pt;font-family:'Calibri','sans-serif';color:windowtext'>";
+            string fontCloseTag = @"</span></b>";
+            string cellOpenTag1 = @"<td width=200 valign=top style='width:200pt;border:solid #8EAADB 1.0pt;border-bottom:solid #8EAADB 1.5pt;padding:0in 5.4pt 0in 5.4pt'>";
+            string cellOpenTag2 = @"<td width=175 valign=top style='width:175pt;border:solid #8EAADB 1.0pt;border-bottom:solid #8EAADB 1.5pt;padding:0in 5.4pt 0in 5.4pt'>";
+
+            sb.Append(@"<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='border-collapse:collapse'>");
+            sb.Append(@"<tr>" + cellOpenTag1 + fontOpenTag + "Scenario Name" + fontCloseTag + "</td>");
+            sb.Append(cellOpenTag2 + fontOpenTag + "# of Requests" + fontCloseTag + "</td>");
+            sb.Append(cellOpenTag2 + fontOpenTag + "Avg Time Taken in ms" + fontCloseTag + "</td></tr>");
+
+            var content = ReportHelpers.Load(storageAccount, "Configration.IISRequestStems.json", containerName);
+            List<IISRequestDetails> UriStems = new List<IISRequestDetails>();
+            UriStems = new JavaScriptSerializer().Deserialize<List<IISRequestDetails>>(content);
+            foreach (IISRequestDetails stem in UriStems)
+            {
+                int avgTime = 0;
+                int requestCount = ReportHelpers.GetQueryNumbers(stem.ScenarioName, out avgTime, datesInWeek, storageAccount, containerName);
+
+                sb.Append(@"<tr>" + cellOpenTag1);
+                sb.Append(stem.ScenarioName);
+                sb.Append(@"</td>" + cellOpenTag2);
+                sb.Append(Convert.ToInt64(requestCount).ToString("#,##0"));
+                sb.Append(@"</td>" + cellOpenTag2);
+                sb.Append(Convert.ToInt64(avgTime).ToString("#,##0"));
+                sb.Append("</td></tr>");
+            }
+            sb.Append("</table>");
+            return sb.ToString();
+        }
+
+        public static int GetQueryNumbers(string scenarioName, out int avgTime, List<string> DatesInWeek, CloudStorageAccount storageAccount, string containerName)
+        {
+            List<int> queries = new List<int>();
+            avgTime = 0;
+            foreach (string date in DatesInWeek)
+            {
+                int queryNumber = GetQueryNumbersFromBlob(date, scenarioName, out avgTime, storageAccount, containerName);
+                queries.Add(queryNumber);
+            }
+            return queries.Sum();
+        }
+
+        public static int GetQueryNumbersFromBlob(string Date, string scenarioName, out int avgTime, CloudStorageAccount storageAccount, string containerName)
+        {
+            Dictionary<string, string> dict = ReportHelpers.GetDictFromBlob(storageAccount, "IISRequestDetails" + Date + ".json", containerName);
+            List<IISRequestDetails> requestDetails = new List<IISRequestDetails>();
+            int totalRequestNumber = 0;
+            avgTime = 0;
+            int count = 0;
+
+            if (dict != null)
+            {
+                foreach (KeyValuePair<string, string> keyValuePair in dict)
+                {
+                    requestDetails = new JavaScriptSerializer().Deserialize<List<IISRequestDetails>>(keyValuePair.Value);
+                    foreach (IISRequestDetails detail in requestDetails)
+                    {
+                        if (detail.ScenarioName == scenarioName)
+                        {
+                            totalRequestNumber += detail.RequestsPerHour;
+                            avgTime += detail.AvgTimeTakenInMilliSeconds;
+                            count++;
+                        }
+                    }
+                }
+            }
+            if (count > 1)
+            { 
+                avgTime = Convert.ToInt32(avgTime / count);
+            }
+            return totalRequestNumber;
         }
     }
 }

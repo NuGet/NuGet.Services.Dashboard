@@ -6,14 +6,18 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Net;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Web.Script.Serialization;
+using DotNet.Highcharts.Enums;
+using DotNet.Highcharts.Helpers;
+using DotNet.Highcharts.Options;
 
 namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
 {
-    [Command("SendWeeklyStatusReportEmailTask", "Creates daily status report for various gallery metrics in the past 24 hours", AltName = "swsret")]
+    [Command("SendWeeklyStatusReportEmailTask", "Creates weekly status report for various gallery metrics in the past week", AltName = "swsret")]
     public class SendWeeklyStatusReportEmailTask : StorageTask
     {
         [Option("Recepient", AltName = "rec")]
@@ -45,6 +49,83 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         public const int SecondsInAnHour = 3600;
         private bool flag;
 
+        #region Charts
+ 
+        /// <summary>
+        /// Creates the Html for a table using Install/ Update/ Restore data
+        /// </summary>
+        /// <returns></returns>
+        public string InstallUpdatesRestoresByNuGetVersion()
+        {
+            string[] installBlobNames = {"Install7Day.json", "Install-Dependency7Day.json", "Update7Day.json", "Update-Dependency7Day.json", "Reinstall7Day.json", "Reinstall-Dependency7Day.json"};
+            List<string> versions = new List<string>();
+            List<object> installs = new List<object>();
+            List<object> restores = new List<object>();
+
+            ReportHelpers.GetValuesFromBlobs(installBlobNames, StorageAccount, ContainerName, out versions, out installs);
+
+            string[] restoreBlobNames = { "Restore7Day.json", "Restore-Dependency7Day.json"};
+            ReportHelpers.GetValuesFromBlobs(restoreBlobNames, StorageAccount, ContainerName, out versions, out restores);
+           
+            string installChartHtml = ReportHelpers.GetOperationsPerNuGetVersionTable(installs,restores, versions, "Install/Updates and Restores");
+            return installChartHtml;
+        }
+
+        /// <summary>
+        /// Creates the Html for a table using Install/ Update/ Restore data
+        /// </summary>
+        /// <returns></returns>
+        public string InstallUpdatesRestoresByVSVersion()
+        {
+            string[] installBlobNames = { "VsTrend7Day.json"};
+            List<string> versions = new List<string>();
+            List<object> installs = new List<object>();
+            List<object> restores = new List<object>();
+
+            ReportHelpers.GetValuesFromBlobs(installBlobNames, StorageAccount, ContainerName, out versions, out installs);
+
+            string[] restoreBlobNames = { "VsRestoreTrend7Day.json"};
+            ReportHelpers.GetValuesFromBlobs(restoreBlobNames, StorageAccount, ContainerName, out versions, out restores);
+
+            string installChartHtml = ReportHelpers.GetOperationsPerNuGetVersionTable(installs, restores, versions, "Install/Updates and Restores");
+            return installChartHtml;
+        }
+
+        /// <summary>
+        /// Creates the Html for a Chart using Restore data
+        /// </summary>
+        /// <returns></returns>
+        public string RestoreByNuGetVersionChart()
+        {
+            string[] blobNames = { "Restore7Day.json", "Restore-Dependency7Day.json"};
+            List<string> xValues = new List<string>();
+            List<object> yValues = new List<Object>();
+
+            ReportHelpers.GetValuesFromBlobs(blobNames, StorageAccount, ContainerName, out xValues, out yValues);
+
+            List<DotNet.Highcharts.Options.Series> seriesSet = new List<DotNet.Highcharts.Options.Series>();
+
+            seriesSet.Add(new DotNet.Highcharts.Options.Series
+            {
+                Data = new Data(yValues.ToArray())
+
+            });
+
+            DotNet.Highcharts.Highcharts installChart = ReportHelpers.GetBarChart(seriesSet, xValues, "Restores_Per_NuGet_Version");
+            string installChartHtml = installChart.ToHtmlString();
+            return installChartHtml;
+        }
+        #endregion
+
+        #region IISRequests
+
+        private string CreateTableForIISRequestsDistribution()
+        {
+            return ReportHelpers.CreateTableForIISRequestsDistribution(StorageAccount, ContainerName, DatesInWeek);
+        }
+
+        #endregion
+
         public double Availability
         {
             get
@@ -57,15 +138,19 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetDownloadNumbersFromBlob("Install7Day.json");
-            }
+                int allDownloads;
+                allDownloads = GetDownloadNumbersFromBlob("Install7Day.json") + GetDownloadNumbersFromBlob("Install-Dependency7Day.json") +
+                                GetDownloadNumbersFromBlob("Update7Day.json") + GetDownloadNumbersFromBlob("Update-Dependency7Day.json") +
+                                GetDownloadNumbersFromBlob("Reinstall7Day.json") + GetDownloadNumbersFromBlob("Reinstall-Dependency7Day.json");
+                return allDownloads;
+             }
         }
 
         public int Restore
         {
             get
             {
-                return GetDownloadNumbersFromBlob("Restore7Day.json");
+                return GetDownloadNumbersFromBlob("Restore7Day.json") + GetDownloadNumbersFromBlob("Restore-Dependency7Day.json");
             }
         }
 
@@ -73,7 +158,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
         {
             get
             {
-                return GetWeeklySearchQueryNumbers();
+                int avgTime = 0;
+                return ReportHelpers.GetQueryNumbers("Search", out avgTime, DatesInWeek, StorageAccount, ContainerName);
             }
         }
 
@@ -309,10 +395,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
             System.Net.Mail.MailMessage message = new System.Net.Mail.MailMessage();
             message.From = new MailAddress(ConfigurationManager.AppSettings["SmtpUserName"], "NuGet Weekly Status Report");
             message.To.Add(new MailAddress(MailRecepientAddress, MailRecepientAddress));
-            message.Subject = string.Format("NuGet Gallery Weekly Status Report - for Week of " + DateTime.Today.AddDays(-1).ToShortDateString() + " ~ " + DateTime.Today.AddDays(-7).ToShortDateString());
+            message.Subject = string.Format("NuGet Gallery Weekly Status Report - for Week of " + DateTime.Today.AddDays(-7).ToShortDateString() + " ~ " + DateTime.Today.AddDays(-1).ToShortDateString());
             message.IsBodyHtml = true;
-            message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(@"<html><body>" + GetMailContent() + "</body></html>", new ContentType("text/html")));
-
+            //message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(@"<html><body>" + GetMailContent() + "</body></html>", new ContentType("text/html")));
+            message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString( GetMailContent() , new ContentType("text/html")));
+                                 
             try
             {
                 sc.Send(message);
@@ -322,6 +409,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
                 Console.WriteLine(" Error in sending mail : {0}", ex.Message);
                 Console.ReadKey();
             }
+
+            
         }
 
         private string GetMailContent()
@@ -352,6 +441,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
             mailBody = mailBody.Replace("{InstanceCount}", InstanceCount.ToString());
             mailBody = mailBody.Replace("{instancemax}", InstanceMax.ToString());
             mailBody = mailBody.Replace("{instancemin}", InstanceMin.ToString());
+            mailBody = mailBody.Replace("{InstallUpdatesRestoresPerNuGetVersion}", InstallUpdatesRestoresByNuGetVersion());
+            mailBody = mailBody.Replace("{InstallUpdatesRestoresPerVSVersion}", InstallUpdatesRestoresByVSVersion());
+            mailBody = mailBody.Replace("{IISRequestsDistribution}", CreateTableForIISRequestsDistribution());
             mailBody = ReplaceWorkJobDetails(mailBody, DatesInWeek);
 
             return mailBody;
@@ -485,39 +577,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
             return values.Sum();
         }
 
-        private int GetWeeklySearchQueryNumbers()
-        {
-            List<int> searchQueries = new List<int>();
-            foreach (string date in DatesInWeek)
-            {
-                int queryNumber = GetSearchQueryNumbersFromBlob(date);
-                searchQueries.Add(queryNumber);
-            }
-            return searchQueries.Sum();
-        }
-
-        private int GetSearchQueryNumbersFromBlob(string Date)
-        {
-            Dictionary<string, string> dict = ReportHelpers.GetDictFromBlob(StorageAccount, "IISRequestDetails" + Date + ".json", ContainerName);
-            List<IISRequestDetails> requestDetails = new List<IISRequestDetails>();
-            int totalSearchRequestNumber = 0;
-
-            if (dict != null)
-            {
-                foreach (KeyValuePair<string, string> keyValuePair in dict)
-                {
-                    requestDetails = new JavaScriptSerializer().Deserialize<List<IISRequestDetails>>(keyValuePair.Value);
-                    foreach (IISRequestDetails detail in requestDetails)
-                    {
-                        if (detail.ScenarioName == "Search")
-                        {
-                            totalSearchRequestNumber += detail.RequestsPerHour;
-                        }
-                    }
-                }
-            }
-            return totalSearchRequestNumber;
-        }
+        
 
         private List<WorkInstanceDetail> GetWorkJobDetail(string date)
         {
@@ -566,6 +626,10 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.ReportMailTasks
             }
             return new Tuple<int, string[], string[]>(count, failedJobNames.ToArray(), notableIssues.ToArray());
         }
+
+        
+            
+
         #endregion
     }
 }
