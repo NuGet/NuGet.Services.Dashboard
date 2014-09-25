@@ -416,6 +416,7 @@
     <Content Include="Views\Threshold\Edit.cshtml" />
     <Content Include="Views\Threshold\Create.cshtml" />
     <Content Include="Views\V2GalleryFrontEnd\V2GalleryFrontEnd_LatencyDetails.cshtml" />
+    <Content Include="Views\SearchService\SearchService_Detail.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
