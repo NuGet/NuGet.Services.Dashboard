@@ -276,10 +276,10 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             Dictionary<string, int> proddict = GenerateDict(prodDB, Operation);
             Dictionary<string, int> warehousedict = GenerateDict(warehouseDB, Operation);
 
-            if (warehousedict.Count != proddict.Count) 
+            if (Math.Abs(warehousedict.Count - proddict.Count) > 10) 
             {
-                correct = false;
                 bool prod = true;
+                correct = false;
                 StringBuilder sb = new StringBuilder();
                 if (warehousedict.Count > proddict.Count) prod = false;
                 if(prod)
@@ -298,9 +298,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                         if (!proddict.ContainsKey(key)) sb.Append(key + Environment.NewLine);
                     }
                 }
-
-
-
                 outputMessage = string.Format("Package statistic total pacakage number is not correct on {0},more detail is {1}", DateTime.UtcNow.AddDays(-1).ToString("MM/dd/yyyy"), sb.ToString());
             }
 
@@ -329,7 +326,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     Level = "Error"
                 }.ExecuteCommand();
             }
-            Console.WriteLine(outputMessage);
             return outputMessage;
 
         }
