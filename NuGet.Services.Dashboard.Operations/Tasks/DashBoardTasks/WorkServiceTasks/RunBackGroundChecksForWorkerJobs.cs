@@ -276,10 +276,29 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             Dictionary<string, int> proddict = GenerateDict(prodDB, Operation);
             Dictionary<string, int> warehousedict = GenerateDict(warehouseDB, Operation);
 
-            if (warehousedict.Count != proddict.Count)
+            if (Math.Abs(warehousedict.Count - proddict.Count) > 10) 
             {
+                bool prod = true;
                 correct = false;
-                outputMessage = string.Format("Package statistic total pacakage number is not correct on {0}", DateTime.UtcNow.AddDays(-1).ToString("MM/dd/yyyy"));
+                StringBuilder sb = new StringBuilder();
+                if (warehousedict.Count > proddict.Count) prod = false;
+                if(prod)
+                {
+                    sb.Append("prod key is more than warehouse, the following is in prod but not in warehouse. detail: ");
+                    foreach (string key in proddict.Keys)
+                    {
+                        if (!warehousedict.ContainsKey(key)) sb.Append(key + Environment.NewLine);
+                    }
+                }
+                else
+                {
+                    sb.Append("warehouse key is more than prod, the following is in warehouse but not in prod. detail: ");
+                    foreach (string key in warehousedict.Keys)
+                    {
+                        if (!proddict.ContainsKey(key)) sb.Append(key + Environment.NewLine);
+                    }
+                }
+                outputMessage = string.Format("Package statistic total pacakage number is not correct on {0},more detail is {1}", DateTime.UtcNow.AddDays(-1).ToString("MM/dd/yyyy"), sb.ToString());
             }
 
             else
