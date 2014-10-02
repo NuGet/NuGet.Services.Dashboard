@@ -395,7 +395,14 @@
             </td>
         </tr>
     </table>
+    <p class=MsoNormal>
+        <span style="font-family: arial; color: gray; font-size: 10px; font-style: italic">*Availability is calculated based on the min value of uptime for feed.top.30.by.downloads, package.restore.download and package.restore.lookup from pingdom checks.</span>
+    </p>
+    <p class=MsoNormal>
+        <span style="font-family: arial; color: red; font-size: 10px; font-style: italic">{warning}</span>
+    </p>
     <br>&nbsp;</br>
+    
     <h2>
         Operations Per NuGet Version
     </h2>
@@ -410,12 +417,16 @@
         IIS Requests Distribution
     </h2>
     {IISRequestsDistribution}
-    <p class=MsoNormal>
-        <span style="font-family: arial; color: gray; font-size: 10px; font-style: italic">*Availability is calculated based on the min value of uptime for feed.top.30.by.downloads, package.restore.download and package.restore.lookup from pingdom checks.</span>
-    </p>
-    <p class=MsoNormal>
-        <span style="font-family: arial; color: red; font-size: 10px; font-style: italic">{warning}</span>
-    </p>
+    <br>&nbsp;</br>
+    <h2>
+        IPs with top # of requests
+    </h2>
+    {IPRequestDistribution}
+    <br>&nbsp;</br>
+    <h2>
+        Requests with long response time
+    </h2>
+    {ResponseTime}
     <br>&nbsp;</br>
     <h2>
         Daily Operations Summary

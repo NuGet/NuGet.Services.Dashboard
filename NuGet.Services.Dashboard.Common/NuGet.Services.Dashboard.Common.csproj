@@ -82,6 +82,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlertThresholds.cs" />
+    <Compile Include="IISIPDetails.cs" />
+    <Compile Include="IISResponseTimeDetails.cs" />
     <Compile Include="SearchResult.cs" />
     <Compile Include="VsTrending.cs" />
     <Compile Include="RefreshElmahError.cs" />

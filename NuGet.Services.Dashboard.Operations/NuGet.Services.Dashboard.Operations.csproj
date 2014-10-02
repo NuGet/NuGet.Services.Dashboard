@@ -195,6 +195,7 @@
     <Compile Include="Tasks\DashBoardTasks\V2GalleryFrontendTasks\CreateElmahErrorOverviewReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\PingdomTasks\CreatePingdomDetailedReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\PingdomTasks\CreatePingdomWeeklyAndHourlyReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\V2GalleryFrontendTasks\CreateIPDetailsPerDayReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\V2GalleryFrontendTasks\CreateRequestsPerHourReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\SearchServiceTasks\CreateSearchIndexingStatusReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\TrendingTasks\CreateStatsHourlyReportTask.cs" />

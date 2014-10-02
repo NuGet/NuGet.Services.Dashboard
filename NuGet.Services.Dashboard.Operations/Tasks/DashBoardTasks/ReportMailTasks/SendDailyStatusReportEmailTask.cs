@@ -86,6 +86,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             return ReportHelpers.CreateTableForIISRequestsDistribution(StorageAccount, ContainerName, _dates);
         }
 
+
         public string[] SearchTerms
         {
             get
@@ -315,6 +316,16 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             return installChartHtml;
         }
 
+        public string IPDetails()
+        {
+            return ReportHelpers.CreateTableForIPDistribution(StorageAccount, ContainerName, DateTime.Now);
+        }
+
+        public string ResponseTimeDetails()
+        {
+            return ReportHelpers.CreateTableForResponseTime(StorageAccount, ContainerName, DateTime.Now);
+        }
+
         private void SendEmail()
         {
             SmtpClient sc = new SmtpClient("smtphost");
@@ -386,6 +397,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             mailBody = mailBody.Replace("{InstallUpdatesRestoresPerNuGetVersion}", InstallUpdatesRestoresByNuGetVersion());
             mailBody = mailBody.Replace("{InstallUpdatesRestoresPerVSVersion}", InstallUpdatesRestoresByVSVersion());
             mailBody = mailBody.Replace("{IISRequestsDistribution}", CreateTableForIISRequestsDistribution());
+            mailBody = mailBody.Replace("{IPRequestDistribution}", IPDetails());
+            mailBody = mailBody.Replace("{ResponseTime}", ResponseTimeDetails());
             return mailBody;
         }
 

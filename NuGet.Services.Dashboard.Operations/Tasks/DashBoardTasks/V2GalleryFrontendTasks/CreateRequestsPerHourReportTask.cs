@@ -64,8 +64,7 @@ namespace NuGetGallery.Operations
             //Create reports.
             CreateOverviewReport(info);
             CreateUriStemDetailedReport(info);         
-       
-        }
+          }
 
         /// <summary>
         /// Creates report for Over all RequestsPerHour
@@ -104,6 +103,7 @@ namespace NuGetGallery.Operations
             ReportHelpers.AppendDatatoBlob(StorageAccount, blobName, new Tuple<string, string>(string.Format("{0:HH:00}", DateTime.Now.AddHours(-1)), json), 50, ContainerName);
         }
 
+        
         /// <summary>
         /// Gets the data for the specific query using Logparser
         /// </summary>
@@ -126,6 +126,7 @@ namespace NuGetGallery.Operations
             }
             return Convert.ToInt32(metricValue);           
         }
+          
 
         private  int InvokeNugetProcess(string arguments, out string standardError, out string standardOutput, string WorkingDir = null)
         {

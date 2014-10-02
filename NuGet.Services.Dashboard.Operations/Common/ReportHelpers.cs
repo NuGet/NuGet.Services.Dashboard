@@ -342,6 +342,79 @@ namespace NuGetGallery.Operations.Common
             return blockBlob.Uri;
         }
 
+        public static string CreateTableForIPDistribution(CloudStorageAccount storageAccount, string containerName, DateTime date)
+        {
+            StringBuilder sb = new StringBuilder();
+            string fontOpenTag = @"<b><span style='font-size:11.0pt;font-family:'Calibri','sans-serif';color:windowtext'>";
+            string fontCloseTag = @"</span></b>";
+            string cellOpenTag1 = @"<td width=200 valign=top style='width:200pt;border:solid #8EAADB 1.0pt;border-bottom:solid #8EAADB 1.5pt;padding:0in 5.4pt 0in 5.4pt'>";
+            string cellOpenTag2 = @"<td width=175 valign=top style='width:175pt;border:solid #8EAADB 1.0pt;border-bottom:solid #8EAADB 1.5pt;padding:0in 5.4pt 0in 5.4pt'>";
+
+            sb.Append(@"<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='border-collapse:collapse'>");
+            sb.Append(@"<tr>" + cellOpenTag1 + fontOpenTag + "IP Address" + fontCloseTag + "</td>");
+            sb.Append(cellOpenTag2 + fontOpenTag + "# of Requests" + fontCloseTag + "</td>");
+            sb.Append(cellOpenTag2 + fontOpenTag + "Avg Time Taken in ms" + fontCloseTag + "</td></tr>");
+
+            string blobName = "IISIPDetails" + string.Format("{0:MMdd}", date.AddDays(-1)) + ".json";
+            
+            Dictionary<string, string> dict = ReportHelpers.GetDictFromBlob(storageAccount, blobName, containerName);
+            IISIPDetails requestDetails = new IISIPDetails();
+           
+            if (dict != null)
+            {
+                foreach (KeyValuePair<string, string> keyValuePair in dict)
+                {
+                    requestDetails = new JavaScriptSerializer().Deserialize<IISIPDetails>(keyValuePair.Value);
+
+                    sb.Append(@"<tr>" + cellOpenTag1);
+                    sb.Append(requestDetails.cip);
+                    sb.Append(@"</td>" + cellOpenTag2);
+                    sb.Append(Convert.ToInt64(requestDetails.RequestsPerHour).ToString("#,##0"));
+                    sb.Append(@"</td>" + cellOpenTag2);
+                    sb.Append(Convert.ToInt64(requestDetails.AvgTimeTakenInMilliSeconds).ToString("#,##0"));
+                    sb.Append("</td></tr>");
+
+                }
+            }
+            sb.Append("</table>");
+            return sb.ToString();
+        }
+
+        public static string CreateTableForResponseTime(CloudStorageAccount storageAccount, string containerName, DateTime date)
+        {
+            StringBuilder sb = new StringBuilder();
+            string fontOpenTag = @"<b><span style='font-size:11.0pt;font-family:'Calibri','sans-serif';color:windowtext'>";
+            string fontCloseTag = @"</span></b>";
+            string cellOpenTag1 = @"<td width=200 valign=top style='width:200pt;border:solid #8EAADB 1.0pt;border-bottom:solid #8EAADB 1.5pt;padding:0in 5.4pt 0in 5.4pt'>";
+            string cellOpenTag2 = @"<td width=175 valign=top style='width:175pt;border:solid #8EAADB 1.0pt;border-bottom:solid #8EAADB 1.5pt;padding:0in 5.4pt 0in 5.4pt'>";
+
+            sb.Append(@"<table class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='border-collapse:collapse'>");
+            sb.Append(@"<tr>" + cellOpenTag1 + fontOpenTag + "Uri Stem" + fontCloseTag + "</td>");
+            sb.Append(cellOpenTag2 + fontOpenTag + "Avg Time Taken in ms" + fontCloseTag + "</td></tr>");
+
+            string blobName = "IISResponseTimeDetails" + string.Format("{0:MMdd}", date.AddDays(-1)) + ".json";
+
+            Dictionary<string, string> dict = ReportHelpers.GetDictFromBlob(storageAccount, blobName, containerName);
+            IISResponseTimeDetails requestDetails = new IISResponseTimeDetails();
+
+            if (dict != null)
+            {
+                foreach (KeyValuePair<string, string> keyValuePair in dict)
+                {
+                    requestDetails = new JavaScriptSerializer().Deserialize<IISResponseTimeDetails>(keyValuePair.Value);
+
+                    sb.Append(@"<tr>" + cellOpenTag1);
+                    sb.Append(requestDetails.UriStem);
+                    sb.Append(@"</td>" + cellOpenTag2);
+                    sb.Append(Convert.ToInt64(requestDetails.AvgTimeTakenInMilliSeconds).ToString("#,##0"));
+                    sb.Append("</td></tr>");
+
+                }
+            }
+            sb.Append("</table>");
+            return sb.ToString();
+        }
+
         public static string CreateTableForIISRequestsDistribution(CloudStorageAccount storageAccount, string containerName, List<string> datesInWeek)
         {
             StringBuilder sb = new StringBuilder();
