@@ -17,6 +17,8 @@
         <li><a href="#Errors">Errors Weekly Trend</a></li>
         <li><a href="#LatencyReport">E2E Latency Report</a></li>
         <li><a href="#LatencyToday">E2E Latency Trends</a></li>
+        <li><a href="#CpuUsageTotay">Cpu</a></li>
+        <li><a href="#MemUsageTotay">Memory</a></li>
       
     </ul>    
     <div class="frames">
@@ -25,6 +27,8 @@
         <div class="frame" id="Errors">@Html.Action("ErrorsThisWeek", "V2GalleryFrontEnd");</div>
         <div class="frame" id="LatencyReport">@Html.Action("LatencyReport", "V2GalleryFrontEnd");</div>
         <div class="frame" id="LatencyToday">@Html.Action("LatencyToday", "V2GalleryFrontEnd");</div>
+        <div class="frame" id="CpuUsageTotay">@Html.Action("CpuUsage", "V2GalleryFrontEnd");</div>
+        <div class="frame" id="MemUsageTotay">@Html.Action("MemUsage", "V2GalleryFrontEnd");</div>
     </div>
 
 </div>

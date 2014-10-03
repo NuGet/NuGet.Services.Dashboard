@@ -29,6 +29,24 @@ namespace NuGetDashboard.Controllers.LiveSiteMonitoring
         }
 
         [HttpGet]
+        public ActionResult CpuUsage()
+        {
+            string[] blobNames = new string[1];
+            blobNames[0] = "nuget-prod-0-v2gallery" + @"\Processor(_Total)\% Processor Time" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow());
+
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "CpuUsagetoday", 24*4, 800));
+        }
+
+        [HttpGet]
+        public ActionResult MemUsage()
+        {
+            string[] blobNames = new string[1];
+            blobNames[0] = "nuget-prod-0-v2gallery" + @"\Memory\Available MBytes" + string.Format("{0:MMdd}", DateTimeUtility.GetPacificTimeNow());
+
+            return PartialView("~/Views/Shared/PartialChart.cshtml", ChartingUtilities.GetLineChartFromBlobName(blobNames, "Memory_Usage_todayInMB", 24 * 4, 800));
+        }
+
+        [HttpGet]
         public ActionResult ErrorsThisWeek()
         {
             string[] blobNames = new string[8];
