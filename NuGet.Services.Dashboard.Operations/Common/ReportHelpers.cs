@@ -355,7 +355,7 @@ namespace NuGetGallery.Operations.Common
             sb.Append(cellOpenTag2 + fontOpenTag + "# of Requests" + fontCloseTag + "</td>");
             sb.Append(cellOpenTag2 + fontOpenTag + "Avg Time Taken in ms" + fontCloseTag + "</td></tr>");
 
-            string blobName = "IISIPDetails" + string.Format("{0:MMdd}", date.AddDays(-1)) + ".json";
+            string blobName = "IISIPDetails" + string.Format("{0:yyMMdd}", date.AddDays(-1)) + ".json";
             
             Dictionary<string, string> dict = ReportHelpers.GetDictFromBlob(storageAccount, blobName, containerName);
             IISIPDetails requestDetails = new IISIPDetails();
@@ -392,7 +392,7 @@ namespace NuGetGallery.Operations.Common
             sb.Append(@"<tr>" + cellOpenTag1 + fontOpenTag + "Uri Stem" + fontCloseTag + "</td>");
             sb.Append(cellOpenTag2 + fontOpenTag + "Avg Time Taken in ms" + fontCloseTag + "</td></tr>");
 
-            string blobName = "IISResponseTimeDetails" + string.Format("{0:MMdd}", date.AddDays(-1)) + ".json";
+            string blobName = "IISResponseTimeDetails" + string.Format("{0:yyMMdd}", date.AddDays(-1)) + ".json";
 
             Dictionary<string, string> dict = ReportHelpers.GetDictFromBlob(storageAccount, blobName, containerName);
             IISResponseTimeDetails requestDetails = new IISResponseTimeDetails();

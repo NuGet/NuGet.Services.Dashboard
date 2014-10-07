@@ -72,8 +72,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             {
                 int avgTime = 0;
                 List<string> _dates = new List<string>();
-                string date = string.Format("{0:MMdd}", DateTime.Now.AddDays(-1));
-                _dates.Add(date);
+                _dates.Add(Date);
                 return ReportHelpers.GetQueryNumbers("Search", out avgTime, _dates, StorageAccount, ContainerName);
             }
         }
@@ -81,8 +80,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         private string CreateTableForIISRequestsDistribution()
         {
             List<string> _dates = new List<string>();
-            string date = string.Format("{0:MMdd}", DateTime.Now.AddDays(-1));
-            _dates.Add(date);
+            _dates.Add(Date);
             return ReportHelpers.CreateTableForIISRequestsDistribution(StorageAccount, ContainerName, _dates);
         }
 

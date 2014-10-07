@@ -32,14 +32,21 @@ namespace NuGetGallery.Operations
 
         [Option("ServiceName", AltName = "servicename")]
         public string ServiceName { get; set; }
+
+        public string ReportDate
+        {
+            get
+            {
+                return string.Format("{0:yyMMdd}", DateTime.UtcNow.AddDays(-1));
+            }
+        }
         
         public override void ExecuteCommand()
         {            
            //Get the logs for the previous day.
            string DeploymentID = new JavaScriptSerializer().Deserialize<string>(ReportHelpers.Load(StorageAccount, "DeploymentId_" + ServiceName + ".json", ContainerName));
            string blobName = DeploymentID + "/NuGetGallery/NuGetGallery_IN_{IID}/Web/W3SVC1273337584/u_ex{Date}{Hour}.log";
-           string date = string.Format("{0:yyMMdd}", DateTime.UtcNow.AddDays(-1));
-           blobName = blobName.Replace("{Date}", date);
+           blobName = blobName.Replace("{Date}", ReportDate);
                        
            DirectoryInfo info = new System.IO.DirectoryInfo(Environment.CurrentDirectory);
                       
@@ -88,11 +95,11 @@ namespace NuGetGallery.Operations
             string standardOutput = string.Empty;
             List<IISIPDetails> ipDetails = new List<IISIPDetails>();
 
-            string query = string.Format(@"select c-ip, count(*), avg(time-taken) from {0}\*.log GROUP BY c-ip", info.FullName);
+            string query = string.Format(@"select c-ip, count(*), avg(time-taken) from {0}\*{1}*.log GROUP BY c-ip", info.FullName, ReportDate);
             ipDetails = InvokeLogParserProcess(@"-i:IISW3C -o:CSV " + @"""" + query + @"""" + " -stats:OFF", 3);
             if (ipDetails.Count > 0)
             {
-                string blobName = "IISIPDetails" + string.Format("{0:MMdd}", DateTime.Now.AddDays(-1)) + ".json";
+                string blobName = "IISIPDetails" + ReportDate + ".json";
                 int count = 0;
                 foreach (IISIPDetails detail in ipDetails)
                 {
@@ -111,11 +118,11 @@ namespace NuGetGallery.Operations
             string standardOutput = string.Empty;
             List<IISResponseTimeDetails> responseTimeDetails = new List<IISResponseTimeDetails>();
 
-            string query = string.Format(@"select cs-uri-stem, avg(time-taken) from {0}\*.log GROUP BY cs-uri-stem", info.FullName);
+            string query = string.Format(@"select cs-uri-stem, avg(time-taken) from {0}\*{1}*.log GROUP BY cs-uri-stem", info.FullName, ReportDate);
             responseTimeDetails = InvokeLogParserProcessForResponseTime(@"-i:IISW3C -o:CSV " + @"""" + query + @"""" + " -stats:OFF", 2);
             if (responseTimeDetails.Count > 0)
             {
-                string blobName = "IISResponseTimeDetails" + string.Format("{0:MMdd}", DateTime.Now.AddDays(-1)) + ".json";
+                string blobName = "IISResponseTimeDetails" + ReportDate + ".json";
                 int count = 0;
                 foreach (IISResponseTimeDetails detail in responseTimeDetails)
                 {
