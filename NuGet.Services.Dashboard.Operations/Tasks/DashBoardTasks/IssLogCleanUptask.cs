@@ -9,6 +9,23 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         public override void ExecuteCommand()
         {
             var dirs = Directory.EnumerateDirectories(Environment.CurrentDirectory, "*.log");
+            var files = Directory.EnumerateFiles(Environment.CurrentDirectory, "*.log");
+
+            foreach (string file in files)
+            {
+                try
+                {
+                    string filename = file.Substring(Environment.CurrentDirectory.Length);
+                    string date = filename.Substring("\\u_ex".Length, "yyMMddHH".Length);
+                    DateTime logdate = new DateTime();
+                    logdate = DateTime.ParseExact(date, "yyMMddHH", null);
+                    if (logdate < DateTime.UtcNow.AddHours(-48)) File.Delete(file);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("clean up error: {0}", e.Message);
+                }
+            }
             foreach (string dir in dirs)
             {
                 try
