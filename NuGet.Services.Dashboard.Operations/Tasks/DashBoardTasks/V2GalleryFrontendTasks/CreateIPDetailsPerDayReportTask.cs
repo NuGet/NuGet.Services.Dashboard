@@ -95,7 +95,7 @@ namespace NuGetGallery.Operations
             string standardOutput = string.Empty;
             List<IISIPDetails> ipDetails = new List<IISIPDetails>();
 
-            string query = string.Format(@"select c-ip, count(*), avg(time-taken) from {0}\*{1}*.log GROUP BY c-ip", info.FullName, ReportDate);
+            string query = string.Format(@"select c-ip, avg(time-taken), count(*) from {0}\*{1}*.log GROUP BY c-ip", info.FullName, ReportDate);
             ipDetails = InvokeLogParserProcess(@"-i:IISW3C -o:CSV " + @"""" + query + @"""" + " -stats:OFF", 3);
             if (ipDetails.Count > 0)
             {
