@@ -324,6 +324,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             return ReportHelpers.CreateTableForResponseTime(StorageAccount, ContainerName, DateTime.Now);
         }
 
+        public string UserAgentDetails()
+        {
+            return ReportHelpers.CreateTableForUserAgent(StorageAccount, ContainerName, DateTime.Now);
+        }
+
         private void SendEmail()
         {
             SmtpClient sc = new SmtpClient("smtphost");
@@ -397,6 +402,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             mailBody = mailBody.Replace("{IISRequestsDistribution}", CreateTableForIISRequestsDistribution());
             mailBody = mailBody.Replace("{IPRequestDistribution}", IPDetails());
             mailBody = mailBody.Replace("{ResponseTime}", ResponseTimeDetails());
+            mailBody = mailBody.Replace("{UserAgent}", UserAgentDetails());
             return mailBody;
         }
 
