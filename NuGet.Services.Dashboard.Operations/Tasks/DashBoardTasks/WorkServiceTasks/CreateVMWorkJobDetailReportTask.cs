@@ -58,7 +58,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.WorkServiceTasks
                                     int index = line.IndexOf(@"'");
                                     int end = line.IndexOf(@"'", index + 1);
                                     frequency = Convert.ToDouble(line.Substring(index + 1, end - index - 1)) / (1000 * 60);
-                                    if ((blob as CloudBlockBlob).Properties.LastModified.Value.DateTime < DateTime.UtcNow.AddMinutes(-frequency * 10))
+                                    if ((blob as CloudBlockBlob).Properties.LastModified.Value.DateTime < DateTime.UtcNow.AddMinutes(-frequency * 50))
                                         alert = true;
                                 }
                             }
