@@ -35,7 +35,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         {
             AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
             int diff = GetTotalPackageCountFromDatabase() - GetTotalPackageCountFromLucene();
-            if(diff > thresholdValues.LuceneIndexLagAlertErrorThreshold || diff < -50)
+            if (diff > thresholdValues.LuceneIndexLagAlertErrorThreshold || diff < -200) //Increasing the value for negative lag due to bug https://github.com/NuGet/NuGetGallery/issues/2328/. TBD : Make the threshold configurable.
             {
                 new SendAlertMailTask
                 {
