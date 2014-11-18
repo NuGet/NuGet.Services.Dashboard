@@ -14,9 +14,10 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.WorkServiceTasks
     [Command("CreateVMWorkJobDetailReportTask", "Create work job detail", AltName = "cvwjdrt")]
     class CreateVMWorkJobDetailReportTask : StorageTask
     {
-        private HashSet<string> error;
+        private StringBuilder errorFile;
         private int ErrorCount;
         private int Successed;
+        private List<string> runs;
 
         [Option("LogStorageUri", AltName = "uri")]
         public string LogStorageUri { get; set; }
@@ -34,71 +35,143 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.WorkServiceTasks
 
             foreach (CloudBlobDirectory task in dirs)
             {
-                error = new HashSet<string>();
                 ErrorCount = 0;
                 Successed = 0;
-                double frequency = 0.0;
-                bool alert = false;
-                var allblobs = container.ListBlobs(prefix: task.Prefix, useFlatBlobListing: true, blobListingDetails: BlobListingDetails.None).OrderByDescending(e => (e as CloudBlockBlob).Name);
-                foreach (var blob in allblobs)
-                {
-                    using (var memoryStream = new MemoryStream())
+                int len = task.Prefix.Length;
+                int adjust = "yyyy/MM/dd/hh/mm/ss/xxxxxxx/NUGET-PROD-JOBS/".Length;
+                string date = string.Format("{0:yyyy/MM/dd/}",DateTime.UtcNow);
+                errorFile = new StringBuilder();
+                runs = new List<string>();
+
+                if (!task.Prefix.ToString().Contains("Ng"))
+                { 
+                    int days = 1;
+                    while (true)
                     {
-                        Console.WriteLine((blob as CloudBlockBlob).Name);
-                        (blob as CloudBlockBlob).DownloadToStream(memoryStream);
-                        StreamReader sr = new StreamReader(memoryStream);
-                        sr.BaseStream.Seek(0, SeekOrigin.Begin);
-                        string line;
-                        while ((line = sr.ReadLine()) != null)
+                        var allblobs = container.ListBlobs(prefix: task.Prefix + date, useFlatBlobListing: true, blobListingDetails: BlobListingDetails.None).OrderByDescending(e => (e as CloudBlockBlob).Name).Where(e => (e as CloudBlockBlob).Name.Substring(len + adjust).Equals("ended.txt")).Take(20);
+
+                        int count = 0;
+                        date = string.Format("{0:yyyy/MM/dd/}", DateTime.UtcNow.AddDays(-days));
+                        foreach (var blob in allblobs)
                         {
-                            if (frequency == 0)
-                            {
-                                if (line.Contains("SleepDuration"))
-                                {
-                                    int index = line.IndexOf(@"'");
-                                    int end = line.IndexOf(@"'", index + 1);
-                                    frequency = Convert.ToDouble(line.Substring(index + 1, end - index - 1)) / (1000 * 60);
-                                    if ((blob as CloudBlockBlob).Properties.LastModified.Value.DateTime < DateTime.UtcNow.AddMinutes(-frequency * 50))
-                                        alert = true;
-                                }
-                            }
-                            if (line.Contains("[Err]"))
-                            {
-                                error.Add(line);
-                                ErrorCount += 1;
-                            }
-                            if (line.Contains("Job Succeeded")) Successed += 1;
+                            count++;
+                            bool result = EndfileCheck((blob as CloudBlockBlob).Name.ToString(),container, task.Prefix.Replace(@"\", ""));
+                            
                         }
+                        if (count != 0 || days > 5) break;
+                        days++;
                     }
-                    if (Successed + ErrorCount > 20) break;
                 }
+                else
+                {
+                    CollectJobRun(task);
+                    int runToday = 0;
+                    foreach(string run in runs)
+                    {
+                        bool result = EndfileCheck(run + @"ended.txt", container, task.Prefix.Replace(@"\", ""));
+                        if (run.Contains(date)) runToday++;
+                    }
+
+                    if (runToday >= 5)
+                    {
+                        new SendAlertMailTask
+                        {
+                            AlertSubject = string.Format("Warning: Alert for VM jobs : {0} ", task.Prefix.Replace(@"\", "")),
+                            Details = string.Format("{0} task have more than 5 runs today, we should check it.", task.Prefix.Replace(@"\", "")),
+                            AlertName = string.Format("Error: Vm jobs {0}", task.Prefix.Replace(@"\", "")),
+                            Component = "Vm jobs",
+                            Level = "Error"
+                        }.ExecuteCommand();
+                    }            
+                }
+                
                 AlertThresholds thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
 
-                if (Successed != 0 && ErrorCount*100 / Successed > thresholdValues.WorkJobErrorThreshold)
+                if (Successed != 0 && ErrorCount*100 / (Successed+ErrorCount) > thresholdValues.WorkJobErrorThreshold)
                 {
                     new SendAlertMailTask
                     {
-                        AlertSubject = string.Format("Error: Alert for work job service : {0} failure", task.Prefix.Replace(@"\","")),
-                        Details = string.Format("Rate of failure exceeded Error threshold for {0}. Threshold count : {1}%, failure in last 20 runs : {2}, error detail is {3}", task.Prefix.Replace(@"\", ""), thresholdValues.WorkJobErrorThreshold, ErrorCount,error.ToString()),
-                        AlertName = string.Format("Error: Work job service {0}", task.Prefix.Replace(@"\", "")),
-                        Component = "work job service",
+                        AlertSubject = string.Format("Error: Alert for VM jobs : {0} failure", task.Prefix.Replace(@"\","")),
+                        Details = string.Format("{0} Rate of failure exceeded Error threshold {1}%. in last 20 runs, following run are failed: {2}", task.Prefix.Replace(@"\", ""), thresholdValues.WorkJobErrorThreshold, ErrorCount, errorFile.ToString()),
+                        AlertName = string.Format("Error: Vm jobs {0}", task.Prefix.Replace(@"\", "")),
+                        Component = "Vm jobs",
                         Level = "Error"
                     }.ExecuteCommand();
-                }
-                if (alert)
+                }               
+            }
+        }
+
+        private void CollectJobRun(CloudBlobDirectory root)
+        {
+            var allblobs = root.ListBlobs(useFlatBlobListing: false, blobListingDetails: BlobListingDetails.None);
+            foreach (var blob in allblobs)
+            {
+                if (blob is CloudBlobDirectory) CollectJobRun(blob as CloudBlobDirectory);
+                else
                 {
-                    new SendAlertMailTask
-                    {
-                        AlertSubject = string.Format("Error: Alert for work job service : {0} failure", task.Prefix.Replace(@"\", "")),
-                        Details = string.Format("worker job: {0} didn't run in last {1} min", task.Prefix.Replace(@"\", ""), frequency*10),
-                        AlertName = string.Format("Error: Work job service {0}", task.Prefix.Replace(@"\", "")),
-                        Component = "work job service",
-                        Level = "Error"
-                    }.ExecuteCommand();
+                    runs.Add(root.Prefix);
+                    break;
                 }
             }
+        }
 
+        private bool EndfileCheck(string filename, CloudBlobContainer container, string taskName)
+        {
+            CloudBlockBlob blob = container.GetBlockBlobReference(filename);
+            string lastlogFile = "";
+            using (var memoryStream = new MemoryStream())
+            {
+                try
+                {
+                    blob.DownloadToStream(memoryStream);
+                    StreamReader sr = new StreamReader(memoryStream);
+                    sr.BaseStream.Seek(0, SeekOrigin.Begin);
+                    lastlogFile = sr.ReadLine();
+                }
+                catch
+                {
+                    return true;
+                }
+            }
+            CloudBlockBlob lastBlob = container.GetBlockBlobReference(lastlogFile);
+            using (var memoryStream = new MemoryStream())
+            {
+                Console.WriteLine((blob as CloudBlockBlob).Name);
+                try
+                {
+                    lastBlob.DownloadToStream(memoryStream);
+                }
+                catch
+                {
+                    return false;
+                }
 
+                StreamReader sr = new StreamReader(memoryStream);
+                sr.BaseStream.Seek(0, SeekOrigin.Begin);
+                string line;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (line.Contains("Job Succeeded")) return true;
+                    if (line.Contains("Job Failed"))
+                    {
+                        errorFile.Append((blob as CloudBlockBlob).Name + ",");
+                        return false;
+                    }
+                    if (line.Contains("Job Crashed"))
+                    {
+                        new SendAlertMailTask
+                        {
+                            AlertSubject = string.Format("Error: Alert for VM jobs : {0} Crashed", taskName),
+                            Details = string.Format("VM {0} job crashed at {1}, the last blob file name is {2}", taskName, (blob as CloudBlockBlob).Properties.LastModified.ToString(), (blob as CloudBlockBlob).Name),
+                            AlertName = string.Format("Error: Vm Jobs {0}", taskName),
+                            Component = "Vm jobs",
+                            Level = "Error"
+                        }.ExecuteCommand();
+                        return false;
+                    }
+                }
+            }
+            return false;
         }
     }
 }
