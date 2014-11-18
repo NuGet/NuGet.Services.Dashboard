@@ -129,10 +129,10 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Error: Alert for work job service : {0} failure", job.JobInstanceName),
+                            AlertSubject = string.Format("Error: Alert for Nuget Work Service : {0} failure", job.JobInstanceName),
                             Details = string.Format("Rate of failure exceeded Error threshold for {0}. Threshold count : {1}%, failure in last 24 hour : {2}", job.JobInstanceName,thresholdValues.WorkJobErrorThreshold , faultCount),
-                            AlertName = string.Format("Error: Work job service {0}", job.JobInstanceName),
-                            Component = "work job service",
+                            AlertName = string.Format("Error: Nuget Work Service {0}", job.JobInstanceName),
+                            Component = "Nuget Work Service",
                             Level = "Error"
                         }.ExecuteCommand();
                     }
@@ -140,10 +140,10 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Warning: Alert for work job service: {0} failure", job.JobInstanceName),
+                            AlertSubject = string.Format("Warning: Alert for Nuget Work Service: {0} failure", job.JobInstanceName),
                             Details = string.Format("Rate of failure exceeded Warning threshold for {0}. Threshold count : {1}%, failure in last 24 hour : {2}", job.JobInstanceName, thresholdValues.WorkJobWarningThreshold, faultCount),
-                            AlertName = string.Format("Warning: Work job service {0}", job.JobInstanceName),
-                            Component = "work job service",
+                            AlertName = string.Format("Warning: Nuget Work Service {0}", job.JobInstanceName),
+                            Component = "Nuget Work Service",
                             Level = "Warning"
                         }.ExecuteCommand();
                     }
@@ -153,10 +153,10 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
                 {
                     new SendAlertMailTask
                     {
-                        AlertSubject = string.Format("Error: Alert for work job service : {0} failure", job.JobInstanceName),
+                        AlertSubject = string.Format("Error: Alert for Nuget Work Service : {0} failure", job.JobInstanceName),
                         Details = string.Format("In last 24 hours, invocation of {0} is only {1}, it's less than half of scheduled jobs", job.JobInstanceName, invocationCount),
-                        AlertName = string.Format("Error: Work job service {0}", job.JobInstanceName),
-                        Component = "work job service",
+                        AlertName = string.Format("Error: Nuget Work Service {0}", job.JobInstanceName),
+                        Component = "Nuget Work Service",
                         Level = "Error"
                     }.ExecuteCommand();
                 }
