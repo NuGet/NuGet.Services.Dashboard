@@ -28,7 +28,7 @@ namespace NuGet.Services.Dashboard.Common
         public int WorkJobErrorThreshold = 30;
         public int DatabaseImportErrorThreshold = 39000;
         public int PingdomServiceDistruptionErrorThresholdInSeconds = 30; // specifies the limit on down time for each pindom micro service (second)
-        public int MetricsServiceHeartbeatErrorThreshold = 0;
+        public int MetricsServiceHeartbeatErrorThreshold = 30;
         public int MetricsServiceStatusErrorThreshold = 900;
         public int UploadPackageThreshold = 0; //specifies limit on latency in milliseconds for uploading a package
         public int DownloadPackageThreshold = 0; //specifies limit on latency in milliseconds for downloading a package
