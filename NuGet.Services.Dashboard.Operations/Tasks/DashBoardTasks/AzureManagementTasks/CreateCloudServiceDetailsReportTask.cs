@@ -91,13 +91,13 @@ namespace NuGetGallery.Operations
                     }.ExecuteCommand();
                 }
             }
-            if(unReadyInstanceCount > (roleInstanceCount / 2)) 
+            if((roleInstanceCount-unReadyInstanceCount) >= 2) 
             {
                 string unReadyReport = string.Join(",", unReadyInstanceStatus.ToArray());
                 new SendAlertMailTask
                     {
                         AlertSubject = string.Format("Error: Alert for Multiple role instances statuses for {0}", ServiceName),
-                        Details = string.Format("More than half instances of {0} cloud service are not in ReadyRole status, the instance name and status is {1}",  ServiceName, unReadyReport),
+                        Details = string.Format("less than 2 instances of {0} cloud service are in ReadyRole status, the unready instance name and status is {1}",  ServiceName, unReadyReport),
                         AlertName = string.Format("Error: Alert for Multiple Role Instances for {0}", ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
                         Component = "CloudService" + ServiceName,
                         Level = "Error"
