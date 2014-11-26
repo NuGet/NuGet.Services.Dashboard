@@ -91,7 +91,7 @@ namespace NuGetGallery.Operations
                     }.ExecuteCommand();
                 }
             }
-            if((roleInstanceCount-unReadyInstanceCount) >= 2) 
+            if((roleInstanceCount-unReadyInstanceCount) < 2) 
             {
                 string unReadyReport = string.Join(",", unReadyInstanceStatus.ToArray());
                 new SendAlertMailTask
