@@ -203,6 +203,7 @@
     <Compile Include="Tasks\DashBoardTasks\TrendingTasks\CreateVsTrendingReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\AzureManagementTasks\CreateTrafficManagerStatusOverviewReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\CreateWADPerformanceDiagnosticsReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\V3JobsBackGroundTasks\CreateBackupLuceneIndexTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\WorkServiceTasks\CreateVMWorkJobDetailReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\WorkServiceTasks\CreateWorkJobDetailReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\WorkServiceTasks\CreateWorkJobWeeklyReport.cs" />
