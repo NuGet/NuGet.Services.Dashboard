@@ -35,7 +35,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
 
         public override void ExecuteCommand()
         {
-            destContainerName = "automatedbackup-" + String.Format(DateTime.Now.ToString("MMddhh"));
+            destContainerName = "v3-lucene0-automatedbackup-" + String.Format(DateTime.Now.ToString("MMddhh"));
             UpdateSourceIndex();
             CreateBackUpIndex();
             CheckBackedUpIndex();
