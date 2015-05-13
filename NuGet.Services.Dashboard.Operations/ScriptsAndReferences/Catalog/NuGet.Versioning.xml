@@ -1,0 +1,668 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>NuGet.Versioning</name>
+    </assembly>
+    <members>
+        <member name="T:NuGet.Versioning.HashCodeCombiner">
+            <summary>
+            Hash code creator, based on the original NuGet hash code combiner/ASP hash code combiner implementations
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.HashCodeCombiner.GetHashCode(System.Object[])">
+            <summary>
+            Create a unique hash code for the given set of items
+            </summary>
+        </member>
+        <member name="T:NuGet.Versioning.IVersionRangeComparer">
+            <summary>
+            Version range comparer
+            </summary>
+        </member>
+        <member name="T:NuGet.Versioning.IVersionComparer">
+            <summary>
+            IVersionComparer represents a version comparer capable of sorting and determining the equality of SimpleVersion objects.
+            </summary>
+        </member>
+        <member name="T:NuGet.Versioning.NuGetVersion">
+            <summary>
+            A hybrid implementation of SemVer that supports semantic versioning as described at http://semver.org while not strictly enforcing it to 
+            allow older 4-digit versioning schemes to continue working.
+            </summary>
+        </member>
+        <member name="T:NuGet.Versioning.SemanticVersion">
+            <summary>
+            A strict SemVer implementation
+            </summary>
+        </member>
+        <member name="T:NuGet.Versioning.SimpleVersion">
+            <summary>
+            A basic version that allows comparisons.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.SimpleVersion.ToNormalizedString">
+            <summary>
+            Gives a normalized representation of the version.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.SimpleVersion.Equals(NuGet.Versioning.SimpleVersion,NuGet.Versioning.VersionComparison)">
+            <summary>
+            True if the VersionBase objects are equal based on the given comparison mode.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.SimpleVersion.CompareTo(NuGet.Versioning.SimpleVersion,NuGet.Versioning.VersionComparison)">
+            <summary>
+            Compares NuGetVersion objects using the given comparison mode.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.SimpleVersion.op_Equality(NuGet.Versioning.SimpleVersion,NuGet.Versioning.SimpleVersion)">
+            <summary>
+            ==
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.SimpleVersion.op_Inequality(NuGet.Versioning.SimpleVersion,NuGet.Versioning.SimpleVersion)">
+            <summary>
+            !=
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:NuGet.Versioning.SimpleVersion.op_LessThan(NuGet.Versioning.SimpleVersion,NuGet.Versioning.SimpleVersion)" -->
+        <!-- Badly formed XML comment ignored for member "M:NuGet.Versioning.SimpleVersion.op_LessThanOrEqual(NuGet.Versioning.SimpleVersion,NuGet.Versioning.SimpleVersion)" -->
+        <member name="M:NuGet.Versioning.SimpleVersion.op_GreaterThan(NuGet.Versioning.SimpleVersion,NuGet.Versioning.SimpleVersion)">
+            <summary>
+            >
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.SimpleVersion.op_GreaterThanOrEqual(NuGet.Versioning.SimpleVersion,NuGet.Versioning.SimpleVersion)">
+            <summary>
+            >=
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.SemanticVersion.#ctor(NuGet.Versioning.SemanticVersion)">
+            <summary>
+            Creates a SemanticVersion from an existing SemanticVersion
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.SemanticVersion.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Creates a SemanticVersion X.Y.Z
+            </summary>
+            <param name="major">X.y.z</param>
+            <param name="minor">x.Y.z</param>
+            <param name="patch">x.y.Z</param>
+        </member>
+        <member name="M:NuGet.Versioning.SemanticVersion.#ctor(System.Int32,System.Int32,System.Int32,System.String)">
+            <summary>
+            Creates a NuGetVersion X.Y.Z-alpha
+            </summary>
+            <param name="major">X.y.z</param>
+            <param name="minor">x.Y.z</param>
+            <param name="patch">x.y.Z</param>
+            <param name="releaseLabel">Prerelease label</param>
+        </member>
+        <member name="M:NuGet.Versioning.SemanticVersion.#ctor(System.Int32,System.Int32,System.Int32,System.String,System.String)">
+            <summary>
+            Creates a NuGetVersion X.Y.Z-alpha#build01
+            </summary>
+            <param name="major">X.y.z</param>
+            <param name="minor">x.Y.z</param>
+            <param name="patch">x.y.Z</param>
+            <param name="releaseLabel">Prerelease label</param>
+            <param name="metadata">Build metadata</param>
+        </member>
+        <member name="M:NuGet.Versioning.SemanticVersion.#ctor(System.Int32,System.Int32,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.String)">
+            <summary>
+            Creates a NuGetVersion X.Y.Z-alpha.1.2#build01
+            </summary>
+            <param name="major">X.y.z</param>
+            <param name="minor">x.Y.z</param>
+            <param name="patch">x.y.Z</param>
+            <param name="releaseLabels">Release labels that have been split by the dot separator</param>
+            <param name="metadata">Build metadata</param>
+        </member>
+        <member name="M:NuGet.Versioning.SemanticVersion.Parse(System.String)">
+            <summary>
+            Parses a SemVer string using strict SemVer rules.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.SemanticVersion.TryParse(System.String,NuGet.Versioning.SemanticVersion@)">
+            <summary>
+            Parse a version string
+            </summary>
+            <returns>false if the version is not a strict semver</returns>
+        </member>
+        <member name="M:NuGet.Versioning.SemanticVersion.ParseSections(System.String)">
+            <summary>
+            Parse the version string into version/release/build
+            The goal of this code is to take the most direct and optimized path
+            to parsing and validating a semver. Regex would be much cleaner, but 
+            due to the number of versions created in NuGet Regex is too slow.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.SemanticVersion.Major">
+            <summary>
+            Major version X (X.y.z)
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.SemanticVersion.Minor">
+            <summary>
+            Minor version Y (x.Y.z)
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.SemanticVersion.Patch">
+            <summary>
+            Patch version Z (x.y.Z)
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.SemanticVersion.ReleaseLabels">
+            <summary>
+            A collection of pre-release labels attached to the version.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.SemanticVersion.Release">
+            <summary>
+            The full pre-release label for the version.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.SemanticVersion.IsPrerelease">
+            <summary>
+            True if pre-release labels exist for the version.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.SemanticVersion.HasMetadata">
+            <summary>
+            True if metadata exists for the version.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.SemanticVersion.Metadata">
+            <summary>
+            Build metadata attached to the version.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.#ctor(System.String)">
+            <summary>
+            Creates a NuGetVersion using NuGetVersion.Parse(string)
+            </summary>
+            <param name="version">Version string</param>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.#ctor(NuGet.Versioning.NuGetVersion)">
+            <summary>
+            Creates a NuGetVersion from an existing NuGetVersion
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.#ctor(System.Version,System.String,System.String)">
+            <summary>
+            Creates a NuGetVersion from a .NET Version
+            </summary>
+            <param name="version">Version numbers</param>
+            <param name="releaseLabel">Prerelease label</param>
+            <param name="metadata">Build metadata</param>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Creates a NuGetVersion X.Y.Z
+            </summary>
+            <param name="major">X.y.z</param>
+            <param name="minor">x.Y.z</param>
+            <param name="patch">x.y.Z</param>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.#ctor(System.Int32,System.Int32,System.Int32,System.String)">
+            <summary>
+            Creates a NuGetVersion X.Y.Z-alpha
+            </summary>
+            <param name="major">X.y.z</param>
+            <param name="minor">x.Y.z</param>
+            <param name="patch">x.y.Z</param>
+            <param name="releaseLabel">Prerelease label</param>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.#ctor(System.Int32,System.Int32,System.Int32,System.String,System.String)">
+            <summary>
+            Creates a NuGetVersion X.Y.Z-alpha#build01
+            </summary>
+            <param name="major">X.y.z</param>
+            <param name="minor">x.Y.z</param>
+            <param name="patch">x.y.Z</param>
+            <param name="releaseLabel">Prerelease label</param>
+            <param name="metadata">Build metadata</param>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.#ctor(System.Int32,System.Int32,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.String)">
+            <summary>
+            Creates a NuGetVersion X.Y.Z-alpha.1.2#build01
+            </summary>
+            <param name="major">X.y.z</param>
+            <param name="minor">x.Y.z</param>
+            <param name="patch">x.y.Z</param>
+            <param name="releaseLabels">Prerelease labels</param>
+            <param name="metadata">Build metadata</param>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.#ctor(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Creates a NuGetVersion W.X.Y.Z
+            </summary>
+            <param name="major">W.x.y.z</param>
+            <param name="minor">w.X.y.z</param>
+            <param name="patch">w.x.Y.z</param>
+            <param name="revision">w.x.y.Z</param>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.String,System.String)">
+            <summary>
+            Creates a NuGetVersion W.X.Y.Z-alpha#build01
+            </summary>
+            <param name="major">W.x.y.z</param>
+            <param name="minor">w.X.y.z</param>
+            <param name="patch">w.x.Y.z</param>
+            <param name="revision">w.x.y.Z</param>
+            <param name="releaseLabel">Prerelease label</param>
+            <param name="metadata">Build metadata</param>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.String)">
+            <summary>
+            Creates a NuGetVersion W.X.Y.Z-alpha.1#build01
+            </summary>
+            <param name="major">W.x.y.z</param>
+            <param name="minor">w.X.y.z</param>
+            <param name="patch">w.x.Y.z</param>
+            <param name="revision">w.x.y.Z</param>
+            <param name="releaseLabels">Prerelease labels</param>
+            <param name="metadata">Build metadata</param>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.#ctor(System.Version,System.Collections.Generic.IEnumerable{System.String},System.String,System.String)">
+            <summary>
+            Creates a NuGetVersion from a .NET Version with additional release labels, build metadata, and a non-normalized version string.
+            </summary>
+            <param name="version">Version numbers</param>
+            <param name="releaseLabels">prerelease labels</param>
+            <param name="metadata">Build metadata</param>
+            <param name="originalVersion">Non-normalized original version string</param>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.ToString">
+            <summary>
+            Returns the version string.
+            </summary>
+            <remarks>This method includes legacy behavior. Use ToNormalizedString() instead.</remarks>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.Parse(System.String)">
+            <summary>
+            Creates a NuGetVersion from a string representing the semantic version.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.TryParse(System.String,NuGet.Versioning.NuGetVersion@)">
+            <summary>
+            Parses a version string using loose semantic versioning rules that allows 2-4 version components followed by an optional special version.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.TryParseStrict(System.String,NuGet.Versioning.NuGetVersion@)">
+            <summary>
+            Parses a version string using strict SemVer rules.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.NuGetVersion.GetLegacyString(System.Version,System.Collections.Generic.IEnumerable{System.String},System.String)">
+            <summary>
+            Creates a legacy version string using System.Version
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.NuGetVersion.Version">
+            <summary>
+            A System.Version representation of the version without metadata or release labels.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.NuGetVersion.IsLegacyVersion">
+            <summary>
+            True if the NuGetVersion is using legacy behavior.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.NuGetVersion.Revision">
+            <summary>
+            Revision version R (x.y.z.R)
+            </summary>
+        </member>
+        <member name="T:NuGet.Versioning.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.Resources.Argument_Cannot_Be_Null_Or_Empty">
+            <summary>
+              Looks up a localized string similar to Value cannot be null or an empty string..
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.Resources.Invalidvalue">
+            <summary>
+              Looks up a localized string similar to &apos;{0}&apos; is not a valid version string..
+            </summary>
+        </member>
+        <member name="T:NuGet.Versioning.VersionComparer">
+            <summary>
+            An IVersionComparer for NuGetVersion and NuGetVersion types.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionComparer.#ctor">
+            <summary>
+            Creates a VersionComparer using the default mode.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionComparer.#ctor(NuGet.Versioning.VersionComparison)">
+            <summary>
+            Creates a VersionComparer that respects the given comparison mode.
+            </summary>
+            <param name="versionComparison">comparison mode</param>
+        </member>
+        <member name="M:NuGet.Versioning.VersionComparer.Equals(NuGet.Versioning.SimpleVersion,NuGet.Versioning.SimpleVersion)">
+            <summary>
+            Determines if both versions are equal.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionComparer.Compare(NuGet.Versioning.SimpleVersion,NuGet.Versioning.SimpleVersion,NuGet.Versioning.VersionComparison)">
+            <summary>
+            Compares the given versions using the VersionComparison mode.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionComparer.GetHashCode(NuGet.Versioning.SimpleVersion)">
+            <summary>
+            Gives a hash code based on the normalized version string.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionComparer.Compare(NuGet.Versioning.SimpleVersion,NuGet.Versioning.SimpleVersion)">
+            <summary>
+            Compare versions.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionComparer.CompareLegacyVersion(NuGet.Versioning.NuGetVersion,NuGet.Versioning.NuGetVersion)">
+            <summary>
+            Compares the 4th digit of the version number.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionComparer.CompareReleaseLabels(System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Compares sets of release labels.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionComparer.CompareRelease(System.String,System.String)">
+            <summary>
+            Release labels are compared as numbers if they are numeric, otherwise they will be compared
+            as strings.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionComparer.Default">
+            <summary>
+            A default comparer that compares metadata as strings.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionComparer.Version">
+            <summary>
+            A comparer that uses only the version numbers.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionComparer.VersionRelease">
+            <summary>
+            Compares versions without comparing the metadata.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionComparer.VersionReleaseMetadata">
+            <summary>
+            A version comparer that follows SemVer 2.0.0 rules.
+            </summary>
+        </member>
+        <member name="T:NuGet.Versioning.VersionComparison">
+            <summary>
+            Version comparison modes.
+            </summary>
+        </member>
+        <member name="F:NuGet.Versioning.VersionComparison.Default">
+            <summary>
+            Semantic version 2.0.1-rc comparison with additional compares for extra NuGetVersion fields.
+            </summary>
+        </member>
+        <member name="F:NuGet.Versioning.VersionComparison.Version">
+            <summary>
+            Compares only the version numbers.
+            </summary>
+        </member>
+        <member name="F:NuGet.Versioning.VersionComparison.VersionRelease">
+            <summary>
+            Include Version number and Release labels in the compare.
+            </summary>
+        </member>
+        <member name="F:NuGet.Versioning.VersionComparison.VersionReleaseMetadata">
+            <summary>
+            Include all metadata during the compare.
+            </summary>
+        </member>
+        <member name="T:NuGet.Versioning.VersionRange">
+            <summary>
+            Represents a range of versions.
+            </summary>
+            <summary>
+            Static factory methods for creating version range objects.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.#ctor(NuGet.Versioning.SimpleVersion,System.Boolean,NuGet.Versioning.SimpleVersion,System.Boolean,System.Nullable{System.Boolean})">
+            <summary>
+            Creates a VersionRange with the given min and max.
+            </summary>
+            <param name="minVersion">Lower bound of the version range.</param>
+            <param name="includeMinVersion">True if minVersion satisfies the condition.</param>
+            <param name="maxVersion">Upper bound of the version range.</param>
+            <param name="includeMaxVersion">True if maxVersion satisfies the condition.</param>
+            <param name="includePrerelease">True if prerelease versions should satisfy the condition.</param>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.Satisfies(NuGet.Versioning.SimpleVersion)">
+            <summary>
+            Determines if an NuGetVersion meets the requirements.
+            </summary>
+            <param name="version">SemVer to compare</param>
+            <returns>True if the given version meets the version requirements.</returns>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.Satisfies(NuGet.Versioning.SimpleVersion,NuGet.Versioning.VersionComparison)">
+            <summary>
+            Determines if an NuGetVersion meets the requirements using the given mode.
+            </summary>
+            <param name="version">SemVer to compare</param>
+            <param name="versionComparison">VersionComparison mode used to determine the version range.</param>
+            <returns>True if the given version meets the version requirements.</returns>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.Satisfies(NuGet.Versioning.SimpleVersion,NuGet.Versioning.IVersionComparer)">
+            <summary>
+            Determines if an NuGetVersion meets the requirements using the version comparer.
+            </summary>
+            <param name="version">SemVer to compare.</param>
+            <param name="comparer">Version comparer used to determine if the version criteria is met.</param>
+            <returns>True if the given version meets the version requirements.</returns>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.ToString">
+            <summary>
+            Normalized range string.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.ToString(System.String,System.IFormatProvider)">
+            <summary>
+            Format the version range with an IFormatProvider
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.TryFormatter(System.String,System.IFormatProvider,System.String@)">
+            <summary>
+            Format the range
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.PrettyPrint">
+            <summary>
+            Format the version range in Pretty Print format.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.Equals(System.Object)">
+            <summary>
+            Compares the object as a VersionRange with the default comparer
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.GetHashCode">
+            <summary>
+            Returns the hash code using the default comparer.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.Equals(NuGet.Versioning.VersionRange)">
+            <summary>
+            Default compare
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.Equals(NuGet.Versioning.VersionRange,NuGet.Versioning.IVersionRangeComparer)">
+            <summary>
+            Use the VersionRangeComparer for equality checks
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.Equals(NuGet.Versioning.VersionRange,NuGet.Versioning.VersionComparison)">
+            <summary>
+            Use a specific VersionComparison for comparison
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.Equals(NuGet.Versioning.VersionRange,NuGet.Versioning.IVersionComparer)">
+            <summary>
+             Use a specific IVersionComparer for comparison
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.Parse(System.String)">
+            <summary>
+            The version string is either a simple version or an arithmetic range
+            e.g.
+                 1.0         --> 1.0 ≤ x
+                 (,1.0]      --> x ≤ 1.0
+                 (,1.0)      --> x &lt; 1.0
+                 [1.0]       --> x == 1.0
+                 (1.0,)      --> 1.0 &lt; x
+                 (1.0, 2.0)   --> 1.0 &lt; x &lt; 2.0
+                 [1.0, 2.0]   --> 1.0 ≤ x ≤ 2.0
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRange.TryParse(System.String,NuGet.Versioning.VersionRange@)">
+            <summary>
+            Parses a VersionRange from its string representation.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionRange.HasLowerBound">
+            <summary>
+            True if MinVersion exists;
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionRange.HasUpperBound">
+            <summary>
+            True if MaxVersion exists.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionRange.HasLowerAndUpperBounds">
+            <summary>
+            True if both MinVersion and MaxVersion exist.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionRange.IsMinInclusive">
+            <summary>
+            True if MinVersion exists and is included in the range.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionRange.IsMaxInclusive">
+            <summary>
+            True if MaxVersion exists and is included in the range.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionRange.MaxVersion">
+            <summary>
+            Maximum version allowed by this range.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionRange.MinVersion">
+            <summary>
+            Minimum version allowed by this range.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionRange.IncludePrerelease">
+            <summary>
+            True if pre-release versions are included in this range.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionRange.All">
+            <summary>
+            A range that accepts all versions, prerelease and stable.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionRange.AllStable">
+            <summary>
+            A range that accepts all stable versions
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionRange.None">
+            <summary>
+            A range that rejects all versions
+            </summary>
+        </member>
+        <member name="T:NuGet.Versioning.VersionRangeComparer">
+            <summary>
+            A version range comparer capable of using different VersionComparers to check if ranges are equivalent.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRangeComparer.#ctor">
+            <summary>
+            Default version range comparer.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRangeComparer.#ctor(NuGet.Versioning.VersionComparison)">
+            <summary>
+            Compare versions with a specific VersionComparison
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRangeComparer.#ctor(NuGet.Versioning.IVersionComparer)">
+            <summary>
+            Compare versions with a specific IVersionComparer
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRangeComparer.Equals(NuGet.Versioning.VersionRange,NuGet.Versioning.VersionRange)">
+            <summary>
+            Checks if two version ranges are equivalent. This follows the rules of the version comparer
+            when checking the bounds.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRangeComparer.GetHashCode(NuGet.Versioning.VersionRange)">
+            <summary>
+            Creates a hash code based on all properties of the range. This follows the rules of the
+            version comparer when comparing the version bounds.
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionRangeComparer.Default">
+            <summary>
+            Default Version comparer
+            </summary>
+        </member>
+        <member name="P:NuGet.Versioning.VersionRangeComparer.VersionRelease">
+            <summary>
+            Compare versions using the Version and Release
+            </summary>
+        </member>
+        <member name="T:NuGet.Versioning.VersionRangeFormatter">
+            <summary>
+            VersionRange formatter
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRangeFormatter.GetNormalizedString(NuGet.Versioning.VersionRange)">
+            <summary>
+            Builds a normalized string with no short hand
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRangeFormatter.GetToString(NuGet.Versioning.VersionRange)">
+            <summary>
+            Builds a string to represent the VersionRange. This string can include short hand notations.
+            </summary>
+        </member>
+        <member name="M:NuGet.Versioning.VersionRangeFormatter.PrettyPrint(NuGet.Versioning.VersionRange)">
+            <summary>
+            A pretty print representation of the VersionRange.
+            </summary>
+        </member>
+    </members>
+</doc>

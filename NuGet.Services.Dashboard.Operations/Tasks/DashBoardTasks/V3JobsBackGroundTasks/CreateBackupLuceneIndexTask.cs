@@ -82,18 +82,20 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
             Microsoft.WindowsAzure.Storage.Auth.StorageCredentials scr = new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(StorageName,StorageKey);
             CloudStorageAccount csa = new CloudStorageAccount(scr, false);
             CloudBlobClient blobClient = csa.CreateCloudBlobClient();
-            IEnumerable<CloudBlobContainer> backupContainers = blobClient.ListContainers("automatedbackup-");
+            IEnumerable<CloudBlobContainer> backupContainers = blobClient.ListContainers("v3-lucene0-automatedbackup-");
             if( backupContainers.Count() >= 5)
             {
                 backupContainers.OrderBy(p => p.Properties.LastModified).ToList()[0].DeleteIfExistsAsync();
             }
             CloudBlobContainer destContainer = blobClient.GetContainerReference(destContainerName);
-            destContainer.CreateIfNotExists();            
+            //Delete and recreate.This is to make sure that rerunning creates a new container from scratch.
+            destContainer.DeleteIfExists();
+            destContainer.Create();            
         }
 
         private void UpdateSourceIndex()
         {
-            string argument = @" catalog2lucene -source " + CatalogRootUrl + " -luceneDirectoryType azure " + " -luceneStorageAccountName " + StorageName + " -luceneStorageKeyValue " + StorageKey + " -luceneStorageContainer " + SourceContainerName + " -registration " + RegistrationCursorUrl + "-verbose true -interval 30";
+            string argument = @" catalog2lucene -source " + CatalogRootUrl + " -luceneDirectoryType azure " + " -luceneStorageAccountName " + StorageName + " -luceneStorageKeyValue " + StorageKey + " -luceneStorageContainer " + SourceContainerName + " -registration " + RegistrationCursorUrl + " -verbose true -interval 30";
             string standardError = string.Empty;
             string standardOutput = string.Empty;
             int exitCode = InvokeNgProcess(argument,out standardError,out standardOutput);
@@ -113,15 +115,15 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
         {
             Process ngProcess = new Process();
             string pathToNugetExe = Path.Combine(NGExecutableFullPath);
-            ProcessStartInfo nugetProcessStartInfo = new ProcessStartInfo(pathToNugetExe);
-            nugetProcessStartInfo.Arguments = arguments;
-            nugetProcessStartInfo.RedirectStandardError = true;
-            nugetProcessStartInfo.RedirectStandardOutput = true;
-            nugetProcessStartInfo.RedirectStandardInput = true;
-            nugetProcessStartInfo.UseShellExecute = false;
-            nugetProcessStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            nugetProcessStartInfo.CreateNoWindow = true;
-            ngProcess.StartInfo = nugetProcessStartInfo;
+            ProcessStartInfo ngProcessStartInfo = new ProcessStartInfo(pathToNugetExe);
+            ngProcessStartInfo.Arguments = arguments;
+            ngProcessStartInfo.RedirectStandardError = true;
+            ngProcessStartInfo.RedirectStandardOutput = true;
+            ngProcessStartInfo.RedirectStandardInput = true;
+            ngProcessStartInfo.UseShellExecute = false;
+            ngProcessStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            ngProcessStartInfo.CreateNoWindow = true;
+            ngProcess.StartInfo = ngProcessStartInfo;
             ngProcess.Start();
             standardError = ngProcess.StandardError.ReadToEnd();
             Console.WriteLine(standardError);
