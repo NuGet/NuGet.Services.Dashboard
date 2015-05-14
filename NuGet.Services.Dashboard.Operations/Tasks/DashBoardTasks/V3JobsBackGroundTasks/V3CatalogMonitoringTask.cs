@@ -29,6 +29,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
 
         [Option("CatalogStorageAccount", AltName = "csa")]
         public string CatalogStorageAccount { get; set; }
+
+        [Option("CursorFileFullPath", AltName="cfp")]
+        public string CursorFileFullPath { get; set; }
         
         private AlertThresholds thresholdValues;
         public override void ExecuteCommand()
@@ -62,11 +65,12 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
 
         public void DoIntegrityCheckBetweenDBAndCatalog()
         {
+            //Get start time from cursor file.
+            DateTime startTime = Convert.ToDateTime(File.ReadAllText(CursorFileFullPath));
             //Use everything in UTC so that it works consistent across machines (local and Azure VMs).
-            DateTime startTime = DateTime.UtcNow.AddHours(-1);
             DateTime endTime = GetLastCreatedCursorFromCatalog().ToUniversalTime();
             HashSet<PackageEntry> dbPackages = GetDBPackagesInLastHour(startTime, endTime);
-            HashSet<PackageEntry> catalogPackages = GetCatalogPackagesInLastHour(startTime, endTime);
+            HashSet<PackageEntry> catalogPackages = GetCatalogPackages();
             string dbPackagesList = string.Join(",", dbPackages.Select(e => e.ToString()).ToArray());
             Console.WriteLine("List of packages from DB: {0}", dbPackagesList);
             string catalogPackagesList = string.Join(",", catalogPackages.Select(e => e.ToString()).ToArray());
@@ -84,6 +88,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
                     Level = "Error"
                 }.ExecuteCommand();
             }
+            //Update cursor if validation succeeds.
+            File.WriteAllText(CursorFileFullPath, endTime.ToString());
         }
 
         #region Private
@@ -107,27 +113,14 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
 
         private DateTime GetCommitTimeStampFromCatalog()
         {
-            return GetValueFromCatalog("commitTimeStamp");
+            return V3Utility.GetValueFromCatalogIndex(CatalogRootUrl,"commitTimeStamp");
         }
        
         private DateTime GetLastCreatedCursorFromCatalog()
         {
-            return GetValueFromCatalog("nuget:lastCreated");
+            return V3Utility.GetValueFromCatalogIndex(CatalogRootUrl,"nuget:lastCreated");
         }
-        private DateTime GetValueFromCatalog(string keyName)
-        {
-            WebRequest request = WebRequest.Create(CatalogRootUrl);
-            request.PreAuthenticate = true;
-            request.Method = "GET";
-            WebResponse respose = request.GetResponse();
-            using (var reader = new StreamReader(respose.GetResponseStream()))
-            {
-                JavaScriptSerializer js = new JavaScriptSerializer();
-                var objects = js.Deserialize<dynamic>(reader.ReadToEnd());
-                DateTime catalogCommitTimeStamp = Convert.ToDateTime(objects[keyName]);
-                return catalogCommitTimeStamp;
-            }
-        }      
+     
         private HashSet<PackageEntry> GetDBPackagesInLastHour(DateTime startTime, DateTime endTime)
         {
             HashSet<PackageEntry> entries = new HashSet<PackageEntry>(PackageEntry.Comparer);
@@ -149,68 +142,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
             return entries;
         }
 
-        private HashSet<PackageEntry> GetCatalogPackagesInLastHour(DateTime startTime, DateTime endTime)
+        private HashSet<PackageEntry> GetCatalogPackages()
         {
-            CollectorHttpClient client = new CollectorHttpClient();
-            CloudStorageAccount csa = CloudStorageAccount.Parse(CatalogStorageAccount);
-            var blobClient = csa.CreateCloudBlobClient();
-            Uri catalogIndex = new Uri(CatalogRootUrl);
-            CatalogIndexReader reader = new CatalogIndexReader(catalogIndex, client);
-            var task = reader.GetEntries(); //TBD Update CatalogIndexReader to return packages based on commit time stamp.Right now it returns all packages.
-            task.Wait();
-            List<CatalogIndexEntry> entries = task.Result.ToList();
-            //Commit time stamp is not exact reflection of creation time. But the idea is commit time stamp will be always more than created date and it will give a super set.
-            //entries = entries.Where(e => e.CommitTimeStamp.ToUniversalTime() > DateTime.UtcNow.AddHours(-1)).ToList(); 
-            var catalogPackages = new HashSet<PackageEntry>(entries.Select(e => new PackageEntry(e.Id, e.Version.ToNormalizedString())), PackageEntry.Comparer);
-            return catalogPackages;
+            return V3Utility.GetCatalogPackages(CatalogRootUrl, CatalogStorageAccount);
         }
-        public class PackageEntry : IEquatable<PackageEntry>
-        {
-            public string Id { get; private set; }
-            public string Version { get; private set; }
-
-            public PackageEntry(string id, string version)
-            {
-                Id = id.ToLowerInvariant();
-                Version = version.ToLowerInvariant();
-            }
-
-            public bool Equals(PackageEntry other)
-            {
-                return Compare(this, other);
-            }
-
-            public override string ToString()
-            {
-                return String.Format("{0} {1}", Id, Version);
-            }
-
-            public static bool Compare(PackageEntry x, PackageEntry y)
-            {
-                return StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id) && StringComparer.OrdinalIgnoreCase.Equals(x.Version, y.Version);
-            }
-
-            public static IEqualityComparer<PackageEntry> Comparer
-            {
-                get
-                {
-                    return new PackageEntryComparer();
-                }
-            }
-
-            public class PackageEntryComparer : IEqualityComparer<PackageEntry>
-            {
-                public bool Equals(PackageEntry x, PackageEntry y)
-                {
-                    return PackageEntry.Compare(x, y);
-                }
-
-                public int GetHashCode(PackageEntry obj)
-                {
-                    return obj.ToString().GetHashCode();
-                }
-            }
-        }
+    
         #endregion Private
     }
 }
