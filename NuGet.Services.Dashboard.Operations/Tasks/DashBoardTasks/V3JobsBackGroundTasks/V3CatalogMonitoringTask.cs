@@ -37,13 +37,14 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
         public override void ExecuteCommand()
         {
             thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));         
+            //Check last activity in DB and last activity in catalog doesn't vary more than allowed threshold.
             CheckLagBetweenDBAndCatalog();
+            //Check all newly uploaded packages in DB are present in catalog.
             DoIntegrityCheckBetweenDBAndCatalog();
         }
 
         public void CheckLagBetweenDBAndCatalog()
-        {
-           
+        {  
             DateTime lastDBTimeStamp = GetLastCreatedOrEditedActivityTimeFromDB();            
             DateTime lastCatalogCommitTimeStamp = GetCommitTimeStampFromCatalog();
             //Take allowed lag from configuration.
@@ -66,7 +67,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
         public void DoIntegrityCheckBetweenDBAndCatalog()
         {
             //Get start time from cursor file.Use everything in UTC so that it works consistent across machines (local and Azure VMs).
-            DateTime startTime = Convert.ToDateTime(File.ReadAllText(CursorFileFullPath)).ToUniversalTime();          
+            DateTime startTime = Convert.ToDateTime(File.ReadAllText(CursorFileFullPath)).ToUniversalTime();   
+            //End time should be based on "nuget:lastCreated" that catalog reports as packages uploaded after that will not be in catalog.
             DateTime endTime = GetLastCreatedCursorFromCatalog();
             HashSet<PackageEntry> dbPackages = GetDBPackagesInLastHour(startTime, endTime);
             HashSet<PackageEntry> catalogPackages = GetCatalogPackages();

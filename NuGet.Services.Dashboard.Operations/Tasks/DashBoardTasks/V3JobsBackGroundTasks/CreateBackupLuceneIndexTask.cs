@@ -41,23 +41,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
             CheckBackedUpIndex();
         }
 
-        private void CheckBackedUpIndex()
-        {
-            string argument = "checklucene -luceneDirectoryType azure -luceneStorageAccountName " + StorageName + " -luceneStorageKeyValue " + StorageKey + " -luceneStorageContainer " + destContainerName;
-            string standardError = string.Empty;
-            string standardOutput = string.Empty;
-            int exitCode = InvokeNgProcess(argument, out standardError, out standardOutput);
-            if (exitCode != 0)
-                new SendAlertMailTask
-                {
-                    AlertSubject = string.Format("Automated back up for lucene index @ {0} not in good state",destContainerName),
-                    Details = String.Format("Ng process output from check lucene: {1}, Ng process error : {2}", SourceContainerName, standardOutput, standardError),
-                    AlertName = string.Format("Unable to create automated backup of Lucene Index {0}", SourceContainerName),
-                    Component = "V3LuceneIndex AutomatedBackup",
-                    Level = "Error"
-                }.ExecuteCommand();
-        }
-
         private void CreateBackUpIndex()
         {
             CreateBackUpContainer();
@@ -95,6 +78,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
 
         private void UpdateSourceIndex()
         {
+            //Update the source index before backing it up.
             string argument = @" catalog2lucene -source " + CatalogRootUrl + " -luceneDirectoryType azure " + " -luceneStorageAccountName " + StorageName + " -luceneStorageKeyValue " + StorageKey + " -luceneStorageContainer " + SourceContainerName + " -registration " + RegistrationCursorUrl + " -verbose true -interval 30";
             string standardError = string.Empty;
             string standardOutput = string.Empty;
@@ -105,6 +89,23 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
                     AlertSubject = string.Format("Catalog2Lucene job against {0} Lucene Index for backups failed",SourceContainerName),
                     Details = String.Format("Unable to update the index @ {0} before taking backups. Ng process output: {1}, Ng process error : {2}",SourceContainerName,standardOutput,standardError),
                     AlertName = string.Format("Catalog2Lucene job against {0} Lucene Index for backups failed", SourceContainerName),
+                    Component = "V3LuceneIndex AutomatedBackup",
+                    Level = "Error"
+                }.ExecuteCommand();
+        }
+
+        private void CheckBackedUpIndex()
+        {
+            string argument = "checklucene -luceneDirectoryType azure -luceneStorageAccountName " + StorageName + " -luceneStorageKeyValue " + StorageKey + " -luceneStorageContainer " + destContainerName;
+            string standardError = string.Empty;
+            string standardOutput = string.Empty;
+            int exitCode = InvokeNgProcess(argument, out standardError, out standardOutput);
+            if (exitCode != 0)
+                new SendAlertMailTask
+                {
+                    AlertSubject = string.Format("Automated back up for lucene index @ {0} not in good state", destContainerName),
+                    Details = String.Format("Ng process output from check lucene: {1}, Ng process error : {2}", SourceContainerName, standardOutput, standardError),
+                    AlertName = string.Format("Unable to create automated backup of Lucene Index {0}", SourceContainerName),
                     Component = "V3LuceneIndex AutomatedBackup",
                     Level = "Error"
                 }.ExecuteCommand();

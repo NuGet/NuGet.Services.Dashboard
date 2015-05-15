@@ -47,7 +47,28 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
             CheckLagBetweenCatalogAndLucene();
             DoIntegrityCheckBetweenCatalogAndLucene();
         }
-
+        private void CheckLagBetweenCatalogAndLucene()
+        {
+            DateTime lastCommitToIndex = GetLastCommitTimeStampForLucene();
+            DateTime lastCommitToCatalog = V3Utility.GetValueFromCatalogIndex(CatalogRootUrl, "commitTimeStamp");
+            double actualLag = lastCommitToCatalog.Subtract(lastCommitToIndex).TotalMinutes;
+            //Allowed lag should be taken from config and it should be in seconds. But right now, the lag noticed is around 10 minutes. So setting it to 20
+            //Until we fix the issue https://github.com/NuGet/NuGetGallery/issues/2479
+            //double allowedLag = thresholdValues.V3SearchIndexCommitTimeStampLagInMinutes;
+            double allowedLag = 20;
+            Console.WriteLine("Lag between catalog and Lucene : {0}", actualLag);
+            if (actualLag > allowedLag)
+            {
+                new SendAlertMailTask
+                {
+                    AlertSubject = string.Format("V3 search lagging behind catalog by {0} minutes", actualLag),
+                    Details = string.Format("The commit timestamp for V3 Search Lucene Index is {0} and the commit timestamp for Catalog is {1}", lastCommitToIndex.ToString(), lastCommitToCatalog.ToString()),
+                    AlertName = "V3 Search Luence Index Lagging behind V2 DB.",
+                    Component = "V3 SearchService",
+                    Level = "Error"
+                }.ExecuteCommand();
+            }
+        }
         private void DoIntegrityCheckBetweenCatalogAndLucene()
         {
            DateTime startTime = Convert.ToDateTime(File.ReadAllText(CursorFileFullPath));
@@ -73,29 +94,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
                File.WriteAllText(CursorFileFullPath, endTime.ToString());
            }            
         }
-
-        private void CheckLagBetweenCatalogAndLucene()
-        {
-            DateTime lastCommitToIndex = GetLastCommitTimeStampForLucene();
-            DateTime lastCommitToCatalog = V3Utility.GetValueFromCatalogIndex(CatalogRootUrl, "commitTimeStamp");
-            double actualLag = lastCommitToCatalog.Subtract(lastCommitToIndex).TotalMinutes;
-            //Allowed lag should be taken from config and it should be in seconds. But right now, the lag noticed is around 10 minutes. So setting it to 20
-            //Until we fix the issue https://github.com/NuGet/NuGetGallery/issues/2479
-            //double allowedLag = thresholdValues.V3SearchIndexCommitTimeStampLagInMinutes;
-            double allowedLag = 20;            
-            Console.WriteLine("Lag between catalog and Lucene : {0}", actualLag);
-            if (actualLag > allowedLag)
-            {
-                new SendAlertMailTask
-                {
-                    AlertSubject = string.Format("V3 search lagging behind catalog by {0} minutes",actualLag),
-                    Details = string.Format("The commit timestamp for V3 Search Lucene Index is {0} and the commit timestamp for Catalog is {1}", lastCommitToIndex.ToString(),lastCommitToCatalog.ToString()),
-                    AlertName = "V3 Search Luence Index Lagging behind V2 DB.",
-                    Component = "V3 SearchService",
-                    Level = "Error"
-                }.ExecuteCommand();
-            } 
-        }
+             
         private DateTime GetLastCommitTimeStampForLucene()
         {
             WebRequest request = WebRequest.Create(string.Format("{0}/stats",SearchEndPoint));
