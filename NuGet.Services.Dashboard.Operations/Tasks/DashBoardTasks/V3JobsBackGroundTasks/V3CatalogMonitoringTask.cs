@@ -65,9 +65,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
 
         public void DoIntegrityCheckBetweenDBAndCatalog()
         {
-            //Get start time from cursor file.
-            DateTime startTime = Convert.ToDateTime(File.ReadAllText(CursorFileFullPath));
-            //Use everything in UTC so that it works consistent across machines (local and Azure VMs).
+            //Get start time from cursor file.Use everything in UTC so that it works consistent across machines (local and Azure VMs).
+            DateTime startTime = Convert.ToDateTime(File.ReadAllText(CursorFileFullPath)).ToUniversalTime();          
             DateTime endTime = GetLastCreatedCursorFromCatalog();
             HashSet<PackageEntry> dbPackages = GetDBPackagesInLastHour(startTime, endTime);
             HashSet<PackageEntry> catalogPackages = GetCatalogPackages();
