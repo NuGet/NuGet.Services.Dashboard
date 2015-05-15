@@ -227,7 +227,7 @@
     <Compile Include="Tasks\DashBoardTasks\CreateWADPerformanceDiagnosticsReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\V3JobsBackGroundTasks\CreateBackupLuceneIndexTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\V3JobsBackGroundTasks\V3CatalogMonitoringTask.cs" />
-    <Compile Include="Tasks\DashBoardTasks\V3JobsBackGroundTasks\V3SearchMonitoringTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\V3JobsBackGroundTasks\V3SearchAndRegistrationBlobMonitoringTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\V3JobsBackGroundTasks\V3Utility.cs" />
     <Compile Include="Tasks\DashBoardTasks\WorkServiceTasks\CreateVMWorkJobDetailReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\WorkServiceTasks\CreateWorkJobDetailReportTask.cs" />

@@ -51,7 +51,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
                 JavaScriptSerializer js = new JavaScriptSerializer();
                 var objects = js.Deserialize<dynamic>(reader.ReadToEnd());
                 DateTime catalogCommitTimeStamp = Convert.ToDateTime(objects[keyName]);
-                return catalogCommitTimeStamp;
+                return catalogCommitTimeStamp.ToUniversalTime();
             }
         }      
     }

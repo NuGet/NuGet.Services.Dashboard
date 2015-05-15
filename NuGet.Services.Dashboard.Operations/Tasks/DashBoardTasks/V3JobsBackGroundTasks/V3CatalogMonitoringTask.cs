@@ -22,7 +22,7 @@ using NuGet.Services.Metadata.Catalog;
 namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
 {
     [Command("V3CatalogMonitoringTask", "Checks the lag between V3 Catalog and v2 DB.Also checks that all new packages in V2 DB is present in V3 catalog", AltName = "v3cmt")]
-    public class V3CatalogtMonitoringTask : DatabaseAndStorageTask
+    public class V3CatalogMonitoringTask : DatabaseAndStorageTask
     {
         [Option("CatalogRootUrl", AltName = "cru")]
         public string CatalogRootUrl { get; set; }
@@ -44,12 +44,12 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
         public void CheckLagBetweenDBAndCatalog()
         {
            
-            DateTime lastDBTimeStamp = GetLastCreatedOrEditedActivityTimeFromDB();
-            //Time from DB will already be in universal time. So convert catalog to universal time.
-            DateTime lastCatalogCommitTimeStamp = GetCommitTimeStampFromCatalog().ToUniversalTime();
+            DateTime lastDBTimeStamp = GetLastCreatedOrEditedActivityTimeFromDB();            
+            DateTime lastCatalogCommitTimeStamp = GetCommitTimeStampFromCatalog();
             //Take allowed lag from configuration.
             double allowedLag = thresholdValues.V3CatalogCommitTimeStampLagInMinutes;
             double actualLag = lastDBTimeStamp.Subtract(lastCatalogCommitTimeStamp).TotalMinutes;
+            Console.WriteLine("Lag between DB and catalog: {0}", actualLag);
             if (actualLag > allowedLag)
             {
                 new SendAlertMailTask
@@ -68,13 +68,12 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
             //Get start time from cursor file.
             DateTime startTime = Convert.ToDateTime(File.ReadAllText(CursorFileFullPath));
             //Use everything in UTC so that it works consistent across machines (local and Azure VMs).
-            DateTime endTime = GetLastCreatedCursorFromCatalog().ToUniversalTime();
+            DateTime endTime = GetLastCreatedCursorFromCatalog();
             HashSet<PackageEntry> dbPackages = GetDBPackagesInLastHour(startTime, endTime);
             HashSet<PackageEntry> catalogPackages = GetCatalogPackages();
             string dbPackagesList = string.Join(",", dbPackages.Select(e => e.ToString()).ToArray());
             Console.WriteLine("List of packages from DB: {0}", dbPackagesList);
-            string catalogPackagesList = string.Join(",", catalogPackages.Select(e => e.ToString()).ToArray());
-            Console.WriteLine("List of packages from Catalog: {0}", catalogPackagesList);
+            string catalogPackagesList = string.Join(",", catalogPackages.Select(e => e.ToString()).ToArray());            
             var missingPackages = dbPackages.Where(e => !catalogPackages.Contains(e));
             if (missingPackages != null && missingPackages.Count() > 0)
             {
@@ -88,8 +87,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
                     Level = "Error"
                 }.ExecuteCommand();
             }
-            //Update cursor if validation succeeds.
-            File.WriteAllText(CursorFileFullPath, endTime.ToString());
+            else
+            {
+                //Update cursor only if validation succeeds.
+                File.WriteAllText(CursorFileFullPath, endTime.ToString());
+            }
         }
 
         #region Private
