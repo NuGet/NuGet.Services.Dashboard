@@ -35,6 +35,9 @@ namespace NuGet.Services.Dashboard.Common
         public int SearchPackageThreshold = 0; //specifies limit on latency in milliseconds for searching a package
         public int CatalogLagThreshold = 0; //specifies limit on number of packages in DB, not in Catalog
         public int ResolverLagThreshold = 0; //specifies limit on time in minutes Resolver Blobs can lag behind Catalog
+        public int V3LuceneIndexLagThreshold = 20; // Specifies the limit on the delta between number of packages in V2 DB and V3 Lucene Index.
+        public int V3SearchIndexCommitTimeStampLagInMinutes = 30; //Specifices the allowed minutes by which the V3 lucene index can lag from datetime.now.
+        public int V3CatalogCommitTimeStampLagInMinutes = 15; //specified the allowed minutes by which the V3 Catalog can lag behind V2 DB.
     
 
         // warning threhold

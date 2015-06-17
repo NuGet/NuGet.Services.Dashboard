@@ -83,9 +83,9 @@ namespace NuGetGallery.Operations
                     string extendedStatus = node.ChildNodes[3].InnerText;
                     new SendAlertMailTask
                     {
-                        AlertSubject = string.Format("Error: Role Instance alert activated for {0} cloud service", ServiceName),
-                        Details = string.Format("The status of the instance {0} in cloud service {1} is {2}, addional information for node status is {3}", instanceName, ServiceName, instanceStatus,extendedStatus),
-                        AlertName = string.Format("Error: Alert for Role Instance status for {0}", ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
+                        AlertSubject = string.Format("Cloud service {0} not in good state", ServiceName),
+                        Details = string.Format("The status of the instance {0} in cloud service {1} is {2}. Addtional information on the instance statuses :  {3}", instanceName, ServiceName, instanceStatus,extendedStatus),
+                        AlertName = string.Format("Cloud service {0} not in good state", ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
                         Component = "CloudService",
                         Level = "Error"
                     }.ExecuteCommand();
@@ -96,10 +96,10 @@ namespace NuGetGallery.Operations
                 string unReadyReport = string.Join(",", unReadyInstanceStatus.ToArray());
                 new SendAlertMailTask
                     {
-                        AlertSubject = string.Format("Error: Alert for Multiple role instances statuses for {0}", ServiceName),
-                        Details = string.Format("less than 2 instances of {0} cloud service are in ReadyRole status, the unready instance name and status is {1}",  ServiceName, unReadyReport),
-                        AlertName = string.Format("Error: Alert for Multiple Role Instances for {0}", ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
-                        Component = "CloudService" + ServiceName,
+                        AlertSubject = string.Format("Multiple instances in Cloud service {0} not in good state", ServiceName),
+                        Details = string.Format("Multiple instances in service '{0}' not in good state. The list of instance names and statuses are as follows : {1}",  ServiceName, unReadyReport),
+                        AlertName = string.Format("Multiple instances in Cloud service {0} not in good state", ServiceName), //ensure uniqueness in Alert name as that is being used incident key in pagerduty.
+                        Component = "CloudService " + ServiceName,
                         Level = "Error"
                     }.ExecuteCommand();
             }

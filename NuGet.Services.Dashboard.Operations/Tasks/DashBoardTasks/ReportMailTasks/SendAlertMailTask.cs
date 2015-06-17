@@ -75,6 +75,7 @@ namespace NuGetGallery.Operations
             TriggerDetails triggerDetails = new TriggerDetails(Component, Details);
             var detailJson = js.Serialize(triggerDetails);
 
+            //Alert name should be unique for each alert - as alert name is used as incident key in pagerduty.
             Trigger trigger = new Trigger(ConfigurationManager.AppSettings["PagerDutyServiceKey"],AlertName,AlertSubject,detailJson);           
             var triggerJson = js.Serialize(trigger);
             client.UploadString(new Uri("https://events.pagerduty.com/generic/2010-04-15/create_event.json"), triggerJson); 
