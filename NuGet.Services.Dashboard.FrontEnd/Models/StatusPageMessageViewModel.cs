@@ -32,8 +32,8 @@ namespace NuGetDashboard.Models
                 return new List<SelectListItem>
                 {
                     new SelectListItem() {Text = "Notice", Value = "**Notice** - ", Selected = false},
-                    new SelectListItem() {Text = "Investigating", Value = "**Notice** - ", Selected = false},
-                    new SelectListItem() {Text = "Resolved", Value = "**Notice** - ", Selected = false},
+                    new SelectListItem() {Text = "Investigating", Value = "**Investigating** - ", Selected = false},
+                    new SelectListItem() {Text = "Resolved", Value = "**Resolved** - ", Selected = false},
                     new SelectListItem() {Text = "Custom prefix (add \"**Prefix** -\" to your message)", Value = "", Selected = false}
                 };
             }
