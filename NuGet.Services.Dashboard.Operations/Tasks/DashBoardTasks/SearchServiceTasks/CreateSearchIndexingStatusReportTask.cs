@@ -32,8 +32,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
         [Option("SearchAdminkey", AltName = "sk")]
         public string SearchAdminKey { get; set; }
 
-        [Option("AllowedLag", AltName = "al")]
-        public int AllowedLagInMinutes { get; set; }
+        [Option("AllowedLagSev1", AltName = "alsev1")]
+        public int AllowedLagInMinutesSev1 { get; set; }
+
+        [Option("AllowedLagSev2", AltName = "alsev2")]
+        public int AllowedLagInMinutesSev2 { get; set; }
 
         public override void ExecuteCommand()
         {
@@ -43,8 +46,8 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             {
                 new SendAlertMailTask
                 {
-                    AlertSubject = "Error: Search Service Alert activated for Lucene index lag",
-                    Details = string.Format("Delta between the packages between in database and lucene index is {0}. Error Threshold lag : {1} packages", diff.ToString(), thresholdValues.LuceneIndexLagAlertErrorThreshold),
+                    AlertSubject = string.Format("Lucene index for {0} lagging behind database by {1} packages", SearchEndPoint, diff),
+                    Details = string.Format("Delta between the packages between in database and lucene index is {0}. Allowed Threshold lag : {1} packages", diff.ToString(), thresholdValues.LuceneIndexLagAlertErrorThreshold),
                     AlertName = "Error: Alert for LuceneIndexLag",
                     Component = "SearchService",
                     Level = "Error"
@@ -68,12 +71,25 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
             DateTime luceneCommitTimeStamp = GetCommitTimeStampFromLucene();
             double lag = lastActivityTime.Subtract(luceneCommitTimeStamp).TotalMinutes;
 
-            if( lag > AllowedLagInMinutes)
+            if( lag > AllowedLagInMinutesSev1)
             {
                 new SendAlertMailTask
                 {
-                    AlertSubject = "Warning: Lucene index out of date alert",
-                    Details = string.Format("Search Index for endpoint {3} last updated {0} minutes back. Last activity (create/edit) in DB is at {1}, but lucene is update @ {2}", lag, lastActivityTime,luceneCommitTimeStamp,SearchEndPoint),
+                    AlertSubject = string.Format("Error: Lucene index for {0} out of date by {1} minutes", SearchEndPoint, Math.Round(lag,2)),
+                    Details = string.Format("Search Index for endpoint {3} last updated {0} minutes back. Last activity (create/edit) in DB is at {1}, but lucene is update @ {2}", Math.Round(lag,2), lastActivityTime,luceneCommitTimeStamp,SearchEndPoint),
+                    AlertName = "Error: Alert for LuceneIndexLag",
+                    Component = "SearchService",
+                    Level = "Error",
+                    EscPolicy = "Sev1"
+                }.ExecuteCommand();
+            }
+
+            else if (lag > AllowedLagInMinutesSev2)
+            {
+                new SendAlertMailTask
+                {
+                    AlertSubject = string.Format("Warning: Lucene index for {0} out of date  by {1} minutes", SearchEndPoint, Math.Round(lag, 2)),
+                    Details = string.Format("Search Index for endpoint {3} last updated {0} minutes back. Last activity (create/edit) in DB is at {1}, but lucene is update @ {2}", Math.Round(lag,2), lastActivityTime, luceneCommitTimeStamp, SearchEndPoint),
                     AlertName = "Warning: Alert for LuceneIndexLag",
                     Component = "SearchService",
                     Level = "Error"
@@ -132,19 +148,37 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks
 
         public DateTime GetCommitTimeStampFromLucene()
         {
-            NetworkCredential nc = new NetworkCredential(SearchAdminUserName, SearchAdminKey);
-            WebRequest request = WebRequest.Create(SearchEndPoint);
-            request.Credentials = nc;
-            request.PreAuthenticate = true;
-            request.Method = "GET";
-            WebResponse respose = request.GetResponse();
-            using (var reader = new StreamReader(respose.GetResponseStream()))
+            DateTime time = DateTime.MinValue;
+            int retries = 5;
+            while (retries-- > 0)
             {
-                JavaScriptSerializer js = new JavaScriptSerializer();
-                var objects = js.Deserialize<dynamic>(reader.ReadToEnd());
-                DateTime count = Convert.ToDateTime(objects["CommitUserData"]["commit-time-stamp"]);
-                return count;
+                
+                try
+                {
+                    NetworkCredential nc = new NetworkCredential(SearchAdminUserName, SearchAdminKey);
+                    WebRequest request = WebRequest.Create(SearchEndPoint);
+                    request.Credentials = nc;
+                    request.PreAuthenticate = true;
+                    request.Method = "GET";
+                    WebResponse respose = request.GetResponse();
+                    using (var reader = new StreamReader(respose.GetResponseStream()))
+                    {
+                        JavaScriptSerializer js = new JavaScriptSerializer();
+                        var objects = js.Deserialize<dynamic>(reader.ReadToEnd());
+                        time = Convert.ToDateTime(objects["CommitUserData"]["commit-time-stamp"]);
+                        return time;
+                    }
+                }
+                catch (Exception)
+                {
+                    //If more retry attempts are possible just log and retry.Else throw the exception so that we will get alerted.
+                    if (retries > 0)
+                        Console.WriteLine("Unable to get commit time stamp from {0} endpoint to check for lucene index lag",SearchEndPoint);
+                    else
+                        throw new InvalidDataException(string.Format("Unable to get commit time stamp from {0} endpoint to check for lucene index lag", SearchEndPoint));
+                }
             }
+            return time;
         }   
 
     }

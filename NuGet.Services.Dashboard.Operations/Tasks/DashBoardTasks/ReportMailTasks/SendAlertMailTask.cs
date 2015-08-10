@@ -39,6 +39,10 @@ namespace NuGetGallery.Operations
         [Option("Level", AltName = "l")]
         public string Level { get; set; }
 
+        [Option("EscPolicy", AltName = "escp")]
+        public string EscPolicy { get; set; }
+
+
 
         public override void ExecuteCommand()
         {
@@ -76,7 +80,11 @@ namespace NuGetGallery.Operations
             var detailJson = js.Serialize(triggerDetails);
 
             //Alert name should be unique for each alert - as alert name is used as incident key in pagerduty.
-            Trigger trigger = new Trigger(ConfigurationManager.AppSettings["PagerDutyServiceKey"],AlertName,AlertSubject,detailJson);           
+            string key = ConfigurationManager.AppSettings["PagerDutyServiceKey"];
+            if (!string.IsNullOrEmpty(EscPolicy))
+            key = ConfigurationManager.AppSettings["PagerDutySev1ServiceKey"];
+            
+            Trigger trigger = new Trigger(key,AlertName,AlertSubject,detailJson);           
             var triggerJson = js.Serialize(trigger);
             client.UploadString(new Uri("https://events.pagerduty.com/generic/2010-04-15/create_event.json"), triggerJson); 
             
