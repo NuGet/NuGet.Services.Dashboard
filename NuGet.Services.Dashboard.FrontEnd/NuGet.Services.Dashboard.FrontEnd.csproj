@@ -215,6 +215,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\DatabaseController.cs" />
+    <Compile Include="Controllers\StatusPageController.cs" />
     <Compile Include="Controllers\ThresholdController.cs" />
     <Compile Include="Controllers\TroubleShootingController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -231,12 +232,14 @@
     <Compile Include="Models\PingdomMonthlyReportViewModel.cs" />
     <Compile Include="Models\PingdomPerCountryViewModel.cs" />
     <Compile Include="Models\PingdomStatusViewModel.cs" />
+    <Compile Include="Models\StatusPageMessageViewModel.cs" />
     <Compile Include="Models\ThresholdViewModel.cs" />
     <Compile Include="Models\WorkerJobStatusViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities\BlobStorageService.cs" />
     <Compile Include="Utilities\ChartingUtilities.cs" />
     <Compile Include="Utilities\DateTimeUtility.cs" />
+    <Compile Include="Utilities\TableStorageService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\modern-responsive.css" />
@@ -429,6 +432,7 @@
     <Content Include="Views\Threshold\Create.cshtml" />
     <Content Include="Views\V2GalleryFrontEnd\V2GalleryFrontEnd_LatencyDetails.cshtml" />
     <Content Include="Views\SearchService\SearchService_Detail.cshtml" />
+    <Content Include="Views\StatusPage\Create.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

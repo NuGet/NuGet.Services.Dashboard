@@ -1,0 +1,51 @@
+﻿@using NuGetDashboard.Models;
+@model StatusPageMessageViewModel
+
+@{
+    ViewBag.Title = "Create";
+}
+<div class="page secondary with-sidebar">
+    <div class="page-header">
+        <div class="page-header-content" id="headercontent">
+            <h1 id="title">Status Page<small>status.nuget.org</small>
+            </h1>
+            <a href="/" id="backbutton" class=" back-button big page-back"></a>
+        </div>
+    </div>
+
+    <div style="width: 800px;" class="fg-color-darken" id="Create">
+        @using (Html.BeginForm())
+        {
+            @Html.ValidationSummary(false)
+
+            <table class="hovered">
+                <tbody>
+                @if (ViewBag.Posted)
+                {
+                    <tr>
+                        <th colspan="2">
+                            <hr/>
+                            <strong>The status message has been posted.</strong>
+                            <br/>Note it may take up to 5 minutes before it is visible on all nodes that host the status page.
+                            <hr/>
+                        </th>
+                    </tr>
+                }
+                <tr>
+                    <td>Environment</td>
+                    <td>@Html.DropDownListFor(x => x.Environment, Model.Environments)</td>
+                </tr>
+                <tr>
+                    <td>Prefix</td>
+                    <td>@Html.DropDownListFor(x => x.Prefix, Model.Prefixes)</td>
+                </tr>
+                <tr>
+                    <td>Message (supports basic Markdown)</td>
+                    <td>@Html.TextAreaFor(x => x.Message)</td>
+                </tr>
+                </tbody>
+            </table>
+            <input type="submit" value="Publish"/>
+        }
+    </div>
+</div>
