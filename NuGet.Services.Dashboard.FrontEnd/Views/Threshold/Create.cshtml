@@ -4,19 +4,20 @@
 @{
     ViewBag.Title = "Create";
 }
-div class="page secondary with-sidebar">
-<div class="page-header">
-    <div class="page-header-content" id="headercontent">
-        <h1 id="title">Threshold<small>Create</small></h1>
-        <a href="/" id="backbutton" class=" back-button big page-back"></a>
+<div class="page secondary with-sidebar">
+    <div class="page-header">
+        <div class="page-header-content" id="headercontent">
+            <h1 id="title">Threshold<small>Create</small>
+            </h1>
+            <a href="/" id="backbutton" class=" back-button big page-back"></a>
+        </div>
     </div>
-</div>
 
-<<div style="width:800px;" class="fg-color-darken" id="Edit">
-    @using (Html.BeginForm())
-    {
-        <table class="hovered">
-            <tbody>
+    <div style="width: 800px;" class="fg-color-darken" id="Edit">
+        @using (Html.BeginForm())
+        {
+            <table class="hovered">
+                <tbody>
                 <tr>
                     <td>Threshold Name</td>
                     <td>@Html.TextBoxFor(x => x.ID)</td>
@@ -29,9 +30,10 @@ div class="page secondary with-sidebar">
                     <td>Current Value</td>
                     <td>@Html.TextBoxFor(x => x.current)</td>
                 </tr>
-            </tbody>
-        </table>
-        <input type="submit" value="Create" />
+                </tbody>
+            </table>
+            <input type="submit" value="Create"/>
 
-    }
+        }
+    </div>
 </div>
