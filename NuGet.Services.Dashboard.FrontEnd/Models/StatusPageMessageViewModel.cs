@@ -39,6 +39,20 @@ namespace NuGetDashboard.Models
             }
         }
 
+        public IEnumerable<SelectListItem> StatusOverrides
+        {
+            get
+            {
+                return new List<SelectListItem>
+                {
+                    new SelectListItem() {Text = "(based on Pingdom)", Value = "", Selected = false},
+                    new SelectListItem() {Text = "Up (green)", Value = "Up", Selected = false},
+                    new SelectListItem() {Text = "Degraded (orange)", Value = "Degraded", Selected = false},
+                    new SelectListItem() {Text = "Down (red)", Value = "Down", Selected = false}
+                };
+            }
+        }
+
         [Required]
         public string Environment { get; set; }
 
@@ -48,5 +62,7 @@ namespace NuGetDashboard.Models
 
         [Required]
         public string Message { get; set; }
+
+        public string StatusOverride { get; set; }
     }
 }

@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using System.Web.Mvc;
 using NuGetDashboard.Models;
 using NuGetDashboard.Utilities;
@@ -22,7 +21,7 @@ namespace NuGetDashboard.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (TableStorageService.WriteStatusPageMessage(model.Environment, model.When, model.Prefix + model.Message, "dashboard"))
+                if (TableStorageService.WriteStatusPageMessage(model.Environment, model.When, model.Prefix + model.Message, model.StatusOverride, "dashboard"))
                 {
                     return RedirectToAction("Create", new { posted = true });
                 }
