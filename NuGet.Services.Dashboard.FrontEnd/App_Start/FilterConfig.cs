@@ -1,4 +1,4 @@
-﻿using System.Web;
+﻿using NuGetDashboard.Filters;
 using System.Web.Mvc;
 
 namespace NuGetDashboard
@@ -8,6 +8,7 @@ namespace NuGetDashboard
         public static void RegisterGlobalFilters(GlobalFilterCollection filters)
         {
             filters.Add(new HandleErrorAttribute());
+            filters.Add(new EnsureTeamClaimsAttribute());
         }
     }
 }

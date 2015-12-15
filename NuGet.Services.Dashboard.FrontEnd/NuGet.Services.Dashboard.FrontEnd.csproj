@@ -225,6 +225,7 @@
     <Compile Include="Controllers\PingdomController.cs" />
     <Compile Include="Controllers\WorkJobsController.cs" />
     <Compile Include="Controllers\TrendingController.cs" />
+    <Compile Include="Filters\EnsureTeamClaimsAttribute.cs" />
     <Compile Include="Filters\InitializeSimpleMembershipAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -322,6 +323,7 @@
     <None Include="Properties\PublishProfiles\nuget-dashboard - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.9.1.intellisense.js" />
     <Content Include="Images\GoogleAnalytics.PNG" />
+    <Content Include="Images\nedry.gif" />
     <Content Include="Images\nuget_32.png" />
     <Content Include="Images\word2013icon.png" />
     <Content Include="Scripts\accordion.js" />
