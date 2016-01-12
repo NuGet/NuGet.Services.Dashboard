@@ -28,7 +28,8 @@ param(
   [Parameter(Mandatory=$true)][string]$DashboardStorageContainerName,
   [Parameter(Mandatory=$true)][string]$WorkingDir,
   [Parameter(Mandatory=$true)][string]$CurrentUserPassword,
-  [Parameter(Mandatory=$false)][string]$EnvName="Prod0")
+  [Parameter(Mandatory=$false)][string]$EnvName="Prod0",
+  [Parameter(Mandatory=$false)][string]$ConsolidatedSearchServiceEndPoint)
 
  $time = [System.DateTime]::Now
  $time = $time.AddMinutes(-($time.Minute))
@@ -73,6 +74,7 @@ CreateTask "CreateWorkJobDetailReport" "cwjdrt -name $WorkServiceAdminUser -key0
 #SearchService Tasks
 CreateTask "CreateLuceneIndexingLagReport" "csisrt -db `"$FrontEndLegacyDBConnectionString`" -se $SearchServiceEndPoint -sa $SearchServiceAdminUser -sk $SearchServiceAdminKey -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 CreateTask "CreateSearchCloudServiceReport" "ccsdrt -id $SubscriptionId -name $SearchServiceName -cername $ProdManagementCertName -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 5
+CreateTask "CreateConsolidatedSearchIndexingStatusReportTask" "ccsisrt -db `"$FrontEndLegacyDBConnectionString`" -se $ConsolidatedSearchServiceEndPoint -sa $SearchServiceAdminUser -sk $SearchServiceAdminKey -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 
 #Misc
 CreateTask "CreateRequestsCountOverviewReport" "crphrt -iis `"$FrontEndStorageConnectionString`" -retry 3 -servicename $FrontEndCloudServiceName  -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60 
@@ -83,5 +85,6 @@ CreateTask "CreateVsTrendingReportFor30Day" "cvtrt -db `"$WareHouseDBConnectionS
 CreateTask "CreateVsTrendingReportFor1Day" "cvtrt -db `"$WareHouseDBConnectionString`" -n 1 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 180
 CreateTask "CreateVsTrendingReportFor7Day" "cvtrt -db `"$WareHouseDBConnectionString`" -n 7 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 180
 CreateTask "CreateDailyStatusReport" sdsret -st `"$DashboardStorageConnectionString` -ct prod0 -rec nugetcore@microsoft.com 1440
+
 #Metrics service
 CreateTask "RunBackgroundCheckForMerticsService" "rbms -uri `"$MetricsServiceApi`" -db `"$StatDBConnectionString`" -st `"$MetricsLogConnectionString`" -ct $MetricsLogContainerName " 5
