@@ -148,7 +148,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
 
                 var objects = js.Deserialize<dynamic>(reader.ReadToEnd());
 
-                var count = (int)objects["NumDocs"];
+                var count = (int)objects["numDocs"];
                 return count;
             }
         }

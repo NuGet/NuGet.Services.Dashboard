@@ -85,7 +85,8 @@ namespace NuGetGallery.Operations
                 {
                     ValidateArguments();
                     ExecuteCommand();
-                }catch(Exception e)
+                }
+                catch (Exception e)
                 {
                     if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["SmtpUserName"]) && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["SmtpPassword"]))
                     {
