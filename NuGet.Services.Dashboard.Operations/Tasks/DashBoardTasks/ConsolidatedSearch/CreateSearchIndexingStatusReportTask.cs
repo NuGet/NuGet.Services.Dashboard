@@ -36,7 +36,10 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
             var thresholdValues = new JavaScriptSerializer().Deserialize<AlertThresholds>(
                 ReportHelpers.Load(StorageAccount, "Configuration.AlertThresholds.json", ContainerName));
 
-            var difference = GetTotalPackageCountFromDatabase() - GetTotalPackageCountFromLucene();
+            var totalPackageCountInDatabase = GetTotalPackageCountFromDatabase();
+            var luceneDetails = GetTotalPackageCountFromLucene();
+
+            var difference = totalPackageCountInDatabase - luceneDetails.Item1 - 59;
 
             if (difference > thresholdValues.LuceneIndexLagAlertErrorThreshold)
             {
@@ -65,7 +68,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
                 new Tuple<string, string>(string.Format("{0:HH-mm}", DateTime.Now), difference.ToString()), 24 * 12, ContainerName);
 
             var lastActivityTime = GetLastCreatedOrEditedActivityTimeFromDatabase();
-            var luceneCommitTimeStamp = GetCommitTimeStampFromLucene();
+            var luceneCommitTimeStamp = luceneDetails.Item2;
             var indexLagInMinutes = lastActivityTime.Subtract(luceneCommitTimeStamp).TotalMinutes;
 
             if (indexLagInMinutes > AllowedLagInMinutesSev1)
@@ -111,6 +114,11 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
                 while (reader.Read())
                 {
                     var dbLastUpdatedTimeStamp = Convert.ToDateTime(reader["LastUpdated"]);
+
+                    // For some reason, our job runs in PDT/PST timezone. The SQL timestamp we get is treated as a PDT/PST time,
+                    // as there is no timezone info in there. Tell .NET to explicitly treat this value as UTC.
+                    dbLastUpdatedTimeStamp = DateTime.SpecifyKind(dbLastUpdatedTimeStamp, DateTimeKind.Utc);
+
                     return dbLastUpdatedTimeStamp;
                 }
             }
@@ -133,13 +141,14 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
             } 
         }
 
-        public int GetTotalPackageCountFromLucene()
+        public Tuple<int, DateTime> GetTotalPackageCountFromLucene()
         {
             var credential = new NetworkCredential(SearchAdminUserName, SearchAdminKey);
             var request = WebRequest.Create(SearchEndPoint); 
             request.Credentials = credential;
             request.PreAuthenticate = true;
             request.Method = "GET";
+            request.Timeout = request.Timeout * 2;
 
             using (var response = request.GetResponse())
             using (var reader = new StreamReader(response.GetResponseStream()))
@@ -148,57 +157,15 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
 
                 var objects = js.Deserialize<dynamic>(reader.ReadToEnd());
 
+                // Get count
                 var count = (int)objects["numDocs"];
-                return count;
+
+                // Get timestamp
+                var time = (DateTimeOffset)DateTimeOffset.Parse(objects["CommitUserData"]["commit-time-stamp"]);
+
+                // Done
+                return new Tuple<int, DateTime>(count, time.UtcDateTime);
             }
         }
-
-        public DateTime GetCommitTimeStampFromLucene()
-        {
-            var time = DateTime.MinValue;
-
-            int retries = 5;
-            while (retries-- > 0)
-            {
-                try
-                {
-                    var credential = new NetworkCredential(SearchAdminUserName, SearchAdminKey);
-                    var request = WebRequest.Create(SearchEndPoint);
-                    request.Credentials = credential;
-                    request.PreAuthenticate = true;
-                    request.Method = "GET";
-
-                    using (var response = request.GetResponse())
-                    using (var reader = new StreamReader(response.GetResponseStream()))
-                    {
-                        var js = new JavaScriptSerializer();
-
-                        var objects = js.Deserialize<dynamic>(reader.ReadToEnd());
-
-                        time = Convert.ToDateTime(objects["CommitUserData"]["commit-time-stamp"]);
-                        return time;
-                    }
-                }
-                catch (Exception)
-                {
-                    // If more retry attempts are possible just log and retry.Else throw the exception so that we will get alerted.
-                    if (retries > 0)
-                    {
-                        Console.WriteLine(
-                            "Unable to get commit time stamp from {0} endpoint to check for Lucene index lag",
-                            SearchEndPoint);
-                    }
-                    else
-                    {
-                        throw new InvalidDataException(
-                            string.Format(
-                                "Unable to get commit time stamp from {0} endpoint to check for Lucene index lag",
-                                SearchEndPoint));
-                    }
-                }
-            }
-            return time;
-        }   
-
     }
 }
