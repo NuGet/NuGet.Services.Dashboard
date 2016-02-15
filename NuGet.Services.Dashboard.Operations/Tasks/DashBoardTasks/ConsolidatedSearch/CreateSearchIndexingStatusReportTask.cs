@@ -83,7 +83,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
                     EscPolicy = "Sev1"
                 }.ExecuteCommand();
             }
-
             else if (indexLagInMinutes > AllowedLagInMinutesSev2)
             {
                 new SendAlertMailTask
@@ -161,7 +160,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
                 var count = (int)objects["numDocs"];
 
                 // Get timestamp
-                var time = (DateTimeOffset)DateTimeOffset.Parse(objects["CommitUserData"]["commit-time-stamp"]);
+                var time = (DateTimeOffset)DateTimeOffset.Parse(objects["CommitUserData"]["commit-time-stamp"], 
+                    DateTimeFormatInfo.CurrentInfo,
+                    DateTimeStyles.AssumeUniversal);
 
                 // Done
                 return new Tuple<int, DateTime>(count, time.UtcDateTime);
