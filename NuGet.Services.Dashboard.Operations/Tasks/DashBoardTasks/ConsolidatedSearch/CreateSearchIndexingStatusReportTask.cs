@@ -39,7 +39,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
             var totalPackageCountInDatabase = GetTotalPackageCountFromDatabase();
             var luceneDetails = GetTotalPackageCountFromLucene();
 
-            var difference = totalPackageCountInDatabase - luceneDetails.Item1 - 59;
+            var difference = totalPackageCountInDatabase - luceneDetails.Item1 - 2;
 
             if (difference > thresholdValues.LuceneIndexLagAlertErrorThreshold)
             {
@@ -134,7 +134,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
                 using (var executor = new SqlExecutor(connection))
                 {
 
-                    var connectionCount = executor.Query<Int32>("SELECT COUNT(*) FROM [dbo].[Packages]").SingleOrDefault();
+                    var connectionCount = executor.Query<Int32>("SELECT COUNT(*) FROM [dbo].[Packages] WHERE Deleted <> 1").SingleOrDefault();
                     return connectionCount;
                 }
             } 
