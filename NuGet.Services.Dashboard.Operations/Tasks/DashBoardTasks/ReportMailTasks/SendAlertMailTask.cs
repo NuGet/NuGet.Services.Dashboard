@@ -82,7 +82,13 @@ namespace NuGetGallery.Operations
             //Alert name should be unique for each alert - as alert name is used as incident key in pagerduty.
             string key = ConfigurationManager.AppSettings["PagerDutyServiceKey"];
             if (!string.IsNullOrEmpty(EscPolicy))
-            key = ConfigurationManager.AppSettings["PagerDutySev1ServiceKey"];
+            {
+                key = ConfigurationManager.AppSettings["PagerDutySev1ServiceKey"];
+            }
+            if (string.IsNullOrEmpty(key))
+            {
+                key = ConfigurationManager.AppSettings["PagerDutyServiceKey"];
+            }
             
             Trigger trigger = new Trigger(key,AlertName,AlertSubject,detailJson);           
             var triggerJson = js.Serialize(trigger);
