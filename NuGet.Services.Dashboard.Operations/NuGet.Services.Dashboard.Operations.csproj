@@ -213,6 +213,7 @@
     <Compile Include="Tasks\DashBoardTasks\DatabaseTasks\CreateDatabaseDetailedReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\DatabaseTasks\CreateDatabaseMetricsReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\DatabaseTasks\CreateDatabaseSizeReportTask.cs" />
+    <Compile Include="Tasks\DashBoardTasks\VerifyPostValidationCursorTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\V2GalleryFrontendTasks\CreateE2ELatencyReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\V2GalleryFrontendTasks\CreateElmahErrorDetailedReportTask.cs" />
     <Compile Include="Tasks\DashBoardTasks\V2GalleryFrontendTasks\CreateElmahErrorOverviewReportTask.cs" />
