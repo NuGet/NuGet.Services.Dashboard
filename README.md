@@ -3,6 +3,8 @@ NuGet.Services.Dashboard
 
 This repo contains the source code for NuGet Dashboard frontend website and back end operations.
 
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
 ###NuGet.Services.Dashboard.Operations###
 
 Contains tasks that retrieves monitoring data from various sources like Pingdom, WAD performance data, SQL Azure DMV queries and gallery database.
