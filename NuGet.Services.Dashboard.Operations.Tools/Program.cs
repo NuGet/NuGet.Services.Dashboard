@@ -1,12 +1,16 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.Configuration;
 using NuBot.Infrastructure;
 using NuGet;
+using NuGet.Services.Dashboard.Common;
 using NLog.Config;
-using NLog.Targets;
 using NLog;
 
 namespace NuGetGallery.Operations.Tools
@@ -54,8 +58,13 @@ namespace NuGetGallery.Operations.Tools
                     Manager.RegisterCommand(cmd);
                 }
 
+                var secretReaderFactory = new SecretReaderFactory(ConfigurationManager.AppSettings);
+
+                var configurationProcessor = new ConfigurationProcessor(secretReaderFactory);
+                configurationProcessor.InjectSecretsInto(ConfigurationManager.AppSettings);
+
                 // Parse the command
-                var parser = new CommandLineParser(Manager);
+                var parser = new CommandLineParser(Manager, secretReaderFactory);
                 ICommand command = parser.ParseCommandLine(args) ?? HelpCommand;
 
                 // Fall back on help command if we failed to parse a valid command

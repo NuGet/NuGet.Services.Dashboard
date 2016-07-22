@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IdentityModel;
@@ -9,7 +12,9 @@ using System.IdentityModel.Tokens;
 using System.Linq;
 using System.ServiceModel.Security;
 using System.Web;
+using NuGet.Services.Dashboard.Common;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
+using NuGet;
 
 [assembly: PreApplicationStartMethod(typeof(NuGetDashboard.FederationConfig), "PreAppStart")]
 namespace NuGetDashboard
@@ -18,6 +23,9 @@ namespace NuGetDashboard
     {
         public static void PreAppStart()
         {
+            var configurationProcessor = new ConfigurationProcessor(new SecretReaderFactory(ConfigurationManager.AppSettings));
+            configurationProcessor.InjectSecretsInto(ConfigurationManager.AppSettings);
+
             FederatedAuthentication.FederationConfigurationCreated += (sender, args) =>
             {
                 // Load config
@@ -25,7 +33,7 @@ namespace NuGetDashboard
                 var realm = ConfigurationManager.AppSettings["Auth.AuthenticationRealm"];
                 var issuer = ConfigurationManager.AppSettings["Auth.AuthenticationIssuer"];
                 var thumbprint = ConfigurationManager.AppSettings["Auth.AuthenticationIssuerThumbprint"];
-                
+
                 var idconfig = new IdentityConfiguration();
                 foreach (var audienceUrl in audienceUrls)
                 {
