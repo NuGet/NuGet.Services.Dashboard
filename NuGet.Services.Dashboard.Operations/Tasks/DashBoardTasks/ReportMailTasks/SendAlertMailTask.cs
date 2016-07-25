@@ -42,8 +42,6 @@ namespace NuGetGallery.Operations
         [Option("EscPolicy", AltName = "escp")]
         public string EscPolicy { get; set; }
 
-
-
         public override void ExecuteCommand()
         {
             //Either create an incident or send mail based on the current settings.

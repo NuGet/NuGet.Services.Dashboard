@@ -73,6 +73,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Services.Client" />
     <Reference Include="System.Spatial, Version=5.6.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -93,6 +94,10 @@
     <Compile Include="SnazzyConsoleTarget.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NuGet.Services.Dashboard.Common\NuGet.Services.Dashboard.Common.csproj">
+      <Project>{5566ae9c-8466-4316-9372-7b38b57dbb20}</Project>
+      <Name>NuGet.Services.Dashboard.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NuGet.Services.Dashboard.Operations\NuGet.Services.Dashboard.Operations.csproj">
       <Project>{DBECF66B-8F2F-4B32-9143-E243BAFF12DF}</Project>
       <Name>NuGet.Services.Dashboard.Operations</Name>

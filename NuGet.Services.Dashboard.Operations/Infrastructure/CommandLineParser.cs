@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,20 +10,31 @@ using System.Linq;
 using System.Reflection;
 using NuGetGallery.Operations;
 using NuGetGallery.Operations.Common;
+using NuGet.Services.KeyVault;
+using NuGet.Services.Dashboard.Common;
 
 namespace NuGet
 {
     public class CommandLineParser
     {
         private readonly ICommandManager _commandManager;
-        
+        private ISecretReaderFactory _secretReaderFactory;
+        private Lazy<ISecretInjector> _secretInjector;
+
         // On Unix or MacOSX slash as a switch indicator would interfere with the path separator
         [SuppressMessage("Microsoft.Performance", "CA1802:UseLiteralsWhereAppropriate")]
         private static readonly bool _supportSlashAsSwitch = (Environment.OSVersion.Platform != PlatformID.Unix) && (Environment.OSVersion.Platform != PlatformID.MacOSX);
 
-        public CommandLineParser(ICommandManager manager)
+        public CommandLineParser(ICommandManager manager, ISecretReaderFactory secretReaderFactory)
         {
             _commandManager = manager;
+            if (secretReaderFactory == null)
+            {
+                throw new ArgumentNullException(nameof(secretReaderFactory));
+            }
+
+            _secretReaderFactory = secretReaderFactory;
+            _secretInjector = new Lazy<ISecretInjector>(InitSecretInjector, isThreadSafe: false);
         }
 
         public void ExtractOptions(ICommand command, IEnumerator<string> argsEnumerator)
@@ -70,7 +84,8 @@ namespace NuGet
                     throw new CommandLineException(TaskResources.MissingOptionValueError, option);
                 }
 
-                AssignValue(command, propInfo, option, value);
+                string newValue = _secretInjector.Value.InjectAsync(value).Result;
+                AssignValue(command, propInfo, option, newValue);
             }
             command.Arguments.AddRange(arguments);
         }
@@ -149,6 +164,11 @@ namespace NuGet
 
             ExtractOptions(cmd, argsEnumerator);
             return cmd;
+        }
+
+        private ISecretInjector InitSecretInjector()
+        {
+            return _secretReaderFactory.CreateSecretInjector(_secretReaderFactory.CreateSecretReader());
         }
 
         public static string GetNextCommandLineItem(IEnumerator<string> argsEnumerator)
