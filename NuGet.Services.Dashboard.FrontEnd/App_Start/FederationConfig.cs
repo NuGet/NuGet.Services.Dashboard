@@ -32,7 +32,7 @@ namespace NuGetDashboard
                 var audienceUrls = ConfigurationManager.AppSettings["Auth.AudienceUrl"].Split('|');
                 var realm = ConfigurationManager.AppSettings["Auth.AuthenticationRealm"];
                 var issuer = ConfigurationManager.AppSettings["Auth.AuthenticationIssuer"];
-                var thumbprint = ConfigurationManager.AppSettings["Auth.AuthenticationIssuerThumbprint"];
+                var thumbprints = ConfigurationManager.AppSettings["Auth.AuthenticationIssuerThumbprint"].Split('|');
 
                 var idconfig = new IdentityConfiguration();
                 foreach (var audienceUrl in audienceUrls)
@@ -41,7 +41,11 @@ namespace NuGetDashboard
                 }
 
                 var registry = new ConfigurationBasedIssuerNameRegistry();
-                registry.AddTrustedIssuer(thumbprint, issuer);
+                foreach (var thumbprint in thumbprints)
+                {
+                    registry.AddTrustedIssuer(thumbprint, issuer);
+                }
+
                 idconfig.IssuerNameRegistry = registry;
                 idconfig.CertificateValidationMode = X509CertificateValidationMode.None;
 
