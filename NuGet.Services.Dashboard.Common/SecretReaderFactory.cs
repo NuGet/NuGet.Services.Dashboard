@@ -11,12 +11,14 @@ namespace NuGet.Services.Dashboard.Common
         private string _vaultName;
         private string _clientId;
         private string _certificateThumbprint;
+        private bool _validateCertificate;
 
         public SecretReaderFactory(NameValueCollection config)
         {
             _vaultName = config["keyVault-VaultName"];
             _clientId = config["keyVault-ClientId"];
             _certificateThumbprint = config["keyVault-CertificateThumbprint"];
+            _validateCertificate = bool.Parse(config["keyVault-ValidateCertificate"]);
         }
 
         public ISecretReader CreateSecretReader()
@@ -30,7 +32,7 @@ namespace NuGet.Services.Dashboard.Common
                 _vaultName,
                 _clientId,
                 _certificateThumbprint,
-                validateCertificate: true);
+                _validateCertificate);
 
             return new KeyVaultReader(keyVaultConfiguration);
         }
