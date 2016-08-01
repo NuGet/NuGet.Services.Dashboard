@@ -18,9 +18,7 @@ namespace NuGet.Services.Dashboard.Common
             _vaultName = config["keyVault-VaultName"];
             _clientId = config["keyVault-ClientId"];
             _certificateThumbprint = config["keyVault-CertificateThumbprint"];
-            _validateCertificate = bool.TryParse(config["keyVault-ValidateCertificate"], out _validateCertificate)
-                                    ? _validateCertificate
-                                    : true;
+            _validateCertificate = bool.Parse(config["keyVault-ValidateCertificate"]);
         }
 
         public ISecretReader CreateSecretReader()
