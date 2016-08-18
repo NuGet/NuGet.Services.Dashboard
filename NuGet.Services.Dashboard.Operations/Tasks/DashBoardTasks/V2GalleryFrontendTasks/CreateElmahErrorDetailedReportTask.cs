@@ -48,9 +48,9 @@ namespace NuGetGallery.Operations
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Error: Elmah Error Alert activated for {0}", error.Error),
+                            AlertSubject = string.Format("Error: Elmah Error Alert on {0} activated for {1}", ContainerName, error.Error),
                             Details = String.Format("Number of {0} exceeded Error threshold limit during the last hour.Threshold error count per hour : {1}, Events recorded in the last hour: {2}", error.Error, thresholds.ElmahCriticalErrorPerHourAlertErrorThreshold, error.Occurecnes.ToString()),
-                            AlertName = string.Format("Error: Elmah Error Alert for {0}", error.Error),
+                            AlertName = string.Format("Error: {0} Elmah Error Alert for {1}", ContainerName, error.Error),
                             Component = "Web Server",
                             Level = "Error"
                         }.ExecuteCommand();
@@ -59,9 +59,9 @@ namespace NuGetGallery.Operations
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Warning: Elmah Error Alert activated for {0}", error.Error),
+                            AlertSubject = string.Format("Warning: Elmah Error Alert on {0} activated for {1}", ContainerName, error.Error),
                             Details = String.Format("Number of {0} exceeded Warning threshold limit during the last hour.Threshold error count per hour : {1}, Events recorded in the last hour: {2}", error.Error, thresholds.ElmahCriticalErrorPerHourAlertWarningThreshold, error.Occurecnes.ToString()),
-                            AlertName = string.Format("Warning: Elmah Error Alert for {0}", error.Error),
+                            AlertName = string.Format("Warning: {0} Elmah Error Alert for {1}", ContainerName, error.Error),
                             Component = "Web Server",
                             Level = "Warning"
                         }.ExecuteCommand();
