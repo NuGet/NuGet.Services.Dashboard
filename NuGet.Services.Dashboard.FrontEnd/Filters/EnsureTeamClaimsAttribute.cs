@@ -19,26 +19,8 @@ namespace NuGetDashboard.Filters
 
         protected override bool AuthorizeCore(HttpContextBase httpContext)
         {
-            Trace.WriteLine(httpContext.User.Identity.Name);
-            var claimsIdentity = httpContext.User.Identity as ClaimsIdentity;
-            if (claimsIdentity != null && httpContext.User.Identity.IsAuthenticated)
-            {
-                var identityProviderClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == IdentityProviderClaimType);
-                if (identityProviderClaim == null || identityProviderClaim.Value != ConfigurationManager.AppSettings["Auth.IdentityProvider"])
-                {
-                    return false;
-                }
-
-                var nameClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == NameClaimType);
-                if (nameClaim == null || !IsAllowedAlias(nameClaim.Value))
-                {
-                    return false;
-                }
-
-                return true;
-            }
-
-            return false;
+            return httpContext.User.Identity.IsAuthenticated
+                   && IsAllowedAlias(httpContext.User.Identity.Name);
         }
 
         private static bool IsAllowedAlias(string claimValue)
@@ -50,14 +32,9 @@ namespace NuGetDashboard.Filters
         protected override void HandleUnauthorizedRequest(System.Web.Mvc.AuthorizationContext filterContext)
         {
             // Ensure we are signed out
-            var federationAuthenticationModule = filterContext.HttpContext.ApplicationInstance
-                .Modules["WSFederationAuthenticationModule"] as WSFederationAuthenticationModule;
-            federationAuthenticationModule.SignOut(true);
-
-            FederatedAuthentication.SessionAuthenticationModule.SignOut();
             FormsAuthentication.SignOut();
 
-            filterContext.Result = new ContentResult() { Content = @"
+            filterContext.Result = new ContentResult { Content = @"
                 <html>
                     <head><title>You didn't say the magic word.</title></head>
 
