@@ -36,7 +36,7 @@ namespace NuGetDashboard.Filters
 
             filterContext.Result = new ContentResult { Content = @"
                 <html>
-                    <head><title>You didn't say the magic word.</title></head>
+                    <head><title>You didn't say the magic word, " + filterContext.HttpContext.User.Identity.Name + @".</title></head>
 
                     <body><h1>401 - Unauthorized</h1><hr /><p>You did not say the magic word.<br /><img src=""/Images/nedry.gif"" /></p></body>
                 </html>
