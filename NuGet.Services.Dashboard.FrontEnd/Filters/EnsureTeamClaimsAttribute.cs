@@ -6,6 +6,7 @@ using System.Linq;
 using System.IdentityModel.Services;
 using System.Web.Security;
 using System.Configuration;
+using System.Diagnostics;
 
 namespace NuGetDashboard.Filters
 {
@@ -18,6 +19,7 @@ namespace NuGetDashboard.Filters
 
         protected override bool AuthorizeCore(HttpContextBase httpContext)
         {
+            Trace.WriteLine(httpContext.User.Identity.Name);
             var claimsIdentity = httpContext.User.Identity as ClaimsIdentity;
             if (claimsIdentity != null && httpContext.User.Identity.IsAuthenticated)
             {
