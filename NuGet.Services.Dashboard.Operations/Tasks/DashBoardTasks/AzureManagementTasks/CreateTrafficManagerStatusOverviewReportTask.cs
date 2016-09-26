@@ -29,36 +29,48 @@ namespace NuGetGallery.Operations
             request.Headers.Add("x-ms-version: 2014-02-01");
             request.PreAuthenticate = true;
             request.Method = "GET";
-            WebResponse respose = request.GetResponse();
+            var response = request.GetResponse();
             //Schema of the response would be as specified in http://msdn.microsoft.com/en-us/library/azure/hh758251.aspx
-            Console.WriteLine(respose);
-            using (var reader = new StreamReader(respose.GetResponseStream()))
-            {               
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(reader.ReadToEnd());
-                XmlNodeList parentNode = doc.GetElementsByTagName("Endpoint", "http://schemas.microsoft.com/windowsazure");
-                List<Tuple<string, string>> endpointValues = new List<Tuple<string, string>>();
-                foreach (XmlNode node in parentNode)
+            using (var reader = new StreamReader(response.GetResponseStream()))
+            {
+                var responseContent = reader.ReadToEnd();
+                Console.WriteLine(responseContent);
+
+                var responseDoc = new XmlDocument();
+                responseDoc.LoadXml(responseContent);
+                var endpointNodes = responseDoc.GetElementsByTagName("Endpoint", "http://schemas.microsoft.com/windowsazure");
+                //Endpoint Structure
+                //<Endpoint >
+                //    <DomainName>    Name                </DomainName>
+                //    <Status>        Enabled             </Status>
+                //    <Type>          CloudService        </Type>
+                //    <Location>      North Central US    </Location>
+                //    <MonitorStatus> Online              </MonitorStatus>
+                //    <Weight>        1                   </Weight>
+                //</Endpoint>
+
+                var endpointValues = new List<Tuple<string, string>>();
+                foreach (XmlNode endpointNode in endpointNodes)
                 {
-                    string endpointName = node.ChildNodes[0].InnerText;
-                    string endpointStatus = node.ChildNodes[3].InnerText;                             
-                    Console.WriteLine(string.Format("End point name {0}, status {1}", endpointName, endpointStatus));
-                    endpointValues.Add(new Tuple<string, string>(endpointName, endpointStatus));
-                    if(!endpointStatus.Equals("Online",StringComparison.OrdinalIgnoreCase))
+                    string endpointName = endpointNode["DomainName"].InnerText;
+                    string endpointStatus = endpointNode["MonitorStatus"].InnerText;
+                    Console.WriteLine(string.Format("Endpoint name {0}, status {1}", endpointName, endpointStatus));
+                    endpointValues.Add(Tuple.Create(endpointName, endpointStatus));
+                    if (!endpointStatus.Equals("Online", StringComparison.OrdinalIgnoreCase))
                     {
                         new SendAlertMailTask
                         {
-                            AlertSubject = string.Format("Error: Traffic manager endpoint alert activated for {0}",endpointName),
+                            AlertSubject = string.Format("Error: Traffic manager endpoint alert activated for {0}", endpointName),
                             Details = string.Format("The status of the endpoint {0} monitoring by traffic manager {1} is {2}", endpointName, ProfileName, endpointStatus),
                             AlertName = "Error: Alert for TrafficManagerEndpoint",
                             Component = "TrafficManager",
                             Level = "Error"
                         }.ExecuteCommand();
                     }
-                   
+
                 }
-                     JArray reportObject = ReportHelpers.GetJson(endpointValues);
-                     ReportHelpers.CreateBlob(StorageAccount, "TrafficManagerStatus.json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
+                JArray reportObject = ReportHelpers.GetJson(endpointValues);
+                ReportHelpers.CreateBlob(StorageAccount, "TrafficManagerStatus.json", ContainerName, "application/json", ReportHelpers.ToStream(reportObject));
             }
         }
 
