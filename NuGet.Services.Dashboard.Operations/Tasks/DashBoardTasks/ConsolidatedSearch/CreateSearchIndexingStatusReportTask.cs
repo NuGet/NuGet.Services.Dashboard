@@ -19,12 +19,6 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
         [Option("SearchEndPoint", AltName = "se")]
         public string SearchEndPoint { get; set; }
 
-        [Option("SearchAdminUserName", AltName = "sa")]
-        public string SearchAdminUserName { get; set; }
-
-        [Option("SearchAdminkey", AltName = "sk")]
-        public string SearchAdminKey { get; set; }
-
         [Option("AllowedLagSev1", AltName = "alsev1")]
         public int AllowedLagInMinutesSev1 { get; set; }
 
@@ -142,10 +136,7 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
 
         public Tuple<int, DateTime> GetTotalPackageCountFromLucene()
         {
-            var credential = new NetworkCredential(SearchAdminUserName, SearchAdminKey);
-            var request = WebRequest.Create(SearchEndPoint); 
-            request.Credentials = credential;
-            request.PreAuthenticate = true;
+            var request = WebRequest.Create(SearchEndPoint);
             request.Method = "GET";
             request.Timeout = request.Timeout * 2;
 
