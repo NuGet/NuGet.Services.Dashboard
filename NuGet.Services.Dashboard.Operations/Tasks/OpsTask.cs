@@ -98,7 +98,7 @@ namespace NuGetGallery.Operations
                             Component = "Dashboard Ops"
                         }.ExecuteCommand();
                     }
-                    throw e;
+                    throw;
                 }
             }
         }
