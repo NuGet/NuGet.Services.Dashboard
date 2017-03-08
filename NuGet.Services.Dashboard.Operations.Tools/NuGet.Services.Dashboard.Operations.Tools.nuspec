@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>galops</id>
+    <version>$version$</version>
+    <authors>.NET Foundation</authors>
+    <owners>.NET Foundation</owners>
+    <description>galops</description>
+    <copyright>Copyright .NET Foundation</copyright>
+  </metadata>
+  <files>
+    <file src="bin\$configuration$\**\*" target="tools"/>
+  </files>
+</package>

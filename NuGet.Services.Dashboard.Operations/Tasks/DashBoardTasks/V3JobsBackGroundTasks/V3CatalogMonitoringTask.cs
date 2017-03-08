@@ -4,20 +4,9 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web.Script.Serialization;
-using AnglicanGeek.DbExecutor;
-using Elmah;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Newtonsoft.Json.Linq;
 using NuGet.Services.Dashboard.Common;
-using NuGetGallery;
-using NuGetGallery.Infrastructure;
 using NuGetGallery.Operations.Common;
-using NuGet.Services.Metadata.Catalog;
 
 namespace NuGetGallery.Operations.Tasks.DashBoardTasks.V3JobsBackGroundTasks
 {
