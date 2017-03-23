@@ -48,7 +48,7 @@ CreateTask "CreatePingdomHourlyReport" "cpdwr -user `"$PingdomUserName`" -passwo
 CreateTask "CreatePingdomServiceDisruptionReport" "psdrt -user `"$PingdomUserName`" -password `"$PingdomPassword`" -appkey `"$PingdomAppKey`" -n 1 -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60
 
 # SearchService tasks
-CreateTask "CreateConsolidatedSearchIndexingStatusReportTask" "ccsisrt -db `"$FrontEndLegacyDBConnectionString`" -se $ConsolidatedSearchServiceEndPoint -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" -alsev1 120 -alsev2 30 60
+CreateTask "CreateConsolidatedSearchIndexingStatusReportTask" "ccsisrt -db `"$FrontEndLegacyDBConnectionString`" -se $ConsolidatedSearchServiceEndPoint -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName -alsev1 120 -alsev2 30" 60
 
 # Misc
 CreateTask "CreateRequestsCountOverviewReport" "crphrt -iis `"$FrontEndStorageConnectionString`" -retry 3 -servicename $FrontEndCloudServiceName  -st `"$DashboardStorageConnectionString`" -ct $DashboardStorageContainerName" 60 
