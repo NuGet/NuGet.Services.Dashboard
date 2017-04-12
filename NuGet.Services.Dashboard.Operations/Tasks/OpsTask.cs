@@ -52,6 +52,12 @@ namespace NuGetGallery.Operations
             }
         }
 
+        [Option("DisableNotification", AltName = "disn")]
+        public bool DisableNotification { get; set; }
+
+        [Option("DisableIncidentCreation", AltName = "disic")]
+        public bool DisableIncidentCreation { get; set; }
+
         [Option("Path to the configuration file to use when command line arguments aren't specified")]
         public string ConfigFile { get; set; }
 

@@ -22,7 +22,7 @@ using System.Configuration;
 namespace NuGetGallery.Operations
 {
     [Command("SendAlertMailTask", "Creates a pager duty incident or sends an alert email based on configuration", AltName = "samt")]
-    public class SendAlertMailTask : OpsTask 
+    public class SendAlertMailTask : OpsTask
     {
         [Option("ErrorDetails", AltName = "e")]
         public string Details { get; set; }
@@ -32,7 +32,7 @@ namespace NuGetGallery.Operations
 
         [Option("AlertName", AltName = "n")]
         public string AlertName { get; set; }
-        
+
         [Option("Component", AltName = "c")]
         public string Component { get; set; }
 
@@ -45,13 +45,13 @@ namespace NuGetGallery.Operations
         public override void ExecuteCommand()
         {
             //Either create an incident or send mail based on the current settings.
-            if (ConfigurationManager.AppSettings["UsePagerDuty"].Equals("true", StringComparison.OrdinalIgnoreCase))
+            if (!DisableIncidentCreation && ConfigurationManager.AppSettings["UsePagerDuty"].Equals("true", StringComparison.OrdinalIgnoreCase))
             {
                 CreateIncident();  
             }
             else
             {
-                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["SmtpUserName"]) && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["SmtpPassword"]))
+                if (!DisableNotification && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["SmtpUserName"]) && !string.IsNullOrEmpty(ConfigurationManager.AppSettings["SmtpPassword"]))
                 {
                     SendEmail();
                 }
