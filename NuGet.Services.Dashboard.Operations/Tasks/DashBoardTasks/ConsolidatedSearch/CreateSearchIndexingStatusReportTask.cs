@@ -43,7 +43,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
                     Details = string.Format("Delta between the packages between in database and Lucene index is {0}. Allowed Threshold lag : {1} packages", difference, thresholdValues.LuceneIndexLagAlertErrorThreshold),
                     AlertName = "Error: Alert for LuceneIndexLag",
                     Component = "SearchService",
-                    Level = "Error"
+                    Level = "Error",
+                    DisableIncidentCreation = DisableIncidentCreation,
+                    DisableNotification = DisableNotification
                 }.ExecuteCommand();
             }
             else if (difference > thresholdValues.LuceneIndexLagAlertWarningThreshold)
@@ -54,7 +56,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
                     Details = string.Format("Delta between the packages between in database and Lucene index is {0}. Warning Threshold lag : {1} packages", difference, thresholdValues.LuceneIndexLagAlertWarningThreshold),
                     AlertName = "Warning: Alert for LuceneIndexLag",
                     Component = "SearchService",
-                    Level = "Warning"
+                    Level = "Warning",
+                    DisableIncidentCreation = DisableIncidentCreation,
+                    DisableNotification = DisableNotification
                 }.ExecuteCommand();
             }
 
@@ -74,7 +78,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
                     AlertName = "Error: Alert for LuceneIndexLag",
                     Component = "SearchService",
                     Level = "Error",
-                    EscPolicy = "Sev1"
+                    EscPolicy = "Sev1",
+                    DisableIncidentCreation = DisableIncidentCreation,
+                    DisableNotification = DisableNotification
                 }.ExecuteCommand();
             }
             else if (indexLagInMinutes > AllowedLagInMinutesSev2)
@@ -85,7 +91,9 @@ namespace NuGetGallery.Operations.Tasks.DashBoardTasks.SearchServiceTasks.Consol
                     Details = string.Format("Search Index for endpoint {3} last updated {0} minutes back. Last activity (create/edit) in DB is at {1}, but Lucene is updated @ {2}", Math.Round(indexLagInMinutes, 2), lastActivityTime, luceneCommitTimeStamp, SearchEndPoint),
                     AlertName = "Warning: Alert for LuceneIndexLag",
                     Component = "SearchService",
-                    Level = "Error"
+                    Level = "Error",
+                    DisableIncidentCreation = DisableIncidentCreation,
+                    DisableNotification = DisableNotification
                 }.ExecuteCommand();
             }
 
