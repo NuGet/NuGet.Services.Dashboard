@@ -12,6 +12,7 @@ using NuGet;
 using NuGet.Services.Dashboard.Common;
 using NLog.Config;
 using NLog;
+using System.Net;
 
 namespace NuGetGallery.Operations.Tools
 {
@@ -76,6 +77,10 @@ namespace NuGetGallery.Operations.Tools
                 }
                 else
                 {
+                    // Ensure that SSLv3 is disabled and that Tls v1.2 is enabled.
+                    ServicePointManager.SecurityProtocol &= ~SecurityProtocolType.Ssl3;
+                    ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+
                     command.Execute();
                 }
             }
